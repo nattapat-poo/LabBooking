@@ -1,0 +1,142 @@
+<!--
+ * FILE: JS_Core.html
+ * PURPOSE: Primary client-side application state machine, API bridge integration, session bootstrapping.
+ * DESIGN SPEC REF: Section 1.2.1, Section 6.4.1, Section 6.4.4
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 24, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<script>
+window.appState = {
+  currentUser: null,
+  activeRole: 'teacher',
+  activeProxy: null,
+  canEditConfig: false,
+  selectedSlots: [],
+  activeWeekOffset: 0,
+  labOutages: [],
+  weeklySchedule: null,
+  isLoading: false
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initCoreEngine();
+});
+
+/**
+ * Core Engine Initialization
+ */
+function initCoreEngine() {
+  window.appState.isLoading = true;
+  google.script.run
+    .withSuccessHandler((userContext) => {
+      if (!userContext || !userContext.email) {
+        window.location.reload();
+        return;
+      }
+      window.appState.currentUser = userContext;
+      window.appState.activeRole = userContext.role || 'teacher';
+      window.appState.canEditConfig = ['admin', 'labtech', 'ta'].includes(window.appState.activeRole);
+      
+      hydrateHeaderUI();
+      
+      if (!userContext.hasCompletedTutorial && typeof window.openWelcomeModal === 'function') {
+        window.openWelcomeModal();
+      }
+
+      if (typeof window.refreshTimeline === 'function') {
+        window.refreshTimeline();
+      }
+      window.appState.isLoading = false;
+    })
+    .withFailureHandler((err) => {
+      showToast('Failed to initialize session: ' + (err.message || err), 'error');
+      window.appState.isLoading = false;
+    })
+    .getVerifiedSessionContext();
+}
+
+/**
+ * Updates Header branding & user session displays
+ */
+function hydrateHeaderUI() {
+  const userEmailElem = document.getElementById('user-email-display');
+  const roleBadgeElem = document.getElementById('user-role-badge');
+  if (userEmailElem && window.appState.currentUser) {
+    userEmailElem.textContent = window.appState.currentUser.email;
+  }
+  if (roleBadgeElem) {
+    roleBadgeElem.textContent = window.appState.activeRole.toUpperCase();
+  }
+}
+
+/**
+ * Toggles slot selection in staging area (Ubiquitous Language Compliance)
+ * @param {Object} slotData - { slotId, date, period, labId, labName }
+ */
+function toggleSlotSelection(slotData) {
+  if (!slotData || !slotData.slotId) return;
+  const index = window.appState.selectedSlots.findIndex(s => s.slotId === slotData.slotId);
+  if (index > -1) {
+    window.appState.selectedSlots.splice(index, 1);
+  } else {
+    window.appState.selectedSlots.push(slotData);
+  }
+
+  if (typeof window.renderSelectedSlotsPanel === 'function') {
+    window.renderSelectedSlotsPanel();
+  }
+}
+
+/**
+ * Clears selected slot staging area
+ */
+function clearSelectedSlots() {
+  window.appState.selectedSlots = [];
+  if (typeof window.renderSelectedSlotsPanel === 'function') {
+    window.renderSelectedSlotsPanel();
+  }
+}
+
+/**
+ * Submits batch booking payload to API Bridge
+ * @param {Object} batchMetadata - { subject, labId, equipmentNotes, teacherEmail }
+ */
+function submitBatchBooking(batchMetadata) {
+  if (window.appState.selectedSlots.length === 0) {
+    showToast('No slots selected for submission.', 'warning');
+    return;
+  }
+
+  const payload = {
+    slots: window.appState.selectedSlots,
+    subject: batchMetadata.subject,
+    labId: batchMetadata.labId,
+    equipmentNotes: batchMetadata.equipmentNotes || '',
+    actingAsTeacher: window.appState.activeProxy ? window.appState.activeProxy.email : null
+  };
+
+  showToast('Submitting batch request...', 'info', 2000);
+
+  google.script.run
+    .withSuccessHandler((response) => {
+      if (response && (response.ok === false || response.success === false)) {
+        showToast('Batch submission failed: ' + (response.message || response.error || 'Server error'), 'error');
+        return;
+      }
+      showToast(response && response.message ? response.message : 'Batch booking submitted successfully!', 'success');
+      clearSelectedSlots();
+      if (typeof window.closeMultiSlotModal === 'function') {
+        window.closeMultiSlotModal();
+      }
+      if (typeof window.refreshTimeline === 'function') {
+        window.refreshTimeline();
+      }
+    })
+    .withFailureHandler((err) => {
+      showToast('Batch submission failed: ' + (err.message || err), 'error');
+    })
+    .bridgeSubmitBooking(payload);
+}
+</script>

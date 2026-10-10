@@ -1,0 +1,220 @@
+<!--
+ * FILE: Modal_Welcome.html
+ * PURPOSE: Interactive Spotlight Onboarding Tutorial Engine with Pixel-Locked Bottom Actions & Screen Gray-Out
+ * DESIGN SPEC REF: Section 10 of Lab Oops OS Master Standard
+ * VERSION: 2.0.0
+ * LAST MODIFIED: August 2026
+-->
+<div id="tutorial-spotlight-overlay" class="fixed inset-0 z-50 pointer-events-none hidden transition-opacity duration-300">
+  <!-- Full-screen SVG Mask with transparent cutout hole -->
+  <svg class="absolute inset-0 w-full h-full pointer-events-auto">
+    <defs>
+      <mask id="tutorial-spotlight-mask">
+        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+        <rect id="spotlight-cutout-rect" x="0" y="0" width="0" height="0" rx="10" fill="black" />
+      </mask>
+    </defs>
+    <rect x="0" y="0" width="100%" height="100%" fill="rgba(15, 23, 42, 0.78)" mask="url(#tutorial-spotlight-mask)" onclick="nextOnboardingStep()" title="Click outside to advance" />
+  </svg>
+
+  <!-- Glowing Focus Ring -->
+  <div id="spotlight-focus-ring" class="absolute pointer-events-none rounded-xl border-2 border-emerald-400 ring-4 ring-emerald-500/40 shadow-2xl transition-all duration-300 ease-out"></div>
+
+  <!-- Guiding Floating Popover Card with Pixel-Locked Stationary Actions -->
+  <div id="tutorial-popover-card" class="absolute pointer-events-auto w-[340px] h-[175px] max-w-[92vw] bg-slate-900/95 border border-emerald-500/40 shadow-2xl rounded-2xl p-4 flex flex-col justify-between backdrop-blur-md transition-all duration-300 text-left">
+    <!-- Header with Step Badge & Skip Button -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-1.5">
+        <span class="p-1 rounded bg-emerald-500/20 text-emerald-400">
+          <i id="tut-step-icon" data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        </span>
+        <span id="tut-step-badge" class="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">1 / 4 • Overview</span>
+      </div>
+      <button onclick="skipOnboardingGuide()" class="text-[11px] text-slate-400 hover:text-white transition font-medium" title="Skip Tutorial">Skip</button>
+    </div>
+
+    <!-- Title & Concise Description -->
+    <div class="space-y-1 flex-1 py-1">
+      <h4 id="tut-step-title" class="text-sm font-bold text-white tracking-tight leading-snug"></h4>
+      <p id="tut-step-desc" class="text-xs text-slate-300 leading-relaxed"></p>
+    </div>
+
+    <!-- Footer with Progress Dots & Action Buttons (Stationary & Pixel-Locked) -->
+    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-auto">
+      <div id="tut-dots-container" class="flex items-center space-x-1"></div>
+      <div class="flex items-center space-x-1.5">
+        <button id="tut-prev-btn" onclick="prevOnboardingStep()" class="px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition">Prev</button>
+        <button id="tut-next-btn" onclick="nextOnboardingStep()" class="px-3 py-1 text-xs rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow transition flex items-center space-x-1">
+          <span id="tut-next-text">Next</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.ONBOARDING_STATE = {
+  isActive: false,
+  currentStep: 0,
+  totalSteps: 4,
+  steps: [
+    {
+      badge: '1 / 4 • Operations Header',
+      title: 'Smart Lab Booking Center',
+      icon: 'flask-conical',
+      target: '#global-header',
+      description: 'Science Laboratory Operations & Oppositely-Organized Problems Solved Operating System.'
+    },
+    {
+      badge: '2 / 4 • Role Switcher',
+      title: 'Role & User Context',
+      icon: 'users',
+      target: '#role-switcher-container',
+      description: 'Switch between Teacher, TALT Lab Technician, and System Admin perspectives.'
+    },
+    {
+      badge: '3 / 4 • Live Sync',
+      title: 'Real-time Revalidation',
+      icon: 'refresh-cw',
+      target: '#btn-revalidate',
+      description: 'Force sync schedule matrix with sub-5ms 3-tier cached database snapshots.'
+    },
+    {
+      badge: '4 / 4 • Theme Mode',
+      title: 'Sliding Theme Toggle',
+      icon: 'sun',
+      target: '#btn-theme-slider',
+      description: 'Switch seamlessly between Dark and High-Contrast Light Mode.'
+    }
+  ]
+};
+
+function openWelcomeModal(stepIndex) {
+  openOnboardingModal(stepIndex);
+}
+
+function openOnboardingModal(stepIndex) {
+  window.ONBOARDING_STATE.isActive = true;
+  window.ONBOARDING_STATE.currentStep = (typeof stepIndex === 'number') ? stepIndex : 0;
+  
+  var overlay = document.getElementById('tutorial-spotlight-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+
+  renderTutorialStep();
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeOnboardingModal(markAsCompleted) {
+  window.ONBOARDING_STATE.isActive = false;
+  var overlay = document.getElementById('tutorial-spotlight-overlay');
+  if (overlay) overlay.classList.add('hidden');
+
+  if (markAsCompleted) {
+    localStorage.setItem('labbooking_onboarding_completed', 'true');
+  }
+}
+
+function skipOnboardingGuide() {
+  closeOnboardingModal(true);
+}
+
+function nextOnboardingStep() {
+  if (window.ONBOARDING_STATE.currentStep < window.ONBOARDING_STATE.totalSteps - 1) {
+    window.ONBOARDING_STATE.currentStep++;
+    renderTutorialStep();
+  } else {
+    closeOnboardingModal(true);
+  }
+}
+
+function prevOnboardingStep() {
+  if (window.ONBOARDING_STATE.currentStep > 0) {
+    window.ONBOARDING_STATE.currentStep--;
+    renderTutorialStep();
+  }
+}
+
+function renderTutorialStep() {
+  var step = window.ONBOARDING_STATE.steps[window.ONBOARDING_STATE.currentStep];
+  if (!step) return;
+
+  var badgeEl = document.getElementById('tut-step-badge');
+  var titleEl = document.getElementById('tut-step-title');
+  var iconEl = document.getElementById('tut-step-icon');
+  var descEl = document.getElementById('tut-step-desc');
+  var prevBtn = document.getElementById('tut-prev-btn');
+  var nextBtnText = document.getElementById('tut-next-text');
+  var dotsContainer = document.getElementById('tut-dots-container');
+
+  if (badgeEl) badgeEl.textContent = step.badge;
+  if (titleEl) titleEl.textContent = step.title;
+  if (iconEl) iconEl.setAttribute('data-lucide', step.icon);
+  if (descEl) descEl.textContent = step.description;
+
+  if (prevBtn) {
+    if (window.ONBOARDING_STATE.currentStep === 0) {
+      prevBtn.classList.add('invisible');
+    } else {
+      prevBtn.classList.remove('invisible');
+    }
+  }
+
+  if (nextBtnText) {
+    nextBtnText.textContent = (window.ONBOARDING_STATE.currentStep === window.ONBOARDING_STATE.totalSteps - 1) ? 'Finish' : 'Next';
+  }
+
+  if (dotsContainer) {
+    dotsContainer.innerHTML = '';
+    for (var i = 0; i < window.ONBOARDING_STATE.totalSteps; i++) {
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.onclick = (function(idx) { return function() { openOnboardingModal(idx); }; })(i);
+      dot.className = 'w-1.5 h-1.5 rounded-full transition-all ' + (i === window.ONBOARDING_STATE.currentStep ? 'bg-emerald-400 w-4' : 'bg-gray-600 hover:bg-gray-500');
+      dotsContainer.appendChild(dot);
+    }
+  }
+
+  positionSpotlightAndPopover(step);
+  if (window.lucide) lucide.createIcons();
+}
+
+function positionSpotlightAndPopover(step) {
+  var targetEl = document.querySelector(step.target);
+  var cutout = document.getElementById('spotlight-cutout-rect');
+  var ring = document.getElementById('spotlight-focus-ring');
+  var popover = document.getElementById('tutorial-popover-card');
+
+  if (!targetEl || !cutout || !ring || !popover) return;
+
+  var pad = 6;
+  var rect = targetEl.getBoundingClientRect();
+  var tX = Math.max(2, Math.round(rect.left - pad));
+  var tY = Math.max(2, Math.round(rect.top - pad));
+  var tW = Math.min(window.innerWidth - tX - 4, Math.round(rect.width + (pad * 2)));
+  var tH = Math.max(34, Math.round(rect.height + (pad * 2)));
+
+  cutout.setAttribute('x', tX);
+  cutout.setAttribute('y', tY);
+  cutout.setAttribute('width', tW);
+  cutout.setAttribute('height', tH);
+
+  ring.style.left = tX + 'px';
+  ring.style.top = tY + 'px';
+  ring.style.width = tW + 'px';
+  ring.style.height = tH + 'px';
+
+  var popoverW = 340;
+  var popoverH = 175;
+  var windowH = window.innerHeight;
+  var windowW = window.innerWidth;
+
+  var fixedTop = 90;
+  var fixedLeft = Math.round((windowW / 2) - (popoverW / 2));
+  if (fixedLeft < 14) fixedLeft = 14;
+  if (fixedLeft + popoverW > windowW - 14) fixedLeft = windowW - popoverW - 14;
+
+  popover.style.top = fixedTop + 'px';
+  popover.style.left = fixedLeft + 'px';
+}
+</script>

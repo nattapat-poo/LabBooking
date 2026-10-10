@@ -1,0 +1,84 @@
+<!--
+ * FILE: UI_Unauthorized.html
+ * PURPOSE: Guest landing and unauthorized state layout with email and role debug context.
+ * DESIGN SPEC REF: Section 1.5 (Guest Landing & Unauthorized State Layout)
+ * VERSION: 1.1.3d
+ * LAST MODIFIED: 2026-07-20
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Restricted - MUIDS Lab Booking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'muids-blue': '#003366',
+            'muids-blue-light': '#E6EBF0'
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="h-screen w-screen bg-slate-50 flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-8 border border-slate-200 text-center">
+    <!-- Header Icon -->
+    <div class="text-amber-500 bg-amber-50 p-4 rounded-full inline-block mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+
+    <!-- Main Heading -->
+    <h1 class="text-2xl font-bold text-slate-900 mb-2">Access Restricted</h1>
+
+    <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+      Your account is authenticated, but does not currently have permissions to access the Lab Booking App.
+    </p>
+
+    <!-- Debug Context Panel -->
+    <div class="bg-slate-50 rounded-lg p-4 mb-6 border border-slate-200 text-left space-y-2">
+      <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Session Debug Context</div>
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-slate-500 font-medium">Account Email:</span>
+        <span class="font-mono text-slate-800 font-semibold truncate max-w-[200px]" title="<?= activeEmail ?>">
+          <?= activeEmail ?>
+        </span>
+      </div>
+
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-slate-500 font-medium">Assigned Role:</span>
+        <span class="font-mono px-2 py-0.5 rounded text-[11px] font-bold tracking-wide <?= (activeRole === 'UNAUTHORIZED' || activeRole === 'GUEST' || !activeRole) ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200' ?>">
+          <?= activeRole ? activeRole : 'UNASSIGNED' ?>
+        </span>
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <p class="text-xs text-slate-500 mb-6 leading-normal">
+      If your role displays as <code class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">UNASSIGNED</code> or <code class="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">GUEST</code>, your email address needs to be added to the database whitelist sheet by a TALT administrator.
+    </p>
+
+    <!-- Support CTA with Mailto Template -->
+    <a href="mailto:talt.muids@mahidol.ac.th?subject=MUIDS%20Lab%20Booking%20Access%20Request&body=Hello%20TALT%20Team%2C%0A%0AI%20am%20unable%20to%20access%20the%20Lab%20Booking%20App.%0A%0AAccount%20Email%3A%20<?= encodeURIComponent(activeEmail) ?>%0ADetected%20Role%3A%20<?= encodeURIComponent(activeRole) ?>%0A%0APlease%20verify%20my%20whitelist%20permissions.%20Thanks!" 
+       class="w-full py-3 bg-muids-blue text-white rounded-lg font-medium hover:bg-blue-900 transition duration-200 block text-center shadow-md">
+      Contact TALT Support
+    </a>
+  </div>
+
+</body>
+</html>

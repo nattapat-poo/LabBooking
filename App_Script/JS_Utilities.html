@@ -1,0 +1,134 @@
+<!--
+ * FILE: JS_Utilities.html
+ * PURPOSE: System-wide UI utilities, toast notification engine, shimmer skeletons, and manual revalidation logic.
+ * DESIGN SPEC REF: Section 1.2.4, Section 4.1, Section 4.2
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 24, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<script>
+/**
+ * Toast Notification Dispatcher
+ * @param {string} message - Toast content body
+ * @param {string} type - Notification state: 'success' | 'error' | 'warning' | 'info'
+ * @param {number} duration - Auto-dismiss timeout in ms (default: 5000)
+ */
+function showToast(message, type = 'info', duration = 5000) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-xs w-full pointer-events-none px-4 md:px-0';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'pointer-events-auto flex items-center justify-between w-full p-4 rounded-lg shadow-xl border border-slate-200 backdrop-blur-md transition-all duration-300 transform translate-x-full opacity-0';
+
+  let bgClasses = 'bg-slate-800 text-white';
+  let iconSvg = '<svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+
+  if (type === 'success') {
+    bgClasses = 'bg-emerald-50 text-emerald-900 border-emerald-300';
+    iconSvg = '<svg class="w-5 h-5 text-emerald-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+  } else if (type === 'error') {
+    bgClasses = 'bg-red-50 text-red-900 border-red-300';
+    iconSvg = '<svg class="w-5 h-5 text-red-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+  } else if (type === 'warning') {
+    bgClasses = 'bg-amber-50 text-amber-900 border-amber-300';
+    iconSvg = '<svg class="w-5 h-5 text-amber-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+  }
+
+  toast.className += ` ${bgClasses}`;
+  toast.innerHTML = `
+    <div class="flex items-center min-w-0 pr-2">
+      ${iconSvg}
+      <span class="text-sm font-medium leading-tight break-words">${message}</span>
+    </div>
+    <button onclick="dismissToast(this.parentElement)" aria-label="Close" class="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+  `;
+
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-x-full', 'opacity-0');
+    toast.classList.add('translate-x-0', 'opacity-100');
+  });
+
+  const timer = setTimeout(() => {
+    dismissToast(toast);
+  }, duration);
+
+  toast.dataset.timerId = timer;
+}
+
+function dismissToast(toastNode) {
+  if (!toastNode) return;
+  if (toastNode.dataset.timerId) clearTimeout(parseInt(toastNode.dataset.timerId));
+  toastNode.classList.remove('translate-x-0', 'opacity-100');
+  toastNode.classList.add('translate-x-full', 'opacity-0');
+  setTimeout(() => {
+    if (toastNode.parentNode) toastNode.parentNode.removeChild(toastNode);
+  }, 300);
+}
+
+/**
+ * Generates Skeleton Shimmer Components
+ * @param {string} type - Loader view layout context ('grid' | 'header' | 'modal')
+ */
+function getShimmerTemplate(type) {
+  if (type === 'grid') {
+    return `
+      <div class="grid grid-cols-8 gap-2 p-4 w-full animate-pulse">
+        ${Array(40).fill(0).map(() => `
+          <div class="h-16 bg-slate-200/80 rounded-lg"></div>
+        `).join('')}
+      </div>
+    `;
+  }
+  if (type === 'header') {
+    return `
+      <div class="flex items-center gap-3 animate-pulse">
+        <div class="h-4 w-28 bg-slate-200 rounded"></div>
+        <div class="h-6 w-16 bg-slate-200 rounded-full"></div>
+      </div>
+    `;
+  }
+  return `<div class="h-32 bg-slate-200 animate-pulse rounded-xl w-full"></div>`;
+}
+
+/**
+ * Manual Timeline Revalidation Handler
+ */
+function triggerManualRevalidation() {
+  const btn = document.getElementById('btn-manual-revalidate');
+  const icon = document.getElementById('icon-manual-revalidate');
+  if (btn && icon) {
+    btn.classList.add('pointer-events-none', 'opacity-60');
+    icon.classList.add('animate-spin', 'text-muids-blue');
+  }
+
+  google.script.run
+    .withSuccessHandler((response) => {
+      if (btn && icon) {
+        btn.classList.remove('pointer-events-none', 'opacity-60');
+        icon.classList.remove('animate-spin', 'text-muids-blue');
+      }
+      showToast('Timeline and cache synchronized successfully.', 'success');
+      if (typeof window.refreshTimeline === 'function') {
+        window.refreshTimeline();
+      }
+    })
+    .withFailureHandler((error) => {
+      if (btn && icon) {
+        btn.classList.remove('pointer-events-none', 'opacity-60');
+        icon.classList.remove('animate-spin', 'text-muids-blue');
+      }
+      showToast('Sync failed: ' + (error.message || error), 'error');
+    })
+    .bridgeTriggerManualRevalidation();
+}
+</script>

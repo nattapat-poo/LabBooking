@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>System Diagnostic Test Suite Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+      .font-mono-code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+      .gas-console-text { 
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Fira Code", monospace; 
+        font-size: 13px; 
+        line-height: 1.6; 
+        letter-spacing: 0.025em;
+      }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
+  
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 shadow-md flex justify-between items-center h-20 shrink-0">
+    <div>
+      <h1 class="text-xl font-bold text-slate-50 tracking-tight flex items-center gap-2">
+        Core Automated Diagnostic System 
+        <span class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full uppercase tracking-widest font-semibold">Decoupled UI Active</span>
+      </h1>
+      <p class="text-slate-400 text-sm mt-1 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Environment: Development | Transport: Asynchronous RPC
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      
+      <div id="execution-counter-box" class="flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-slate-700 text-slate-300 bg-slate-900/90 shadow-inner select-none min-w-[150px]">
+        <div id="execution-spinner-slot" class="flex items-center justify-center w-5 h-5 rounded bg-slate-800/80 border border-slate-700/50 shrink-0">
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <span id="execution-counter-text" class="tracking-wide">0/0 Passed</span>
+      </div>
+
+      <button id="global-batch-btn" onclick="runAllTests()" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white px-5 py-2 rounded-md font-semibold transition-colors shadow-lg shadow-indigo-900/20 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        Execute Batch Suite
+      </button>
+      <button onclick="clearAllTelemetryOutputs()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 border border-slate-700 px-4 py-2 rounded-md font-semibold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        Flush Console
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-hidden flex p-6 gap-6">
+    
+    <div class="w-1/3 flex flex-col bg-slate-900 rounded-lg border border-slate-800 shadow-xl overflow-hidden">
+      <div class="bg-slate-800/50 px-4 py-3 border-b border-slate-700 flex justify-between items-center shrink-0">
+        <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Test Domain Matrices</h2>
+      </div>
+      <div id="domain-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1.5">
+        <div class="text-center text-slate-500 text-sm py-10 animate-pulse">
+          Fetching Decoupled Telemetry Maps...
+        </div>
+      </div>
+    </div>
+
+    <div class="w-2/3 flex flex-col bg-[#0a0f1a] rounded-lg border border-slate-800 shadow-xl overflow-hidden relative">
+      <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center shrink-0">
+        <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M4 12a8 8 0 1116 0 8 8 0 01-16 0z"></path></svg>
+          System Console
+        </h2>
+        <button onclick="copyActiveConsoleToClipboard()" class="text-slate-500 hover:text-indigo-400 active:text-indigo-300 transition-colors" title="Copy to Clipboard">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+        </button>
+      </div>
+      <div id="panel-console-body" class="flex-1 overflow-y-auto custom-scrollbar p-4 gas-console-text">
+        <div class="text-slate-500 italic">// Infrastructure online. Loading server payloads...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var TARGET_DOMAINS = [];
+    var processingBatch = false;
+
+    // High Density Vector Elements States definitions (Escaped/Standardized)
+    var SVG_IDLE = '<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>';
+    var SVG_SPINNER = '<svg class="animate-spin h-3.5 w-3.5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+    var SVG_CHECK = '<svg class="w-3.5 h-3.5 text-emerald-400 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+    var SVG_WARNING = '<svg class="w-3.5 h-3.5 text-rose-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+
+    var inlineRowSpinner = '<svg class="animate-spin h-3 w-3 text-slate-100" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+    document.addEventListener("DOMContentLoaded", function() {
+      google.script.run
+        .withSuccessHandler(initializeDiagnosticConsole)
+        .withFailureHandler(function(err) {
+          Swal.fire("Telemetry Connection Error", err.message, "error");
+          document.getElementById('domain-list').innerHTML = '<div class="text-rose-500 text-center p-4">Failed to fetch domains.</div>';
+        })
+        .getServerMockTelemetryPayload();
+    });
+
+    function initializeDiagnosticConsole(domains) {
+      TARGET_DOMAINS = domains || [];
+      clearAllTelemetryOutputs();
+      writeToConsoleStream("System Diagnostic Engine ready. Decoupled telemetry maps pulled successfully from server memory structure.", "text-indigo-400");
+      renderDomainList();
+    }
+
+    function renderDomainList() {
+      var container = document.getElementById("domain-list");
+      container.innerHTML = "";
+      
+      TARGET_DOMAINS.forEach(function(domain) {
+        var div = document.createElement("div");
+        div.id = "domain-row-" + domain.id;
+        div.className = "flex items-center justify-between p-3 rounded bg-slate-800/30 border border-slate-800/60 hover:border-slate-700 transition-all duration-150";
+        
+        div.innerHTML = '<div class="truncate pr-2">' +
+            '<div class="font-bold text-slate-200 text-sm truncate">' + domain.name + '</div>' +
+            '<div class="text-xs text-slate-500 font-mono-code truncate">' + domain.id + '</div>' +
+          '</div>' +
+          '<div class="flex items-center gap-2 shrink-0">' +
+            '<span id="timer-' + domain.id + '" class="text-xs text-slate-500 font-mono-code hidden">0ms</span>' +
+            '<span id="status-' + domain.id + '" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800 text-slate-500 border border-slate-700">READY</span>' +
+            '<button id="run-btn-' + domain.id + '" onclick="runSingleTest(\'' + domain.id + '\')" class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 border border-slate-700 hover:border-slate-600 disabled:opacity-50 transition-colors font-medium flex items-center justify-center min-w-[48px]">' +
+               'Run' +
+            '</button>' +
+          '</div>';
+        container.appendChild(div);
+      });
+
+      document.getElementById("execution-counter-text").innerText = "0/" + TARGET_DOMAINS.length + " Passed";
+    }
+
+    function writeToConsoleStream(message, colorClass) {
+      if (!colorClass) colorClass = "text-slate-300";
+      var consoleBody = document.getElementById("panel-console-body");
+      var timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+      var entry = document.createElement("div");
+      entry.className = "mb-1 flex gap-3 " + colorClass;
+      entry.innerHTML = '<span class="text-slate-600 select-none">[' + timestamp + ']</span> <span>' + message + '</span>';
+      consoleBody.appendChild(entry);
+      consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+
+    function updateRowState(domainId, state, timeMs) {
+      var badge = document.getElementById('status-' + domainId);
+      var rowBtn = document.getElementById('run-btn-' + domainId);
+      if (!badge) return;
+      
+      badge.className = "px-2 py-0.5 text-[10px] font-bold uppercase rounded border ";
+      if (state === 'PASSED') {
+         badge.className += "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+         if(rowBtn) { rowBtn.innerHTML = "Run"; rowBtn.disabled = false; }
+      } else if (state === 'FAILED') {
+         badge.className += "bg-rose-500/10 text-rose-400 border-rose-500/20";
+         if(rowBtn) { rowBtn.innerHTML = "Run"; rowBtn.disabled = false; }
+      } else if (state === 'RUNNING') {
+         badge.className += "bg-blue-500/10 text-blue-400 border-blue-500/20 animate-pulse";
+         if(rowBtn) { rowBtn.innerHTML = inlineRowSpinner; rowBtn.disabled = true; }
+      } else {
+         badge.className += "bg-slate-800 text-slate-500 border-slate-700";
+         if(rowBtn) { rowBtn.innerHTML = "Run"; rowBtn.disabled = false; }
+      }
+      
+      badge.innerText = state;
+
+      if (timeMs !== undefined && timeMs !== null) {
+        var timer = document.getElementById('timer-' + domainId);
+        timer.innerText = timeMs + "ms";
+        timer.classList.remove("hidden");
+      }
+    }
+
+    function setUIMutexState(disable) {
+      processingBatch = disable;
+      document.getElementById("global-batch-btn").disabled = disable;
+      TARGET_DOMAINS.forEach(function(d) {
+         var btn = document.getElementById("run-btn-" + d.id);
+         if(btn && !disable) btn.disabled = false;
+         if(btn && disable && btn.innerHTML !== inlineRowSpinner) btn.disabled = true;
+      });
+    }
+
+    // Individual Domain Isolated Test Runner
+    function runSingleTest(domainId) {
+      if (processingBatch) return;
+      setUIMutexState(true);
+      
+      var counterBox = document.getElementById("execution-counter-box");
+      var spinnerSlot = document.getElementById("execution-spinner-slot");
+      
+      spinnerSlot.innerHTML = SVG_SPINNER;
+      updateRowState(domainId, 'RUNNING');
+      writeToConsoleStream("Spawning single targeted execution scope: " + domainId, "text-indigo-400 font-bold mt-2");
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+           var resultsArray = Array.isArray(response) ? response : (response.results || []);
+           var passed = true;
+           
+           if (resultsArray.length > 0) {
+               resultsArray.forEach(function(test) {
+                   if (!test.passed) passed = false;
+                   // Fallback to domain-level runtime if the test payload lacks isolated ms metrics
+                   var runtimeMs = test.timeMs !== undefined ? test.timeMs : response.timeMs;
+                   var timeStr = runtimeMs !== undefined ? " [" + runtimeMs + "ms]" : "";
+                   
+                   writeToConsoleStream((test.passed ? "[Info] " : "[Error] ") + test.testName + timeStr + " \u2014 " + test.message, test.passed ? "text-slate-400" : "text-rose-400 font-bold");
+               });
+           } else {
+               passed = response.passed !== false;
+               var timeStr = response.timeMs !== undefined ? " [" + response.timeMs + "ms]" : "";
+               writeToConsoleStream((passed ? "[Info] " : "[Error] ") + (response.message || "Completed.") + timeStr, passed ? "text-slate-400" : "text-rose-400");
+           }
+           
+           updateRowState(domainId, passed ? 'PASSED' : 'FAILED', response.timeMs);
+           
+           if (passed) {
+              spinnerSlot.innerHTML = SVG_CHECK;
+              counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-emerald-500/50 text-emerald-400 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all duration-300 min-w-[150px]";
+           } else {
+              spinnerSlot.innerHTML = SVG_WARNING;
+              counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-rose-500/50 text-rose-400 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.15)] transition-all duration-300 min-w-[150px]";
+           }
+           
+           setUIMutexState(false);
+        })
+        .withFailureHandler(function(err) {
+           updateRowState(domainId, 'FAILED');
+           spinnerSlot.innerHTML = SVG_WARNING;
+           writeToConsoleStream("[FATAL] Single runner exception on " + domainId + ": " + err.message, "text-rose-500 font-bold");
+           setUIMutexState(false);
+        }).executeTestDomain(domainId);
+    }
+
+    // Diagnostics Batch Suite Runner Matrix Execution Flow
+    function runAllTests() {
+      if (processingBatch || TARGET_DOMAINS.length === 0) return;
+      setUIMutexState(true);
+      
+      var totalDomains = TARGET_DOMAINS.length;
+      var passedDomainsCount = 0;
+      
+      var counterBox = document.getElementById("execution-counter-box");
+      var counterText = document.getElementById("execution-counter-text");
+      var spinnerSlot = document.getElementById("execution-spinner-slot");
+      
+      spinnerSlot.innerHTML = SVG_SPINNER;
+      counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-slate-700 text-slate-300 bg-slate-900/90 shadow-inner min-w-[150px]";
+      counterText.innerText = "0/" + totalDomains + " Passed";
+      
+      document.getElementById("panel-console-body").innerHTML = '';
+      writeToConsoleStream("Initiating Automated Batch Suite...", "text-blue-400 font-bold");
+      
+      var index = 0;
+      function next() {
+        if (index >= totalDomains) {
+          setUIMutexState(false);
+          
+          if (passedDomainsCount === totalDomains && totalDomains > 0) {
+             spinnerSlot.innerHTML = SVG_CHECK;
+             counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-emerald-500/50 text-emerald-400 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all duration-500 min-w-[150px]";
+          } else {
+             spinnerSlot.innerHTML = SVG_WARNING;
+             counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-rose-500/50 text-rose-400 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.15)] transition-all duration-500 min-w-[150px]";
+          }
+          
+          writeToConsoleStream("Batch Execution Complete.", "text-emerald-400 font-bold mt-4");
+          return;
+        }
+        
+        var domain = TARGET_DOMAINS[index];
+        
+        var targetRow = document.getElementById("domain-row-" + domain.id);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        updateRowState(domain.id, 'RUNNING');
+        writeToConsoleStream("Executing domain partition: " + domain.id, "text-indigo-300 font-bold mt-2");
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+             var resultsArray = Array.isArray(response) ? response : (response.results || []);
+             var domainPassed = true;
+             
+             if (resultsArray.length > 0) {
+                 resultsArray.forEach(function(test) {
+                     if (!test.passed) domainPassed = false;
+                     // Injects ms time inline for pure copy-pasteability
+                     var runtimeMs = test.timeMs !== undefined ? test.timeMs : response.timeMs;
+                     var timeStr = runtimeMs !== undefined ? " [" + runtimeMs + "ms]" : "";
+                     
+                     writeToConsoleStream((test.passed ? "[Info] " : "[Error] ") + test.testName + timeStr + " \u2014 " + test.message, test.passed ? "text-slate-400" : "text-rose-400 font-bold");
+                 });
+             } else {
+                 domainPassed = response.passed !== false;
+                 var timeStr = response.timeMs !== undefined ? " [" + response.timeMs + "ms]" : "";
+                 writeToConsoleStream((domainPassed ? "[Info] " : "[Error] ") + (response.message || "Completed.") + timeStr, domainPassed ? "text-slate-400" : "text-rose-400");
+             }
+             
+             if (domainPassed) passedDomainsCount++;
+             counterText.innerText = passedDomainsCount + "/" + totalDomains + " Passed";
+             
+             updateRowState(domain.id, domainPassed ? 'PASSED' : 'FAILED', response.timeMs);
+             index++; next();
+          })
+          .withFailureHandler(function(err) {
+             updateRowState(domain.id, 'FAILED');
+             writeToConsoleStream("[FATAL] " + domain.id + " execution aborted: " + err.message, "text-rose-500 font-bold");
+             index++; next();
+          }).executeTestDomain(domain.id);
+      }
+      
+      next();
+    }
+
+    function clearAllTelemetryOutputs() {
+      if (processingBatch) return;
+      document.getElementById("execution-spinner-slot").innerHTML = SVG_IDLE;
+      
+      var counterBox = document.getElementById("execution-counter-box");
+      counterBox.className = "flex items-center gap-3 px-4 py-2 rounded-md text-sm font-bold border border-slate-700 text-slate-300 bg-slate-900/90 shadow-inner min-w-[150px]";
+      document.getElementById("execution-counter-text").innerText = "0/" + TARGET_DOMAINS.length + " Passed";
+
+      document.getElementById("panel-console-body").innerHTML = '';
+      writeToConsoleStream("// Infrastructure online. Awaiting execution dispatch orders...", "text-slate-500 italic");
+      
+      TARGET_DOMAINS.forEach(function(d) { updateRowState(d.id, "READY"); });
+
+      // 🛡️ NEW PROTOCOL: Flush console also executes a global cache invalidation via secure Bridge
+      writeToConsoleStream("// Executing global memory cache purge...", "text-amber-500 font-mono-code");
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response && (response.ok || response.success)) {
+            writeToConsoleStream("[SUCCESS] Server-side cache matrices flushed and verified.", "text-emerald-400 font-bold");
+          } else {
+            writeToConsoleStream("[WARNING] Cache purge encountered friction: " + (response ? response.error : "Access Denied"), "text-rose-500");
+          }
+        })
+        .withFailureHandler(function(err) {
+          writeToConsoleStream("[WARNING] Cache purge encountered friction: " + err.message, "text-rose-500");
+        })
+        .bridgeTriggerManualRevalidation(); // 🔥 FIXED: Routing through the secure API Bridge endpoint
+    }
+
+    function copyActiveConsoleToClipboard() {
+      navigator.clipboard.writeText(document.getElementById("panel-console-body").innerText).then(function() {
+        Swal.fire({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 2000, icon: 'success', title: 'Console copied' });
+      });
+    }
+  </script>
+</body>
+</html>

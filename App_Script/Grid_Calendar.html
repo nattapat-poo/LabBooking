@@ -1,0 +1,145 @@
+<!--
+/**
+ * FILE: Grid_Calendar.html
+ * PURPOSE: Date-Mapped Horizontal Schedule Grid Container and 4-tier X-Axis header logic.
+ * DESIGN SPEC REF: Section 3.1.1, Section 1.4.2
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: 2026-07-20
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+ */
+-->
+
+<!-- Primary Container: Mobile-Smart Grid Wrapper -->
+<div id="calendar-wrapper" class="overflow-x-auto scrollbar-hide w-full shadow-sm rounded-xl border border-slate-200">
+    
+    <!-- Grid Layout Setup -->
+    <div id="calendar-grid" class="min-w-[800px] lg:min-w-full grid grid-cols-[100px_repeat(5,1fr)] md:grid-cols-[120px_repeat(5,1fr)] bg-white relative">
+        
+        <!-- X-Axis (Horizontal Column Headers) -->
+        <div id="calendar-header-row" class="contents">
+            <!-- 
+                Sticky Top-Left Corner 
+                Serves as the intersection for the sticky left Y-Axis and sticky top X-Axis 
+            -->
+            <div class="sticky top-0 left-0 z-40 bg-slate-100 border-b-2 border-r border-slate-200 flex items-center justify-center p-2 min-h-[72px]">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Time / Lab</span>
+            </div>
+            
+            <!-- Dynamic X-Axis Headers Injected by CalendarGridController -->
+            <div class="col-span-5 flex items-center justify-center p-2 bg-slate-50 border-b-2 border-slate-200 h-full">
+                <div class="h-4 w-24 bg-slate-200 rounded-full animate-pulse"></div> <!-- Loading Shimmer -->
+            </div>
+        </div>
+
+        <!-- Y-Axis (Vertical Row Headers) and Target Booking Cells -->
+        <div id="calendar-body-content" class="contents">
+            <!-- Handled by respective View Controllers (Teacher/TALT) -->
+        </div>
+
+    </div>
+</div>
+
+<script>
+/**
+ * Encapsulated Controller: CalendarGridController
+ * Safely renders the complex 4-tier X-Axis headers with defensive architecture.
+ */
+const CalendarGridController = (() => {
+    // DOM Element Caching
+    const DOM = {
+        headerRow: document.getElementById('calendar-header-row')
+    };
+
+    /**
+     * Resolves the Tailwind classes for BellType badges based on interaction state.
+     * Applies warning highlights for shortened/non-regular schedules.
+     * 
+     * @param {string} bellType - The string identifier from Calendar!F:F
+     * @returns {string} Compiled Tailwind utility classes
+     */
+    const getBellTypeClasses = (bellType) => {
+        const isShortened = (bellType || "").toLowerCase().includes('shortened');
+        
+        // Return standard or warning classes per Design Spec 3.1.1
+        return isShortened 
+            ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse-once' 
+            : 'bg-amber-50 text-amber-700 border-amber-200/80';
+    };
+
+    /**
+     * Renders the complete X-Axis horizontal header stack.
+     * Uses template literals to strictly apply Tailwind rules without drift.
+     * 
+     * @param {Array<Object>} daysData - Validated array of timeline day objects
+     */
+    const renderHeaders = (daysData) => {
+        try {
+            // Defensive Check: Mutex/Data validation
+            if (!Array.isArray(daysData) || daysData.length === 0) {
+                throw new Error("CalendarGrid Error: Invalid or empty calendar dataset provided.");
+            }
+
+            // Retain the top-left Y-Axis label intersection
+            let htmlString = `
+                <div class="sticky top-0 left-0 z-40 bg-slate-100 border-b-2 border-r border-slate-200 flex flex-col items-center justify-center p-2 min-w-[100px] md:min-w-[120px]">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">MUIDS</span>
+                    <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Schedule</span>
+                </div>
+            `;
+
+            const todayStr = new Date().toDateString();
+
+            daysData.forEach(day => {
+                // Determine Interaction States (Active Date Highlight)
+                const isToday = new Date(day.dateString).toDateString() === todayStr;
+                const activeStateClasses = isToday 
+                    ? 'border-t-4 border-t-muids-blue bg-blue-50/30' 
+                    : 'border-t-4 border-t-transparent bg-slate-50';
+                
+                const bellClasses = getBellTypeClasses(day.bellType);
+
+                // Compile 4-Tier Vertical Stack per cell
+                htmlString += `
+                    <!-- X-Axis Cell Container: Sticky header card with subtle hover highlight -->
+                    <div class="sticky top-0 z-30 flex flex-col items-center justify-center p-2 transition-colors duration-150 hover:bg-slate-100 border-b-2 border-r border-slate-200 min-w-[140px] select-none ${activeStateClasses}">
+                        
+                        <!-- Tier 1 & 2: Weekday & Calendar Date -->
+                        <div class="text-xs font-bold text-slate-800 tracking-tight flex items-center gap-1">
+                            <span>${day.weekdayName},</span>
+                            <span>${day.calendarDate}</span>
+                        </div>
+                        
+                        <!-- Tier 3: DayType Badge -->
+                        <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-muids-blue/10 text-muids-blue border border-muids-blue/20">
+                            ${day.dayType}
+                        </div>
+                        
+                        <!-- Tier 4: BellType Badge -->
+                        <div class="mt-0.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${bellClasses}">
+                            ${day.bellType}
+                        </div>
+                        
+                    </div>
+                `;
+            });
+
+            // Write transaction to DOM
+            DOM.headerRow.innerHTML = htmlString;
+
+        } catch (error) {
+            console.error(error);
+            // Fallback UI rendering on failure
+            DOM.headerRow.innerHTML = `
+                <div class="col-span-6 p-4 bg-rose-50 text-rose-700 text-xs text-center border-b-2 border-rose-200">
+                    Failed to initialize schedule grid. Please refresh the timeline.
+                </div>
+            `;
+        }
+    };
+
+    return {
+        renderHeaders
+    };
+})();
+</script>

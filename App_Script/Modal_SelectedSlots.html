@@ -1,0 +1,146 @@
+<!--
+/**
+ * FILE: Modal_SelectedSlots.html
+ * PURPOSE: The centralized staging area for the Teacher's booking workflow. Allows multiple slots to be highlighted and grouped into a single batch submission.
+ * DESIGN SPEC REF: Section 2.2 / 5.5.2
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 20, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+ */
+-->
+
+<!-- Selected Slots Panel (Hidden by default) -->
+<div id="selected-slots-panel" 
+     class="fixed z-50 transition-all duration-300 left-1/2 -translate-x-1/2 bottom-0 md:bottom-6 w-full md:w-auto md:min-w-[600px] md:max-w-2xl bg-white/90 backdrop-blur-md shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] md:shadow-2xl border-t md:border border-gray-200 rounded-t-3xl md:rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 opacity-0 translate-y-10 pointer-events-none"
+     aria-hidden="true"
+     role="region"
+     aria-label="Selected Booking Slots">
+    
+    <!-- Left Section: Status & Counter -->
+    <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muids-blue lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            <span class="font-bold text-muids-blue text-sm md:text-base">Selected Slots</span>
+            <span id="slot-counter" class="bg-muids-blue text-white rounded-full px-2 py-0.5 text-xs font-bold transition-transform duration-200 transform scale-100">0</span>
+        </div>
+        <div id="slot-summary" class="text-xs text-gray-500 truncate max-w-[150px] md:max-w-[250px]" aria-live="polite">
+            <!-- Dynamically populated via JS -->
+        </div>
+    </div>
+
+    <!-- Right Section: Actions -->
+    <div class="flex items-center gap-3 w-full md:w-auto">
+        <button type="button" 
+                id="btn-clear-slots" 
+                onclick="handleClearBatch()" 
+                class="flex-1 md:flex-none border-2 border-muids-blue text-muids-blue hover:bg-blue-50 transition-all duration-200 h-10 px-4 rounded-md font-medium active:scale-95 text-sm focus:outline-none focus:ring-2 focus:ring-muids-blue/20">
+            Clear
+        </button>
+        <button type="button" 
+                id="btn-submit-batch" 
+                onclick="handleInitializeBatchSubmission()" 
+                class="flex-1 md:flex-none bg-muids-blue text-white hover:bg-blue-800 shadow-md active:scale-95 transition-transform duration-200 h-10 px-6 rounded-md font-bold text-sm flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-muids-blue/50">
+            <span>Submit Batch</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+/**
+ * Component Controller: Modal_SelectedSlots
+ * Scoped logic for managing the UI state of the Selected Slots staging area.
+ */
+const SelectedSlotsController = (() => {
+    // DOM Elements
+    const panel = document.getElementById('selected-slots-panel');
+    const counter = document.getElementById('slot-counter');
+    const summary = document.getElementById('slot-summary');
+    const submitBtn = document.getElementById('btn-submit-batch');
+    
+    // Internal State
+    let currentActiveSlots = [];
+
+    /**
+     * Updates the UI based on the active selection array[cite: 6].
+     * @param {Array} slots - Array of slot objects (e.g., { id, date, period, labName })
+     */
+    const renderState = (slots) => {
+        if (!Array.isArray(slots)) {
+            console.error("SelectedSlotsController: Invalid data format provided.");
+            return;
+        }
+
+        currentActiveSlots = slots;
+        const count = currentActiveSlots.length;
+
+        if (count > 0) {
+            // Activate and slide up[cite: 6]
+            panel.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            panel.classList.add('opacity-100', 'translate-y-0');
+            panel.setAttribute('aria-hidden', 'false');
+            
+            // Update Text & Counter
+            counter.textContent = count;
+            counter.classList.add('scale-125'); // Pop animation
+            setTimeout(() => counter.classList.remove('scale-125'), 200);
+
+            // Update Summary Text (e.g., "Period 2, 3 in Bio Lab 1")
+            if (count === 1) {
+                summary.textContent = `Period ${slots[0].period} (${slots[0].labName})`;
+            } else {
+                summary.textContent = `${count} slots selected across timeline`;
+            }
+
+            // Update Submit Button State
+            submitBtn.innerHTML = `<span>Submit Batch (${count})</span> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+        } else {
+            // Hide panel when empty[cite: 6]
+            panel.classList.remove('opacity-100', 'translate-y-0');
+            panel.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            panel.setAttribute('aria-hidden', 'true');
+        }
+    };
+
+    /**
+     * Executes the clear request and communicates with the parent timeline logic.
+     */
+    const triggerClear = () => {
+        currentActiveSlots = [];
+        renderState(currentActiveSlots);
+        
+        // Broadcast custom event for TeacherView to deselect grid cells
+        const event = new CustomEvent('SlotsCleared', { detail: { action: 'clear' } });
+        document.dispatchEvent(event);
+    };
+
+    return {
+        update: renderState,
+        clear: triggerClear,
+        getSlots: () => [...currentActiveSlots]
+    };
+})();
+
+// --- Exposed Event Handlers ---
+
+function handleClearBatch() {
+    SelectedSlotsController.clear();
+}
+
+function handleInitializeBatchSubmission() {
+    const slotsToProcess = SelectedSlotsController.getSlots();
+    
+    if (slotsToProcess.length === 0) {
+        showToast("No slots selected for batch submission.", "error"); // Depends on JS_Utilities
+        return;
+    }
+
+    // Trigger the Booking Flow Modal (Section 2.3) passing the active payload[cite: 6]
+    if (typeof openMultiSlotModal === "function") {
+        openMultiSlotModal(slotsToProcess);
+    } else {
+        console.warn("Global multi-slot modal handler 'openMultiSlotModal' is not defined.");
+    }
+}
+</script>

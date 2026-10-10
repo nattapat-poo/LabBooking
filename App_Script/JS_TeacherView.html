@@ -1,0 +1,279 @@
+<!--
+/**
+ * FILE: JS_TeacherView.html
+ * PURPOSE: Primary "My Timeline" interface for Teacher persona. Renders the interactive 8-period inverted grid and handles slot selection state.
+ * DESIGN SPEC REF: Section 2.1 / 6.4.2
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: 2026-07-20
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+ */
+-->
+
+<div id="teacher-view-wrapper" class="flex flex-col px-2 lg:px-8 w-full h-full fade-in">
+    
+    <!-- Timeline Controls (Header Integration placeholder context) -->
+    <div id="timeline-header-container" class="mb-4">
+        <!-- Rendered via JS_Header.html -->
+    </div>
+
+    <!-- Main Grid Container -->
+    <div class="relative w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        
+        <!-- Mobile-Smart Horizontal Overflow Wrapper -->
+        <div id="grid-scroll-container" class="overflow-x-auto snap-x scrollbar-hide w-full pb-safe">
+            
+            <!-- Inverted Schedule Matrix (Min-width ensures legibility on mobile) -->
+            <div id="teacher-timeline-grid" class="grid min-w-[800px] lg:min-w-full">
+                <!-- Grid dynamically hydrated by JS -->
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Decoupled Component Injections -->
+<?= include('Modal_SelectedSlots'); ?>
+<?= include('Modal_BatchAction'); ?>
+
+<script>
+    /**
+     * TeacherView Controller
+     * Enforces Cycle 14 ULP: "Selected Slots", "Batch Booking".
+     */
+    const TeacherViewController = (() => {
+        
+        // Local UI State Vector
+        const state = {
+            selectedSlots: new Map(), // Key: slotId, Value: slotData
+            timelineData: [],         // Hydrated from API_Read_Aggregator
+            timeTable: [],            // Hydrated Teacher assignment limits
+            isLoading: true,
+            currentWeekStart: null
+        };
+
+        const DOM = {
+            gridContainer: document.getElementById('teacher-timeline-grid'),
+            scrollContainer: document.getElementById('grid-scroll-container')
+        };
+
+        /**
+         * Initialize the view and fetch backend data
+         */
+        const initialize = async () => {
+            _renderShimmerState();
+            try {
+                // Fetch context through secure bridge
+                const response = await new Promise((resolve, reject) => {
+                    google.script.run
+                        .withSuccessHandler(resolve)
+                        .withFailureHandler(reject)
+                        .bridgeGetLabAssignmentContext(); 
+                });
+
+                if (response.status === 'SUCCESS') {
+                    state.timelineData = response.payload.timeline;
+                    state.timeTable = response.payload.teacherTimeTable;
+                    state.isLoading = false;
+                    _buildInvertedMatrix();
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error("[TeacherView] Initialization Error:", error);
+                if (typeof showToast === 'function') {
+                    showToast("Failed to load timeline. Please try refreshing.", "error");
+                }
+            }
+        };
+
+        /**
+         * Core UI Builder: Inverted Matrix (Periods on Y, Days on X)
+         */
+        const _buildInvertedMatrix = () => {
+            if (!DOM.gridContainer) return;
+
+            // Clear shimmer
+            DOM.gridContainer.innerHTML = '';
+            
+            const daysCount = state.timelineData.length;
+            // grid-cols-[100px_repeat(daysCount,1fr)] -> 1 col for Period labels, rest for days
+            DOM.gridContainer.style.gridTemplateColumns = `100px repeat(${daysCount}, minmax(140px, 1fr))`;
+
+            // Row 0: Header Row (Dates/Days)
+            let headerHTML = `<div class="sticky left-0 top-0 z-20 bg-slate-50 border-b border-r border-gray-200 p-3 font-bold text-slate-600 flex items-center justify-center text-sm shadow-sm">Period</div>`;
+            
+            state.timelineData.forEach(day => {
+                const isHoliday = day.dayType === 'Holiday';
+                const dayBadge = isHoliday 
+                    ? `<span class="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs font-medium">Holiday</span>`
+                    : `<span class="bg-muids-blue/10 text-muids-blue px-2 py-0.5 rounded-full text-xs font-medium">Day ${day.dayType}</span>`;
+
+                headerHTML += `
+                    <div class="bg-slate-50 border-b border-gray-200 p-3 flex flex-col items-center justify-center snap-start">
+                        <span class="text-sm font-bold text-gray-800">${day.dateLabel}</span>
+                        ${dayBadge}
+                    </div>
+                `;
+            });
+
+            DOM.gridContainer.innerHTML += headerHTML;
+
+            // Rows 1-8: Periods
+            for (let period = 1; period <= 8; period++) {
+                // Y-Axis Period Label (Sticky)
+                let rowHTML = `
+                    <div class="sticky left-0 z-10 bg-white border-b border-r border-gray-200 p-3 flex flex-col items-center justify-center shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] h-20 md:h-16">
+                        <span class="font-bold text-muids-blue text-lg">${period}</span>
+                    </div>
+                `;
+
+                // X-Axis Day Cells for this period
+                state.timelineData.forEach(day => {
+                    const cellData = _evaluateCellContext(day, period);
+                    rowHTML += _generateCellMarkup(cellData);
+                });
+
+                DOM.gridContainer.innerHTML += rowHTML;
+            }
+
+            // Re-initialize icons if library is present
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        };
+
+        /**
+         * Evaluates cross-reference limits and current booking state
+         */
+        const _evaluateCellContext = (day, period) => {
+            const slotId = `${day.rawDate}_P${period}`;
+            
+            // 1. Check Holiday/Outage
+            if (day.dayType === 'Holiday' || day.outages?.includes(period)) {
+                return { slotId, state: 'N/A', icon: 'slash', label: 'CLOSED', classes: 'bg-slate-200 text-slate-500 diagonal-lines cursor-not-allowed' };
+            }
+
+            // 2. Check "No Assignment" Context Lockout
+            const isAssigned = state.timeTable.some(t => t.dayType === day.dayType && t.period === period);
+            if (!isAssigned) {
+                return { slotId, state: 'LOCKED', icon: 'lock', label: 'No Assignment', classes: 'bg-gray-100 text-gray-400 cursor-not-allowed' };
+            }
+
+            // 3. Check Booked State
+            const existingBooking = day.bookings?.find(b => b.period === period);
+            if (existingBooking) {
+                if (existingBooking.isSelf) {
+                    return { slotId, state: 'BOOKED_SELF', icon: 'calendar-check', label: existingBooking.subject, classes: 'bg-emerald-100 text-emerald-800 border border-emerald-300' };
+                } else {
+                    return { slotId, state: 'BOOKED_OTHER', icon: 'lock', label: 'Occupied', classes: 'bg-gray-100 text-gray-400 cursor-not-allowed' };
+                }
+            }
+
+            // 4. Check Pending State
+            const pendingBooking = day.pending?.find(p => p.period === period);
+            if (pendingBooking) {
+                return { slotId, state: 'PENDING', icon: 'clock', label: 'Pending Approval', classes: 'bg-amber-100 text-amber-700 border border-amber-200 cursor-wait' };
+            }
+
+            // 5. Check if currently in Selected Slots local memory
+            if (state.selectedSlots.has(slotId)) {
+                return { slotId, date: day.rawDate, period: period, state: 'SELECTED', icon: 'check-circle', label: 'Selected', classes: 'bg-muids-blue text-white ring-2 ring-offset-1 ring-muids-blue cursor-pointer transition-all duration-200', isInteractable: true };
+            }
+
+            // 6. Available Fallback
+            return { slotId, date: day.rawDate, period: period, state: 'AVAILABLE', icon: 'plus', label: 'Available', classes: 'bg-white hover:bg-blue-50 border border-dashed border-gray-300 cursor-pointer transition-all duration-200', isInteractable: true };
+        };
+
+        /**
+         * Generates the semantic HTML for a specific evaluated cell
+         */
+        const _generateCellMarkup = (ctx) => {
+            const clickHandler = ctx.isInteractable 
+                ? `onclick="TeacherViewController.toggleSlotSelection('${ctx.slotId}', '${ctx.date}', ${ctx.period})"` 
+                : '';
+                
+            return `
+                <div id="cell-${ctx.slotId}" ${clickHandler} class="relative p-2 flex flex-col items-center justify-center text-center h-20 md:h-16 snap-center group ${ctx.classes}">
+                    <i data-lucide="${ctx.icon}" class="w-5 h-5 mb-1 ${ctx.state === 'AVAILABLE' ? 'opacity-0 group-hover:opacity-100 transition-opacity text-muids-blue' : ''}"></i>
+                    <span class="text-[11px] md:text-xs font-semibold leading-tight truncate w-full">${ctx.label}</span>
+                </div>
+            `;
+        };
+
+        /**
+         * Interactive UI Action: Toggles a slot into the Selected Slots local vector
+         */
+        const toggleSlotSelection = (slotId, date, period) => {
+            if (state.selectedSlots.has(slotId)) {
+                state.selectedSlots.delete(slotId);
+            } else {
+                state.selectedSlots.set(slotId, { date, period });
+            }
+
+            // Fast-DOM Update for immediate visual feedback
+            _buildInvertedMatrix();
+            
+            // Dispatch event for Modal_SelectedSlots.html to catch and slide up
+            document.dispatchEvent(new CustomEvent('SelectedSlotsUpdated', { 
+                detail: { count: state.selectedSlots.size, slots: Array.from(state.selectedSlots.values()) } 
+            }));
+        };
+
+        /**
+         * Visual Feedback: Renders Shimmer skeleton during network IO
+         */
+        const _renderShimmerState = () => {
+            if (!DOM.gridContainer) return;
+            DOM.gridContainer.style.gridTemplateColumns = `100px repeat(5, minmax(140px, 1fr))`;
+            let shimmerHTML = '';
+            for(let i=0; i<45; i++) {
+                shimmerHTML += `<div class="h-20 md:h-16 w-full bg-slate-100 animate-pulse border border-white"></div>`;
+            }
+            DOM.gridContainer.innerHTML = shimmerHTML;
+        };
+
+        /**
+         * Global Accessor for Batch Submission Pipeline
+         */
+        const getSelectedBatch = () => {
+            return Array.from(state.selectedSlots.values());
+        };
+        
+        const clearBatch = () => {
+            state.selectedSlots.clear();
+            _buildInvertedMatrix();
+            document.dispatchEvent(new CustomEvent('SelectedSlotsUpdated', { detail: { count: 0, slots: [] } }));
+        };
+
+        return {
+            initialize,
+            toggleSlotSelection,
+            getSelectedBatch,
+            clearBatch
+        };
+
+    })();
+
+    // Auto-boot on DOM insertion
+    document.addEventListener('DOMContentLoaded', () => {
+        TeacherViewController.initialize();
+    });
+
+</script>
+
+<style>
+    /* Utility enhancements strictly scoped to this view */
+    .diagonal-lines {
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(0,0,0,0.05),
+            rgba(0,0,0,0.05) 10px,
+            transparent 10px,
+            transparent 20px
+        );
+    }
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+</style>

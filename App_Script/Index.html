@@ -1,0 +1,466 @@
+<!--
+ * FILE: Index.html
+ * PURPOSE: Main HTML Shell & Master Layout Container for MUIDS Lab Booking System v1.1.3c
+ * DESIGN SPEC REF: Section 1.2 (Global Navigation), Section 1.4 (Responsive Layout Strategy), Section 1.5, Section 5, Section 6.3
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 20, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MUIDS Lab Booking Application</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind Custom Theme Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'muids-blue': '#003366',
+            'muids-blue-light': '#E6EBF0',
+            'status-pending': '#F59E0B',
+            'status-booked': '#10B981',
+            'status-denied': '#EF4444',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'floating': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            'upward': '0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -5px 10px -5px rgba(0, 0, 0, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Master Stylesheet Fixes -->
+  <style>
+    /* Prevent iOS auto-zoom on form controls */
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+
+    /* Custom Diagonal Pattern for Lab Outages & Maintenance States */
+    .diagonal-lines {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(51, 65, 85, 0.15),
+        rgba(51, 65, 85, 0.15) 10px,
+        rgba(241, 245, 249, 0.4) 10px,
+        rgba(241, 245, 249, 0.4) 20px
+      );
+    }
+
+    /* Scrollbar Utility Optimizations */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animation Keyframes */
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .animate-slide-up {
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+
+    /* ==================== THEME OVERRIDES (DEFAULT: DARK MODE) ==================== */
+    body {
+      background-color: #020617 !important;
+      color: #f8fafc !important;
+    }
+    header#global-header-wrapper, #global-header {
+      background-color: #0f172a !important;
+      border-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+    .bg-white {
+      background-color: #0f172a !important;
+      border-color: #1e293b !important;
+    }
+    .bg-slate-50 {
+      background-color: #020617 !important;
+    }
+    .bg-slate-100 {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+    .border-slate-200, .border-slate-100 {
+      border-color: #334155 !important;
+    }
+    .text-slate-800, .text-slate-700, .text-slate-900 {
+      color: #f8fafc !important;
+    }
+    .text-slate-600, .text-slate-500 {
+      color: #94a3b8 !important;
+    }
+    .text-slate-400 {
+      color: #64748b !important;
+    }
+
+    /* LIGHT MODE OVERRIDES */
+    body.theme-light {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    body.theme-light header#global-header-wrapper, body.theme-light #global-header {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light .bg-white {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .bg-slate-50 {
+      background-color: #f8fafc !important;
+    }
+    body.theme-light .bg-slate-100 {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light .border-slate-200, body.theme-light .border-slate-100 {
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .text-slate-800, body.theme-light .text-slate-700, body.theme-light .text-slate-900 {
+      color: #0f172a !important;
+    }
+    body.theme-light .text-slate-600, body.theme-light .text-slate-500 {
+      color: #334155 !important;
+    }
+    body.theme-light .text-slate-400 {
+      color: #64748b !important;
+    }
+    body.theme-light #tutorial-popover-card {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    }
+    body.theme-light #tut-step-title {
+      color: #0f172a !important;
+    }
+    body.theme-light #tut-step-desc {
+      color: #334155 !important;
+    }
+    body.theme-light #tutorial-spotlight-overlay svg rect[mask] {
+      fill: rgba(15, 23, 42, 0.65) !important;
+    }
+  </style>
+</head>
+
+<body class="h-full font-sans text-slate-100 antialiased flex flex-col bg-slate-950 selection:bg-emerald-500/30 selection:text-emerald-300">
+
+  <!-- ========================================== -->
+  <!-- 1. GLOBAL NOTIFICATION SYSTEM CONTAINER   -->
+  <!-- ========================================== -->
+  <div id="toast-container" class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0">
+    <!-- Dynamic Toast Elements Injected Here by JS_Utilities -->
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. GLOBAL APP HEADER CONTAINER             -->
+  <!-- ========================================== -->
+  <header id="global-header-wrapper" class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+    <?!= include('JS_Header'); ?>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 3. PROXY MODE WARNING BANNER               -->
+  <!-- ========================================== -->
+  <aside id="proxy-banner" class="hidden sticky top-16 z-30 w-full bg-amber-400 text-slate-950 py-2.5 px-4 shadow-md transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-sm font-semibold">
+      <div class="flex items-center gap-2">
+        <i data-lucide="alert-triangle" class="w-5 h-5 text-slate-950 shrink-0"></i>
+        <span>PROXY MODE ACTIVE: You are currently creating/managing reservations on behalf of <span id="proxy-target-name" class="underline decoration-slate-950 decoration-2 font-bold">Teacher</span>.</span>
+      </div>
+      <button id="btn-exit-proxy" type="button" onclick="window.AppController.exitProxyMode()" class="px-3 py-1 bg-slate-950 text-white text-xs rounded-md hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-950">
+        Exit Proxy Mode
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- 4. MAIN WORKSPACE CONTAINER                -->
+  <!-- ========================================== -->
+  <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col">
+    
+    <!-- INITIALIZATION SHIMMER SKELETON SCREEN -->
+    <section id="loading-shimmer-container" class="w-full space-y-6 animate-pulse">
+      <div class="h-16 bg-slate-200 rounded-xl w-full"></div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="h-12 bg-slate-200 rounded-lg w-full md:w-1/3"></div>
+        <div class="h-12 bg-slate-200 rounded-lg w-full md:w-1/3"></div>
+        <div class="h-12 bg-slate-200 rounded-lg w-full md:w-1/3"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 h-96">
+        <div class="bg-slate-200 rounded-xl col-span-1"></div>
+        <div class="bg-slate-200 rounded-xl col-span-1 md:col-span-4"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER TIMELINE MODULE CONTAINER -->
+    <section id="teacher-view-container" class="hidden flex-1 w-full flex flex-col">
+      <?!= include('JS_TeacherView'); ?>
+    </section>
+
+    <!-- TALT MASTER DASHBOARD MODULE CONTAINER -->
+    <section id="talt-view-container" class="hidden flex-1 w-full flex flex-col">
+      <?!= include('JS_TaltView'); ?>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 5. 2-COLUMN SPLIT FOOTER & BRANDING        -->
+  <!-- ========================================== -->
+  <footer class="py-6 px-4 sm:px-6 text-xs text-slate-500 font-mono border-t border-slate-800/80 bg-slate-950 mt-12 w-full">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 leading-relaxed">
+      <!-- Left Column: App & Ecosystem Brand -->
+      <div class="text-center md:text-left">
+        <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
+          <span class="text-emerald-400 font-bold tracking-wide text-sm">Smart Lab Booking System</span>
+          <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full app-version-badge">v1.1.3c</span>
+        </div>
+        <p class="text-slate-400 text-[11px]">
+          <span class="text-slate-300 font-semibold">Lab Oops OS Ecosystem</span> • 
+          <span class="text-slate-500">MUIDS — Science Department</span>
+        </p>
+      </div>
+
+      <!-- Right Column: Developer Signature & Acronym Legend -->
+      <div class="text-center md:text-right">
+        <p class="text-slate-300">
+          <span>Vibe Coded by <strong id="stealth-admin-sig" onclick="window.openSecretAdminModal()" class="text-emerald-400 font-semibold cursor-default">Nattapat Poolyam</strong>, 2026</span>
+        </p>
+        <p class="text-slate-500 text-[10px] mt-0.5">
+          Science <strong class="text-emerald-400 font-extrabold">Lab</strong>oratory <strong class="text-emerald-400 font-extrabold">O</strong>perations &amp; <strong class="text-emerald-400 font-extrabold">O</strong>ppositely-Organized <strong class="text-emerald-400 font-extrabold">P</strong>roblems <strong class="text-emerald-400 font-extrabold">S</strong>olved <strong class="text-emerald-400 font-extrabold">O</strong>perating <strong class="text-emerald-400 font-extrabold">S</strong>ystem
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- 6. FLOATING PANELS & MODAL LAYER           -->
+  <!-- ========================================== -->
+  
+  <!-- SELECTED SLOTS STAGING PANEL -->
+  <aside id="selected-slots-wrapper">
+    <?!= include('Modal_SelectedSlots'); ?>
+  </aside>
+
+  <!-- BATCH WORKSPACE / ACTION MODAL -->
+  <dialog id="modal-batch-workspace-wrapper" class="p-0 bg-transparent backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm">
+    <?!= include('Modal_BatchAction'); ?>
+  </dialog>
+
+  <!-- WORKLOAD REPORT STATS MODAL -->
+  <dialog id="modal-workload-wrapper" class="p-0 bg-transparent backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm">
+    <?!= include('Modal_Workload'); ?>
+  </dialog>
+
+  <!-- EMAIL CONFIGURATION CONTROL PANEL -->
+  <dialog id="modal-email-editor-wrapper" class="p-0 bg-transparent backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm">
+    <?!= include('Modal_EmailEditor'); ?>
+  </dialog>
+
+  <!-- ONBOARDING WELCOME OVERLAY -->
+  <dialog id="modal-welcome-wrapper" class="p-0 bg-transparent backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm">
+    <?!= include('Modal_Welcome'); ?>
+  </dialog>
+
+  <!-- STEALTH ADMIN GATEWAY MODAL -->
+  <dialog id="modal-secret-admin" class="p-0 bg-transparent backdrop:bg-slate-900/80 backdrop:backdrop-blur-md">
+    <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl border border-emerald-500/30 max-w-sm w-full mx-auto shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold text-sm tracking-wide">⚡ Stealth Admin Gateway</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PIN 2026</span>
+        </div>
+        <button type="button" onclick="window.closeSecretAdminModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Lead Architect &amp; SuperAdmin portal (<span class="text-emerald-400 font-mono">nattapat.poo@mahidol.ac.th</span>).
+      </p>
+      <div class="flex flex-col gap-2">
+        <label class="text-[11px] font-mono text-slate-300">Administrative PIN</label>
+        <input type="password" id="secret-admin-pin" placeholder="Enter PIN..." maxlength="8" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono" onkeydown="if(event.key==='Enter') window.verifySecretAdminPin()" />
+        <span id="secret-admin-error" class="text-xs text-rose-400 hidden">Invalid security PIN.</span>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="window.closeSecretAdminModal()" class="px-3 py-1.5 text-xs text-slate-400 hover:text-white rounded-lg">Cancel</button>
+        <button type="button" onclick="window.verifySecretAdminPin()" class="px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors">Authorize</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================== -->
+  <!-- 6. CORE CONTROLLER & UTILITY INCLUDES     -->
+  <!-- ========================================== -->
+  <?!= include('JS_Utilities'); ?>
+  <?!= include('JS_Core'); ?>
+
+  <!-- BOOTSTRAP SYSTEM INITIALIZATION SCRIPT -->
+  <script>
+    // ==================== THEME CONTROLLER ====================
+    function initAppTheme() {
+      var savedTheme = localStorage.getItem('app_theme_preference') || 'dark';
+      applyAppTheme(savedTheme);
+    }
+
+    function toggleAppTheme() {
+      var isCurrentlyLight = document.body.classList.contains('theme-light');
+      var newTheme = isCurrentlyLight ? 'dark' : 'light';
+      localStorage.setItem('app_theme_preference', newTheme);
+      applyAppTheme(newTheme);
+    }
+
+    function applyAppTheme(theme) {
+      var body = document.body;
+      var sliderTrack = document.getElementById('btn-theme-slider');
+      var sliderThumb = document.getElementById('theme-slider-thumb');
+      var sliderIcon = document.getElementById('theme-slider-icon');
+      var guideBtn = document.getElementById('btn-onboarding-guide');
+
+      if (theme === 'light') {
+        body.classList.add('theme-light');
+        if (sliderTrack) {
+          sliderTrack.className = 'theme-slider-track relative inline-flex h-7 w-14 items-center rounded-full transition-all focus:outline-none bg-amber-100 border border-amber-300 p-0.5 shadow-inner cursor-pointer';
+        }
+        if (sliderThumb) {
+          sliderThumb.className = 'theme-slider-thumb inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition-all translate-x-0.5';
+        }
+        if (sliderIcon) {
+          sliderIcon.setAttribute('data-lucide', 'sun');
+        }
+        if (guideBtn) {
+          guideBtn.className = 'text-amber-800 hover:text-amber-950 hover:bg-amber-100 transition-colors cursor-pointer p-2 rounded-full border border-amber-300';
+        }
+      } else {
+        body.classList.remove('theme-light');
+        if (sliderTrack) {
+          sliderTrack.className = 'theme-slider-track relative inline-flex h-7 w-14 items-center rounded-full transition-all focus:outline-none bg-slate-800 border border-slate-700 p-0.5 shadow-inner cursor-pointer';
+        }
+        if (sliderThumb) {
+          sliderThumb.className = 'theme-slider-thumb inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-emerald-500 text-white shadow-md transition-all translate-x-7';
+        }
+        if (sliderIcon) {
+          sliderIcon.setAttribute('data-lucide', 'moon');
+        }
+        if (guideBtn) {
+          guideBtn.className = 'text-slate-400 hover:text-emerald-500 hover:bg-slate-800 transition-colors cursor-pointer p-2 rounded-full border border-transparent';
+        }
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 0. Initialize theme
+      initAppTheme();
+
+      // 1. Initialize global Lucide icons
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+
+      // 2. Delegate application bootstrap to JS_Core
+      if (window.AppController && typeof window.AppController.init === 'function') {
+        window.AppController.init();
+      } else {
+        console.error('System Failure: Core AppController missing or uninitialized.');
+      }
+
+      // 3. First-time user guided tutorial auto-trigger
+      if (!localStorage.getItem('labbooking_onboarding_completed') && typeof openWelcomeModal === 'function') {
+        setTimeout(function() { openWelcomeModal(0); }, 800);
+      }
+    });
+
+    // ==================== STEALTH DEVELOPER ADMIN GATEWAY ====================
+    window.openSecretAdminModal = function() {
+      var modal = document.getElementById('modal-secret-admin');
+      var err = document.getElementById('secret-admin-error');
+      var pin = document.getElementById('secret-admin-pin');
+      if (err) err.classList.add('hidden');
+      if (pin) pin.value = '';
+      if (modal && typeof modal.showModal === 'function') {
+        modal.showModal();
+        if (pin) pin.focus();
+      }
+    };
+
+    window.closeSecretAdminModal = function() {
+      var modal = document.getElementById('modal-secret-admin');
+      if (modal && typeof modal.close === 'function') {
+        modal.close();
+      }
+    };
+
+    window.verifySecretAdminPin = function() {
+      var pinInput = document.getElementById('secret-admin-pin');
+      var err = document.getElementById('secret-admin-error');
+      if (!pinInput) return;
+      if (pinInput.value.trim() === '2026') {
+        window.closeSecretAdminModal();
+        if (typeof showToast === 'function') {
+          showToast('⚡ Stealth Admin Gateway unlocked. SuperAdmin mode active.', 'success', 4000);
+        }
+        if (window.appState) {
+          window.appState.canEditConfig = true;
+          window.appState.activeRole = 'admin';
+        }
+        var roleSwitcher = document.getElementById('role-switcher-select');
+        if (roleSwitcher) {
+          roleSwitcher.value = 'ADMIN';
+          if (window.HeaderModule && typeof window.HeaderModule.handleRoleSwitch === 'function') {
+            window.HeaderModule.handleRoleSwitch('ADMIN');
+          }
+        }
+      } else {
+        if (err) err.classList.remove('hidden');
+        pinInput.value = '';
+        pinInput.focus();
+      }
+    };
+
+    // Stealth keyboard trigger: Ctrl + Shift + Q (or Cmd + Shift + Q)
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        window.openSecretAdminModal();
+      }
+    });
+  </script>
+</body>
+</html>

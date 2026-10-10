@@ -1,0 +1,326 @@
+<!--
+ * FILE: Modal_Details.html
+ * PURPOSE: Multi-slot booking confirmation modal and slot inspection details dialog with hard-lock validation rules.
+ * DESIGN SPEC REF: Section 2.3.1 / Section 5.3 / Section 6.4.1
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 24, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<div 
+  id="modalDetailsContainer" 
+  class="fixed inset-0 z-[60] flex items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modalDetailsTitle">
+  
+  <!-- Modal Content Card -->
+  <div class="bg-white w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-300">
+    
+    <!-- Modal Header -->
+    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+      <div>
+        <h2 id="modalDetailsTitle" class="text-lg font-bold text-slate-900 leading-tight">Confirm Reservation Batch</h2>
+        <p id="modalDetailsSubtitle" class="text-xs text-slate-500 mt-0.5">Provide reservation metadata for selected lab slots</p>
+      </div>
+      <button 
+        type="button" 
+        id="btnModalDetailsClose"
+        onclick="closeDetailsModal()"
+        class="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-200 transition-colors cursor-pointer"
+        aria-label="Close dialog">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body (Scrollable Area) -->
+    <div class="p-6 overflow-y-auto space-y-5 flex-1 scrollbar-thin">
+      
+      <!-- Staging Summary Banner -->
+      <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 flex items-start gap-3">
+        <div class="p-2 bg-[#003366] text-white rounded-lg shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="w-full overflow-hidden">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-[#003366] uppercase tracking-wider">Selected Slots Staged</span>
+            <span id="badgeSlotCount" class="bg-[#003366] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">0 Slots</span>
+          </div>
+          <!-- Slot Summary Badge Matrix -->
+          <div id="modalSlotSummaryList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pt-1 pr-1">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick-Book Template Selector -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="selectQuickBookTemplate" class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            Quick-Book Preset Template
+          </label>
+        </div>
+        <select 
+          id="selectQuickBookTemplate" 
+          onchange="applyQuickBookTemplate(this.value)"
+          class="w-full text-base sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/20 transition-all cursor-pointer">
+          <option value="">-- Load Saved Course Configuration --</option>
+          <option value="BIO_G10">Grade 10 Biology - General Science Lab</option>
+          <option value="CHEM_G11">Grade 11 Chemistry - Advanced Synthesis</option>
+          <option value="PHYS_G12">Grade 12 Physics - Mechanics & Optics</option>
+        </select>
+      </div>
+
+      <!-- Subject Name (MANDATORY FIELD HARD-LOCK) -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="inputSubjectName" class="text-xs font-bold text-slate-700">
+            Subject & Course Name <span class="text-red-500">*</span>
+          </label>
+          <span id="subjectValidationError" class="text-[11px] font-medium text-red-500 hidden">Subject is required</span>
+        </div>
+        <input 
+          type="text" 
+          id="inputSubjectName" 
+          placeholder="e.g. AP Chemistry Section 1102" 
+          oninput="validateModalFormState()"
+          class="w-full text-base sm:text-sm bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/20 transition-all"
+          required />
+      </div>
+
+      <!-- Target Lab Selection Dropdown -->
+      <div>
+        <label for="selectLabChoice" class="block text-xs font-bold text-slate-700 mb-1.5">
+          Laboratory Room Destination
+        </label>
+        <select 
+          id="selectLabChoice" 
+          class="w-full text-base sm:text-sm bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/20 transition-all cursor-pointer">
+          <option value="LAB_BIO_1">Biology Laboratory 1 (Room 301)</option>
+          <option value="LAB_BIO_2">Biology Laboratory 2 (Room 302)</option>
+          <option value="LAB_CHEM_1">Chemistry Laboratory 1 (Room 303)</option>
+          <option value="LAB_PHYS_1">Physics Laboratory 1 (Room 304)</option>
+        </select>
+      </div>
+
+      <!-- Equipment & Special Requirements -->
+      <div>
+        <label for="inputEquipmentNotes" class="block text-xs font-bold text-slate-700 mb-1.5">
+          Equipment & Technician Requisitions
+        </label>
+        <textarea 
+          id="inputEquipmentNotes" 
+          rows="3" 
+          placeholder="Specify required apparatus, chemicals, safety equipment, or setup instructions for TALT technicians..."
+          class="w-full text-base sm:text-sm bg-white border border-slate-300 rounded-lg p-3 text-slate-900 placeholder-slate-400 min-h-[90px] resize-y focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-[#003366]/20 transition-all"></textarea>
+      </div>
+
+    </div>
+
+    <!-- Modal Action Footer -->
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 shrink-0">
+      <button 
+        type="button" 
+        id="btnModalDetailsCancel"
+        onclick="closeDetailsModal()"
+        class="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer text-center">
+        Cancel
+      </button>
+
+      <button 
+        type="button" 
+        id="btnModalDetailsSubmit"
+        onclick="executeBatchSubmission()"
+        disabled
+        class="w-full sm:w-auto px-6 py-2.5 bg-[#003366] text-white text-sm font-semibold rounded-lg shadow-md hover:bg-blue-900 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 transition-all flex items-center justify-center gap-2 cursor-pointer">
+        <span id="submitSpinner" class="hidden">
+          <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </span>
+        <span id="submitButtonText">Submit Batch</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /**
+   * Global State Controller for Modal_Details
+   */
+  var currentStagedSlots = [];
+
+  /**
+   * Opens the reservation details modal and populates staged slot summary
+   * @param {Array<Object>} selectedSlotsArray - Selected slot objects
+   */
+  function openDetailsModal(selectedSlotsArray) {
+    currentStagedSlots = selectedSlotsArray || [];
+    var container = document.getElementById('modalDetailsContainer');
+    var slotSummaryList = document.getElementById('modalSlotSummaryList');
+    var badgeSlotCount = document.getElementById('badgeSlotCount');
+
+    // Reset inputs
+    document.getElementById('inputSubjectName').value = '';
+    document.getElementById('inputEquipmentNotes').value = '';
+    document.getElementById('selectQuickBookTemplate').value = '';
+
+    // Populate slot badges
+    slotSummaryList.innerHTML = '';
+    badgeSlotCount.textContent = currentStagedSlots.length + (currentStagedSlots.length === 1 ? ' Slot' : ' Slots');
+
+    if (currentStagedSlots.length === 0) {
+      slotSummaryList.innerHTML = '<span class="text-xs text-amber-600 italic">No slots selected in staging buffer.</span>';
+    } else {
+      currentStagedSlots.forEach(function(slot) {
+        var badge = document.createElement('span');
+        badge.className = 'inline-flex items-center px-2 py-1 rounded bg-blue-100 text-[#003366] text-[11px] font-mono font-medium border border-blue-200';
+        badge.textContent = (slot.dateStr || 'Date') + ' | P' + (slot.period || '?') + ' (' + (slot.labId || 'Lab') + ')';
+        slotSummaryList.appendChild(badge);
+      });
+    }
+
+    // Validate form state to lock confirm button initially
+    validateModalFormState();
+
+    // Transition Overlay Active State
+    container.classList.remove('opacity-0', 'pointer-events-none');
+    container.classList.add('opacity-100');
+    container.firstElementChild.classList.remove('scale-95');
+    container.firstElementChild.classList.add('scale-100');
+  }
+
+  /**
+   * Closes and resets the reservation details modal
+   */
+  function closeDetailsModal() {
+    var container = document.getElementById('modalDetailsContainer');
+    container.classList.remove('opacity-100');
+    container.classList.add('opacity-0', 'pointer-events-none');
+    container.firstElementChild.classList.remove('scale-100');
+    container.firstElementChild.classList.add('scale-95');
+  }
+
+  /**
+   * Enforces Hard-Lock validation rule on Subject Name input
+   */
+  function validateModalFormState() {
+    var subjectInput = document.getElementById('inputSubjectName');
+    var submitBtn = document.getElementById('btnModalDetailsSubmit');
+    var errorSpan = document.getElementById('subjectValidationError');
+    var isValid = subjectInput.value.trim().length > 0 && currentStagedSlots.length > 0;
+
+    if (isValid) {
+      submitBtn.removeAttribute('disabled');
+      errorSpan.classList.add('hidden');
+      subjectInput.classList.remove('border-red-500', 'focus:border-red-500');
+    } else {
+      submitBtn.setAttribute('disabled', 'true');
+      if (subjectInput.value.trim().length === 0 && document.activeElement === subjectInput) {
+        errorSpan.classList.remove('hidden');
+        subjectInput.classList.add('border-red-500', 'focus:border-red-500');
+      } else {
+        errorSpan.classList.add('hidden');
+      }
+    }
+  }
+
+  /**
+   * Applies pre-saved quick book templates
+   */
+  function applyQuickBookTemplate(templateKey) {
+    var subjectInput = document.getElementById('inputSubjectName');
+    var equipmentInput = document.getElementById('inputEquipmentNotes');
+    var labSelect = document.getElementById('selectLabChoice');
+
+    if (templateKey === 'BIO_G10') {
+      subjectInput.value = 'Grade 10 General Biology';
+      equipmentInput.value = '20x Compound Microscopes, Methylene Blue stain, Glass Slides, Coverslips.';
+      labSelect.value = 'LAB_BIO_1';
+    } else if (templateKey === 'CHEM_G11') {
+      subjectInput.value = 'Grade 11 Honors Chemistry';
+      equipmentInput.value = 'Burettes, 0.1M HCl Solution, Phenolphthalein Indicator, Erlenmeyer Flasks.';
+      labSelect.value = 'LAB_CHEM_1';
+    } else if (templateKey === 'PHYS_G12') {
+      subjectInput.value = 'Grade 12 Physics';
+      equipmentInput.value = 'Photogate Timers, Dynamics Carts, Inclined Planes, Weight Sets.';
+      labSelect.value = 'LAB_PHYS_1';
+    }
+    
+    validateModalFormState();
+  }
+
+  /**
+   * Transmits batch reservation payload to backend API Bridge
+   */
+  function executeBatchSubmission() {
+    var subjectName = document.getElementById('inputSubjectName').value.trim();
+    var labChoice = document.getElementById('selectLabChoice').value;
+    var equipmentNotes = document.getElementById('inputEquipmentNotes').value.trim();
+    var submitBtn = document.getElementById('btnModalDetailsSubmit');
+    var spinner = document.getElementById('submitSpinner');
+    var buttonText = document.getElementById('submitButtonText');
+
+    if (!subjectName || currentStagedSlots.length === 0) {
+      validateModalFormState();
+      return;
+    }
+
+    // Lock UI Mutex Controls
+    submitBtn.setAttribute('disabled', 'true');
+    spinner.classList.remove('hidden');
+    buttonText.textContent = 'Processing...';
+
+    var batchPayload = {
+      subject: subjectName,
+      labChoice: labChoice,
+      notes: equipmentNotes,
+      slots: currentStagedSlots
+    };
+
+    // Invoke Server Boundary
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          spinner.classList.add('hidden');
+          buttonText.textContent = 'Submit Batch';
+          closeDetailsModal();
+          if (typeof showToast === 'function') {
+            showToast('Batch submission completed successfully!', 'success');
+          }
+          if (typeof clearSelectedSlots === 'function') {
+            clearSelectedSlots();
+          }
+        })
+        .withFailureHandler(function(error) {
+          spinner.classList.add('hidden');
+          buttonText.textContent = 'Submit Batch';
+          submitBtn.removeAttribute('disabled');
+          if (typeof showToast === 'function') {
+            showToast('Submission error: ' + (error.message || error), 'error');
+          }
+        })
+        .bridgeSubmitBooking(batchPayload);
+    } else {
+      // Mock Client-Side Fallback Execution
+      setTimeout(function() {
+        console.log('[Modal_Details] Simulated Batch Submission:', batchPayload);
+        spinner.classList.add('hidden');
+        buttonText.textContent = 'Submit Batch';
+        closeDetailsModal();
+        if (typeof showToast === 'function') {
+          showToast('Batch submission simulated successfully!', 'success');
+        }
+      }, 1000);
+    }
+  }
+</script>

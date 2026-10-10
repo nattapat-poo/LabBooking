@@ -1,0 +1,124 @@
+<!--
+ * FILE: Modal_EmailEditor.html
+ * PURPOSE: Interactive notification template editor with anti-tamper UI security safeguards.
+ * DESIGN SPEC REF: Section 3.5
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 24, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<div id="modal-email-editor" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-fade-in">
+    
+    <!-- Header -->
+    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">Email Template Configuration</h3>
+        <p class="text-xs text-slate-500">Edit dynamic system notification formats</p>
+      </div>
+      <button onclick="closeEmailEditorModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- Security Warning Banner (Hidden unless unauthorized) -->
+    <div id="email-editor-lockout-banner" class="hidden bg-amber-50 border-b border-amber-200 p-3 text-xs text-amber-800 flex items-center gap-2">
+      <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <span>Read-only mode: You do not possess administrative configuration privileges.</span>
+    </div>
+
+    <!-- Body Form -->
+    <div class="p-6 space-y-4 overflow-y-auto flex-1">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Target Template</label>
+        <select id="email-template-select" onchange="loadSelectedTemplateContent()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-muids-blue/20 focus:border-muids-blue">
+          <option value="CONFIRMATION">Booking Confirmation</option>
+          <option value="DENIAL">Booking Denial / Cancellation</option>
+          <option value="CONFLICT">Schedule Conflict Alert</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Template Body Markup</label>
+        <textarea id="email-template-body" class="w-full min-h-[220px] font-mono text-sm border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-muids-blue/20 focus:border-muids-blue resize-y" placeholder="Enter template HTML/String content..."></textarea>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+      <button onclick="closeEmailEditorModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+      <button id="btn-save-email-template" onclick="saveEmailTemplate()" class="px-5 py-2 text-sm font-bold text-white bg-muids-blue hover:bg-blue-800 rounded-lg shadow-md transition-all">Save Changes</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openEmailEditorModal() {
+  const modal = document.getElementById('modal-email-editor');
+  if (modal) modal.classList.remove('hidden');
+
+  const canEdit = window.appState && window.appState.canEditConfig;
+  const banner = document.getElementById('email-editor-lockout-banner');
+  const textarea = document.getElementById('email-template-body');
+  const saveBtn = document.getElementById('btn-save-email-template');
+
+  if (!canEdit) {
+    if (banner) banner.classList.remove('hidden');
+    if (textarea) {
+      textarea.disabled = true;
+      textarea.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+    }
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+  } else {
+    if (banner) banner.classList.add('hidden');
+    if (textarea) {
+      textarea.disabled = false;
+      textarea.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+    }
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+  }
+
+  loadSelectedTemplateContent();
+}
+
+function closeEmailEditorModal() {
+  const modal = document.getElementById('modal-email-editor');
+  if (modal) modal.classList.add('hidden');
+}
+
+function loadSelectedTemplateContent() {
+  const type = document.getElementById('email-template-select').value;
+  google.script.run
+    .withSuccessHandler(content => {
+      const textarea = document.getElementById('email-template-body');
+      if (textarea) textarea.value = content || '';
+    })
+    .getEmailTemplate(type);
+}
+
+function saveEmailTemplate() {
+  if (!window.appState || !window.appState.canEditConfig) {
+    showToast('Unauthorized write attempt rejected.', 'error');
+    return;
+  }
+
+  const type = document.getElementById('email-template-select').value;
+  const content = document.getElementById('email-template-body').value;
+
+  showToast('Saving template...', 'info');
+  google.script.run
+    .withSuccessHandler(() => {
+      showToast('Email template updated.', 'success');
+      closeEmailEditorModal();
+    })
+    .withFailureHandler(err => showToast('Save failed: ' + err.message, 'error'))
+    .taltUpdateSystemConfig({ key: `TEMPLATE_${type}`, value: content });
+}
+</script>

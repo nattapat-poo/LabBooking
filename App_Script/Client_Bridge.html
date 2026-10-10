@@ -1,0 +1,132 @@
+<!--
+/**
+ * FILE: Client_Bridge.html
+ * PURPOSE: Pre-Flight Client-Server Communication Bridge (ES6 Promisified GAS Wrapper)
+ * DESIGN SPEC REF: Section 1 (Foundation) & Ubiquitous Language Protocol
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 20, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+ */
+-->
+<script>
+/**
+ * AppBridge: Centralized Frontend SDK for GAS Communication
+ * Abstracts google.script.run into Promise-based async/await architecture.
+ */
+const AppBridge = (function() {
+    // Determine if we are running in a local Dev Sandbox (Mock Mode)
+    const IS_LOCAL_MOCK = typeof google === 'undefined' || !google.script || !google.script.run;
+
+    /**
+     * Core Promisifier for Google Apps Script Server Calls
+     * @param {string} functionName - The target server-side function.
+     * @param {...any} args - Payload parameters to pass to the server.
+     * @returns {Promise<any>}
+     */
+    const invokeServer = (functionName, ...args) => {
+        return new Promise((resolve, reject) => {
+            if (IS_LOCAL_MOCK) {
+                console.warn(`[AppBridge MOCK] Intercepted call to ${functionName}`, args);
+                // Simulate network latency and mock success response
+                setTimeout(() => resolve({ 
+                    ok: true,
+                    success: true,
+                    status: 'success', 
+                    message: 'Simulated backend response.', 
+                    mockData: args 
+                }), 400);
+                return;
+            }
+
+            // Production GAS Execution
+            google.script.run
+                .withSuccessHandler((response) => {
+                    // Normalize Result envelope (gas-best-practices standard)
+                    if (response && typeof response === 'object') {
+                        if (response.ok === undefined && response.success !== undefined) {
+                            response.ok = response.success;
+                        }
+                    }
+                    resolve(response);
+                })
+                .withFailureHandler((error) => {
+                    console.error(`[AppBridge ERROR] Backend failure on ${functionName}:`, error);
+                    resolve({ 
+                        ok: false, 
+                        success: false, 
+                        message: error.message || String(error), 
+                        error: error.message || String(error) 
+                    });
+                })
+                [functionName](...args);
+        });
+    };
+
+    return {
+        // ==========================================
+        // READ SUB-SYSTEMS
+        // ==========================================
+        
+        /**
+         * Fetches specific day type (A-E Cycle) for timeline visualization.
+         */
+        getCalendarDayType: async (dateString) => {
+            return await invokeServer('getCalendarDayType', dateString);
+        },
+
+        /**
+         * Fetches operational bell schedule variations.
+         */
+        getBellType: async (dateString) => {
+            return await invokeServer('getBellType', dateString);
+        },
+
+        // ==========================================
+        // WRITE SUB-SYSTEMS & BATCHING
+        // ==========================================
+
+        /**
+         * Transmits the Selected Slots batch to the backend.
+         * Enforces strict Ubiquitous Language Protocol checks pre-flight.
+         */
+        submitBatch: async (batchPayload) => {
+            // Fail-closed perimeter validation against banned terminology
+            const payloadString = JSON.stringify(batchPayload).toLowerCase();
+            if (payloadString.includes('cart') || payloadString.includes('checkout')) {
+                const errorMsg = "Severity 1 Compliance Failure: Deprecated e-commerce terminology detected in payload structure.";
+                console.error(errorMsg);
+                throw new Error(errorMsg);
+            }
+            
+            return await invokeServer('bridgeSubmitBooking', batchPayload);
+        },
+
+        // ==========================================
+        // TALT ADMINISTRATIVE CONTROLS
+        // ==========================================
+
+        /**
+         * Approves a pending booking transaction (Admin/TALT role required).
+         */
+        approveBooking: async (transactionId) => {
+            return await invokeServer('bridgeApproveBooking', transactionId);
+        },
+
+        /**
+         * Rejects a pending booking transaction (Admin/TALT role required).
+         */
+        rejectBooking: async (transactionId, reason) => {
+            if (!reason) throw new Error("Rejection operations require a valid reason string.");
+            return await invokeServer('bridgeRejectBooking', transactionId, reason);
+        },
+        
+        /**
+         * Triggers manual server-side revalidation of the calendar state.
+         */
+        triggerManualRevalidation: async () => {
+            return await invokeServer('bridgeTriggerManualRevalidation');
+        }
+    };
+})();
+</script>

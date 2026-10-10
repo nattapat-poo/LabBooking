@@ -1,0 +1,448 @@
+<!--
+ * FILE: JS_Header.html
+ * PURPOSE: Persistent command center header, branding logo, user identity profile, active role switcher, dynamic Proxy Banner, timeline control stack, and manual revalidation sync trigger.
+ * DESIGN SPEC REF: Section 1.2 (1.2.1, 1.2.2, 1.2.3, 1.2.4), Section 5.4, Section 6.4.2
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 20, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Lead Engineer Gem)
+-->
+
+<header id="global-header" class="h-16 w-full bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-40 relative shadow-sm">
+  <!-- Brand Logo & System Title -->
+  <div class="flex items-center gap-3">
+    <div class="p-2 bg-[#003366] text-white rounded-lg shadow-sm flex items-center justify-center">
+      <!-- Science Lab Flask Icon -->
+      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 20H5a1 1 0 0 1-.84-1.54l5.84-8.76V5H9a1 1 0 0 1 0-2h6a1 1 0 0 1 0 2h-1v4.7l5.84 8.76A1 1 0 0 1 19 20ZM7.34 18h9.32l-3.33-5H10.67l-3.33 5ZM12 11.5l1-1.5V5h-2v5l1 1.5Z"/>
+      </svg>
+    </div>
+    <div class="flex flex-col">
+      <div class="flex items-center space-x-1.5 text-[9.5px] font-mono tracking-wider">
+        <span class="text-emerald-400 font-bold">LAB OOPS OS</span>
+        <span class="text-slate-400">•</span>
+        <span class="text-slate-400 hidden md:inline">Science <span class="text-emerald-400 font-extrabold">Lab</span>oratory <span class="text-emerald-400 font-extrabold">O</span>perations &amp; <span class="text-emerald-400 font-extrabold">O</span>ppositely-Organized <span class="text-emerald-400 font-extrabold">P</span>roblems <span class="text-emerald-400 font-extrabold">S</span>olved <span class="text-emerald-400 font-extrabold">O</span>perating <span class="text-emerald-400 font-extrabold">S</span>ystem</span>
+        <span class="text-slate-400 md:hidden">MUIDS — Science Department</span>
+      </div>
+      <span class="text-[#003366] font-bold text-base md:text-lg leading-none tracking-tight mt-0.5">Smart Lab Booking System</span>
+    </div>
+  </div>
+
+  <!-- User Identity, Role Switcher, & Utilities -->
+  <div class="flex items-center gap-2 sm:gap-4">
+    <!-- Circular Help / Onboarding Guide Button -->
+    <button id="btn-onboarding-guide" 
+            onclick="openWelcomeModal()" 
+            type="button"
+            title="User Guide &amp; Interactive Walkthrough"
+            class="text-slate-400 hover:text-emerald-500 hover:bg-slate-100 transition-colors cursor-pointer p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/20 border border-transparent">
+      <i data-lucide="help-circle" class="w-5 h-5 text-emerald-500"></i>
+    </button>
+
+    <!-- Sliding Theme Mode Toggle (Dark / Light) -->
+    <div class="flex items-center" title="Toggle Light / Dark Mode">
+      <button id="btn-theme-slider" onclick="toggleAppTheme()" class="theme-slider-track relative inline-flex h-7 w-14 items-center rounded-full transition-all focus:outline-none bg-slate-800 border border-slate-700 p-0.5 shadow-inner cursor-pointer" aria-label="Toggle theme">
+        <span id="theme-slider-thumb" class="theme-slider-thumb inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-emerald-500 text-white shadow-md transition-all translate-x-7">
+          <i id="theme-slider-icon" data-lucide="moon" class="w-3 h-3 text-white"></i>
+        </span>
+      </button>
+    </div>
+
+    <!-- Manual Revalidation Button (Design Spec 1.2.4) -->
+    <button id="btn-revalidate" 
+            onclick="HeaderModule.handleManualRevalidation()" 
+            type="button"
+            title="Force sync timeline with latest database state"
+            class="text-slate-400 hover:text-[#003366] hover:bg-slate-100 transition-colors cursor-pointer p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#003366]/20 border border-transparent">
+      <svg id="icon-revalidate" class="w-5 h-5 stroke-current transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M160 80v48M128 48l32 32-32 32" class="hidden" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 0111.93-6.93l1.88-1.88A10 10 0 1022 12h-2a8 8 0 11-16 0z" />
+      </svg>
+    </button>
+
+    <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+    <!-- Active Role Switcher (Design Spec 1.2.1) -->
+    <div id="role-switcher-container" class="relative hidden sm:block">
+      <select id="role-switcher-select" 
+              onchange="HeaderModule.handleRoleSwitch(this.value)"
+              class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#003366]/20 transition-all">
+        <option value="TEACHER">Role: Teacher</option>
+        <option value="LABTECH">Role: Lab Tech</option>
+        <option value="TA">Role: TA</option>
+        <option value="ADMIN">Role: System Admin</option>
+      </select>
+    </div>
+
+    <!-- User Profile Badge -->
+    <div id="user-profile-card" class="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200">
+      <div id="user-avatar" class="w-7 h-7 rounded-full bg-[#003366] text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+        --
+      </div>
+      <div class="hidden lg:flex flex-col text-left">
+        <span id="user-display-name" class="text-xs font-semibold text-slate-800 leading-tight">Loading...</span>
+        <span id="user-display-email" class="text-[10px] text-slate-500 font-mono truncate max-w-[140px]">user@mahidol.ac.th</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Safety Proxy Mode Warning Banner (Design Spec 1.1.5, 1.2.2) -->
+<aside id="proxy-banner" 
+       class="sticky top-16 w-full bg-amber-400 text-slate-900 py-2 px-4 shadow-md z-30 items-center justify-between gap-3 text-xs md:text-sm font-semibold transition-all duration-300 hidden">
+  <div class="flex items-center gap-2 mx-auto">
+    <!-- Warning Icon -->
+    <svg class="w-5 h-5 text-slate-950 flex-shrink-0 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <span>
+      SAFETY PROXY MODE: You are currently acting as <span id="proxy-teacher-target" class="underline font-extrabold tracking-wide">Teacher Target</span>
+    </span>
+  </div>
+  <button id="btn-exit-proxy" 
+          onclick="HeaderModule.exitProxyMode()" 
+          type="button" 
+          class="bg-slate-900 hover:bg-black text-white text-xs px-3 py-1 rounded-md transition-all shadow-sm flex-shrink-0">
+    Exit Proxy
+  </button>
+</aside>
+
+<!-- Timeline Navigation & Scheduling Context Bar (Design Spec 1.2.3) -->
+<nav id="timeline-controls-bar" class="flex flex-col md:flex-row items-center justify-between p-3 md:p-4 bg-slate-50 border-b border-slate-200 gap-3 w-full z-20">
+  <!-- Week Navigation Group (Left) -->
+  <div class="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-sm w-full md:w-auto justify-between md:justify-start">
+    <button id="btn-prev-week" 
+            onclick="HeaderModule.navigateWeek(-1)" 
+            type="button" 
+            class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-[#003366] hover:bg-slate-50 rounded-md transition-colors flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Prev Week</span>
+    </button>
+    
+    <button id="btn-today-week" 
+            onclick="HeaderModule.navigateToday()" 
+            type="button" 
+            class="px-3 py-1.5 text-xs font-semibold text-[#003366] bg-blue-50 hover:bg-blue-100 rounded-md transition-colors border border-blue-100">
+      Current Week
+    </button>
+    
+    <button id="btn-next-week" 
+            onclick="HeaderModule.navigateWeek(1)" 
+            type="button" 
+            class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-[#003366] hover:bg-slate-50 rounded-md transition-colors flex items-center gap-1">
+      <span>Next Week</span>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- The Scheduling Stack (Center Column) -->
+  <div class="flex flex-col items-center justify-center text-center my-1 md:my-0">
+    <!-- Date Range Display -->
+    <div id="timeline-date-display" class="text-base md:text-lg font-bold text-slate-800 leading-tight">
+      --/--/---- - --/--/----
+    </div>
+    
+    <div class="flex items-center gap-2 mt-1">
+      <!-- DayType Badge (A-E Cycle) -->
+      <span id="timeline-daytype-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-[#003366] border border-blue-200">
+        Day --
+      </span>
+      
+      <!-- BellType Schedule Variation Indicator -->
+      <span id="timeline-belltype-label" class="text-[11px] font-mono text-slate-500 uppercase tracking-wider italic">
+        Regular Schedule
+      </span>
+    </div>
+  </div>
+
+  <!-- Secondary Actions / Quick Filters (Right) -->
+  <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+    <div id="timeline-filter-summary" class="text-xs text-slate-500 font-medium bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+      <span id="timeline-status-text">System Live</span>
+    </div>
+  </div>
+</nav>
+
+<script>
+/**
+ * Header Module Controller
+ * Encapsulates security verification, identity presentation, proxy banner toggles, and revalidation handlers.
+ */
+window.HeaderModule = (function () {
+  'use strict';
+
+  // Internal State Vectors
+  let currentSessionUser = null;
+  let currentActiveRole = 'TEACHER';
+  let activeProxyTarget = null;
+  let activeWeekOffset = 0;
+  let isRevalidating = false;
+
+  /**
+   * Initializes the Header Component with Session Identity & Context Data
+   * @param {Object} userContext Standardized user object from getVerifiedSessionContext
+   */
+  function init(userContext) {
+    if (!userContext || !userContext.email) {
+      console.error('[HeaderModule] Invalid session identity context received.');
+      return;
+    }
+
+    currentSessionUser = userContext;
+    currentActiveRole = userContext.role || 'TEACHER';
+
+    // Update Identity UI
+    const nameElem = document.getElementById('user-display-name');
+    const emailElem = document.getElementById('user-display-email');
+    const avatarElem = document.getElementById('user-avatar');
+
+    if (nameElem) nameElem.textContent = userContext.name || userContext.email.split('@')[0];
+    if (emailElem) emailElem.textContent = userContext.email;
+    if (avatarElem) {
+      const initial = (userContext.name || userContext.email).charAt(0).toUpperCase();
+      avatarElem.textContent = initial;
+    }
+
+    // Configure Role Switcher options dynamically based on permissions
+    configureRoleSwitcher(userContext);
+
+    // Initialize Proxy Banner if loaded in proxy state
+    if (userContext.proxyTeacher) {
+      setProxyMode(userContext.proxyTeacher);
+    } else {
+      clearProxyMode();
+    }
+  }
+
+  /**
+   * Dynamically configures allowed views in the Role Switcher dropdown
+   */
+  function configureRoleSwitcher(user) {
+    const selectElem = document.getElementById('role-switcher-select');
+    if (!selectElem) return;
+
+    selectElem.innerHTML = '';
+
+    const allowedRoles = Array.isArray(user.roles) && user.roles.length > 0 
+      ? user.roles 
+      : [user.role || 'TEACHER'];
+
+    allowedRoles.forEach(function (role) {
+      const option = document.createElement('option');
+      option.value = role;
+      option.textContent = 'Role: ' + formatRoleName(role);
+      if (role === currentActiveRole) option.selected = true;
+      selectElem.appendChild(option);
+    });
+
+    // Hide container if user only has 1 assigned role
+    const container = document.getElementById('role-switcher-container');
+    if (container) {
+      if (allowedRoles.length <= 1) {
+        container.classList.add('hidden');
+      } else {
+        container.classList.remove('hidden');
+      }
+    }
+  }
+
+  /**
+   * Formats raw role string into user-facing text
+   */
+  function formatRoleName(role) {
+    switch (role.toUpperCase()) {
+      case 'ADMIN': return 'System Admin';
+      case 'LABTECH': return 'Lab Tech';
+      case 'TA': return 'Teaching Assistant';
+      case 'HOD': return 'Head of Department';
+      case 'TEACHER': default: return 'Teacher';
+    }
+  }
+
+  /**
+   * Handles user role changes via dropdown selection
+   */
+  function handleRoleSwitch(newRole) {
+    if (newRole === currentActiveRole) return;
+    currentActiveRole = newRole;
+
+    console.log('[HeaderModule] Switching view context to role:', newRole);
+    
+    // Broadcast event to Application Root Controller to swap view cards
+    if (typeof window.dispatchAppRoleChange === 'function') {
+      window.dispatchAppRoleChange(newRole);
+    }
+  }
+
+  /**
+   * Activates Safety Proxy Banner UI (Design Spec 1.1.5, 1.2.2)
+   * @param {Object|String} teacher Target teacher context or email string
+   */
+  function setProxyMode(teacher) {
+    activeProxyTarget = teacher;
+    const banner = document.getElementById('proxy-banner');
+    const targetElem = document.getElementById('proxy-teacher-target');
+
+    const teacherDisplay = typeof teacher === 'object' 
+      ? (teacher.name || teacher.email) 
+      : teacher;
+
+    if (targetElem) targetElem.textContent = teacherDisplay;
+    if (banner) {
+      banner.classList.remove('hidden');
+      banner.classList.add('flex');
+    }
+  }
+
+  /**
+   * Clears Proxy Mode and hides the amber safety banner
+   */
+  function clearProxyMode() {
+    activeProxyTarget = null;
+    const banner = document.getElementById('proxy-banner');
+    if (banner) {
+      banner.classList.add('hidden');
+      banner.classList.remove('flex');
+    }
+  }
+
+  /**
+   * Manual exit trigger from Proxy Banner button
+   */
+  function exitProxyMode() {
+    clearProxyMode();
+    if (typeof window.dispatchExitProxyMode === 'function') {
+      window.dispatchExitProxyMode();
+    }
+  }
+
+  /**
+   * Updates Scheduling Stack display in center navigation bar (Design Spec 1.2.3)
+   * @param {Object} metadata Contains { dateRangeStr, dayType, bellType, isHoliday }
+   */
+  function updateSchedulingStack(metadata) {
+    if (!metadata) return;
+
+    const dateElem = document.getElementById('timeline-date-display');
+    const dayTypeElem = document.getElementById('timeline-daytype-badge');
+    const bellTypeElem = document.getElementById('timeline-belltype-label');
+
+    if (dateElem && metadata.dateRangeStr) {
+      dateElem.textContent = metadata.dateRangeStr;
+    }
+
+    if (dayTypeElem && metadata.dayType) {
+      dayTypeElem.textContent = metadata.dayType;
+      
+      // Holiday vs Normal DayType Styling
+      if (metadata.isHoliday || metadata.dayType.toLowerCase().includes('holiday')) {
+        dayTypeElem.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200';
+      } else {
+        dayTypeElem.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-[#003366] border border-blue-200';
+      }
+    }
+
+    if (bellTypeElem && metadata.bellType) {
+      bellTypeElem.textContent = metadata.bellType;
+    }
+  }
+
+  /**
+   * Executes Manual Revalidation with spin-state locking (Design Spec 1.2.4)
+   */
+  function handleManualRevalidation() {
+    if (isRevalidating) return;
+
+    const btn = document.getElementById('btn-revalidate');
+    const icon = document.getElementById('icon-revalidate');
+
+    // Spin-State Locking
+    isRevalidating = true;
+    if (btn) btn.classList.add('pointer-events-none', 'opacity-60');
+    if (icon) icon.classList.add('animate-spin', 'text-[#003366]');
+
+    console.log('[HeaderModule] Initiating manual timeline revalidation...');
+
+    // Execute backend sync request via API Bridge
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function (response) {
+          resetRevalidationState();
+          if (typeof window.showToast === 'function') {
+            window.showToast('Timeline Synced successfully.', 'success');
+          }
+          if (typeof window.refreshActiveTimelineView === 'function') {
+            window.refreshActiveTimelineView(response);
+          }
+        })
+        .withFailureHandler(function (err) {
+          resetRevalidationState();
+          console.error('[HeaderModule] Revalidation sync failed:', err);
+          if (typeof window.showToast === 'function') {
+            window.showToast('Sync Failed: ' + (err.message || err), 'error');
+          }
+        })
+        .bridgeTriggerManualRevalidation();
+    } else {
+      // Sandbox / Local fallback simulation
+      setTimeout(function () {
+        resetRevalidationState();
+        if (typeof window.showToast === 'function') {
+          window.showToast('Timeline Synced (Sandbox Mode).', 'success');
+        }
+      }, 1000);
+    }
+  }
+
+  /**
+   * Resets manual revalidation button UI state
+   */
+  function resetRevalidationState() {
+    isRevalidating = false;
+    const btn = document.getElementById('btn-revalidate');
+    const icon = document.getElementById('icon-revalidate');
+
+    if (btn) btn.classList.remove('pointer-events-none', 'opacity-60');
+    if (icon) icon.classList.remove('animate-spin', 'text-[#003366]');
+  }
+
+  /**
+   * Handles Week Navigation (Prev / Next)
+   * @param {Number} delta Direction offset (-1 or +1)
+   */
+  function navigateWeek(delta) {
+    activeWeekOffset += delta;
+    if (typeof window.dispatchWeekChange === 'function') {
+      window.dispatchWeekChange(activeWeekOffset);
+    }
+  }
+
+  /**
+   * Resets timeline navigation back to current week
+   */
+  function navigateToday() {
+    activeWeekOffset = 0;
+    if (typeof window.dispatchWeekChange === 'function') {
+      window.dispatchWeekChange(0);
+    }
+  }
+
+  // Public Interface API
+  return {
+    init: init,
+    handleRoleSwitch: handleRoleSwitch,
+    setProxyMode: setProxyMode,
+    clearProxyMode: clearProxyMode,
+    exitProxyMode: exitProxyMode,
+    updateSchedulingStack: updateSchedulingStack,
+    handleManualRevalidation: handleManualRevalidation,
+    navigateWeek: navigateWeek,
+    navigateToday: navigateToday
+  };
+})();
+</script>

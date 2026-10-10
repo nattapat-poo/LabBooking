@@ -1,0 +1,108 @@
+<!--
+ * FILE: Modal_Workload.html
+ * PURPOSE: TALT Workload analytics and capacity limits display modal.
+ * DESIGN SPEC REF: Section 3.4
+ * VERSION: 1.1.3c
+ * LAST MODIFIED: July 24, 2026
+ * PROTOCOL: 1:1 Mirror Promotion (PRD 17.2)
+ * AUTHOR: Gemini (Engineering Mode)
+-->
+<div id="modal-workload" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl p-6 border border-slate-100 flex flex-col gap-6 animate-fade-in">
+    
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">TALT Workload Capacity</h3>
+        <p id="workload-talt-name" class="text-xs text-slate-500">Loading technician statistics...</p>
+      </div>
+      <button onclick="closeWorkloadModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- Progress Metrics -->
+    <div class="space-y-5">
+      <!-- Daily Sessions -->
+      <div>
+        <div class="flex justify-between text-xs font-semibold mb-1.5">
+          <span class="text-slate-700">Daily Sessions</span>
+          <span id="label-daily-sessions" class="text-slate-500">0 / 6 Max</span>
+        </div>
+        <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden">
+          <div id="bar-daily-sessions" class="h-full bg-muids-blue transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Consecutive Sessions -->
+      <div>
+        <div class="flex justify-between text-xs font-semibold mb-1.5">
+          <span class="text-slate-700">Consecutive Slots</span>
+          <span id="label-consecutive-sessions" class="text-slate-500">0 / 3 Max</span>
+        </div>
+        <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden">
+          <div id="bar-consecutive-sessions" class="h-full bg-muids-blue transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Weekly Summary Badge -->
+      <div class="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
+        <span class="text-xs font-medium text-slate-600">Total Weekly Load</span>
+        <span id="badge-weekly-total" class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-200 text-slate-700">0 Sessions</span>
+      </div>
+    </div>
+
+    <div class="pt-2 border-t border-slate-100 flex justify-end">
+      <button onclick="closeWorkloadModal()" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openWorkloadModal(taltEmail) {
+  const modal = document.getElementById('modal-workload');
+  const nameElem = document.getElementById('workload-talt-name');
+  if (nameElem) nameElem.textContent = taltEmail || 'Technician Load';
+  if (modal) modal.classList.remove('hidden');
+
+  google.script.run
+    .withSuccessHandler(renderWorkloadStats)
+    .withFailureHandler(err => showToast('Failed to load workload stats: ' + err.message, 'error'))
+    .coreGenerateWorkloadReport(taltEmail);
+}
+
+function closeWorkloadModal() {
+  const modal = document.getElementById('modal-workload');
+  if (modal) modal.classList.add('hidden');
+}
+
+function renderWorkloadStats(stats) {
+  if (!stats) return;
+
+  const dailyPct = Math.min(100, Math.round((stats.dailyCount / 6) * 100));
+  const consecPct = Math.min(100, Math.round((stats.consecutiveCount / 3) * 100));
+
+  updateWorkloadBar('bar-daily-sessions', 'label-daily-sessions', stats.dailyCount, 6, dailyPct);
+  updateWorkloadBar('bar-consecutive-sessions', 'label-consecutive-sessions', stats.consecutiveCount, 3, consecPct);
+
+  const weeklyBadge = document.getElementById('badge-weekly-total');
+  if (weeklyBadge) weeklyBadge.textContent = `${stats.weeklyTotal || 0} Sessions`;
+}
+
+function updateWorkloadBar(barId, labelId, val, max, pct) {
+  const bar = document.getElementById(barId);
+  const label = document.getElementById(labelId);
+  if (label) label.textContent = `${val} / ${max} Max`;
+  if (bar) {
+    bar.style.width = `${pct}%`;
+    bar.className = 'h-full transition-all duration-500 ';
+    if (pct >= 100) {
+      bar.className += 'bg-red-600';
+    } else if (pct >= 80) {
+      bar.className += 'bg-amber-500';
+    } else {
+      bar.className += 'bg-muids-blue';
+    }
+  }
+}
+</script>
