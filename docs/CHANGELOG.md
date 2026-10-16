@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), conforming to **Lab Oops OS** ecosystem standards.
 
+## [1.4.0a] — 2026-10-15
+
+### 🛡️ Security Hardening & Federated Architecture Architecture Baseline
+Major architectural elevation addressing all 17 security findings (F-01..F-17) and 16 implementation revisions (R-01..R-16):
+
+### Added
+* **Formal Implementation Plan (v1.4.0a)**: Detailed 6-phase remediation blueprint in [`docs/IMPLEMENTATION_PLAN.md`](file:///c:/Users/MUIDS/Documents/Projects/Lab%20Oops/Project01_LabBooking/docs/IMPLEMENTATION_PLAN.md).
+* **Automated Phase Verification Checklist**: Comprehensive requirements and verification matrix in [`docs/PHASE_CHECKLIST.md`](file:///c:/Users/MUIDS/Documents/Projects/Lab%20Oops/Project01_LabBooking/docs/PHASE_CHECKLIST.md) (IDs `P0-01` through `P6-08`).
+* **Canonical Role Permissions (`PERMISSIONS`)**: Policy-as-data matrix defining authority for Teacher, TA, LabTech, Admin, and HoD.
+* **Two-Way Approval Postponement Protocol**: Reciprocal workflow requiring TALT approval for teacher moves and teacher approval for TALT moves.
+* **Federated Multi-Spreadsheet Schema**: Formal 8-tab schema contract spanning Local Sheet, Master DB 2026, and Timetable 2026.
+* **On-Behalf Booking Attribution**: Mandatory tracking of `SubmittedByUserID`, `TargetUserID`, `ConfirmUserID`, and `AssignedTaltID`.
+* **Telemetry & Forensic Stats Tab**: Canonical 12-column analytics schema for `Stats`.
+
+### Changed
+* **Role Equality Normalization**: Established full equality between `TA` and `LabTech`.
+* **HoD Scope Refinement**: Restricted `HoD` from approving standard bookings; granted executive read-only overview for forensic logs and stats.
+* **Domain Whitelist**: Restricted perimeter whitelist to `@mahidol.ac.th`, `@student.mahidol.ac.th`, and `@student.mahidol.edu` (strictly prohibiting `@mahidol.edu`).
+* **Lead Time Policy**: Standardized on 24 hours in `Asia/Bangkok` with audited TALT urgent setup bypass.
+
 ---
 
 ## [1.1.3c] — 2026-10-10

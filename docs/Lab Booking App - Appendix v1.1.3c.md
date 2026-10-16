@@ -6,7 +6,7 @@
   * Booking App Google Sheet structure, sheets and headers  
     * 1\. Booking sheet  
       * This sheet is a primary for user input and operation  
-      * Link: [https\://docs.google.com/spreadsheets/d/1y6OOsvWDqLptGcrdDO5RdAUiMp331W-R49jVPFMR\_Q4/](https://docs.google.com/spreadsheets/d/1y6OOsvWDqLptGcrdDO5RdAUiMp331W-R49jVPFMR_Q4/)  
+      * Link: [https://docs.google.com/spreadsheets/d/<LEGACY_BOOKING_SHEET_ID>/](https://docs.google.com/spreadsheets/d/<LEGACY_BOOKING_SHEET_ID>/)  
       * Columns and Headers (some headers are in arrayformula):  
         Note: I think columns T-X is what I initiated the validation process, but it is not done.
 
@@ -243,15 +243,15 @@ function getLastRow(sheet, rangeString) {
   Select event source: “From spreadsheet”  
   Select event type: “On edit”  
   * Google Calendar and settings  
-    * Calendar ID: “mahidol.edu\_qqoq8j566dhh7sdr05j189d8b0@group.calendar.google.com”  
-    * Sharable Link: [https\://calendar.google.com/calendar/u/0?cid=bWFoaWRvbC5lZHVfcXFvcThqNTY2ZGhoN3NkcjA1ajE4OWQ4YjBAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ](https://calendar.google.com/calendar/u/0?cid=bWFoaWRvbC5lZHVfcXFvcThqNTY2ZGhoN3NkcjA1ajE4OWQ4YjBAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)  
+    * Calendar ID: "<CALENDAR_ID>"  
+    * Sharable Link: [https://calendar.google.com/calendar/u/0?cid=<CALENDAR_ID>](https://calendar.google.com/calendar/u/0?cid=<CALENDAR_ID>)  
     * Shared with:  
       * Subject teachers can see all event details  
       * TALT can make changes and manage sharing  
 * Google Sheet Timetable 2025  
   * Structure, sheets and headers  
     * TimeTable sheet: This sheet contains visual format for all teachers, all A-E day and all periods. Data is pulled from other sheet using formula located in cell C2  
-    * Link: [https\://docs.google.com/spreadsheets/d/1MmDEOspbdUk-9LOyspEpmHiapeenUl86fdgbNTUhM\_I/edit?gid=846435577](https://docs.google.com/spreadsheets/d/1MmDEOspbdUk-9LOyspEpmHiapeenUl86fdgbNTUhM_I/edit?gid=846435577)  
+    * Link: [https://docs.google.com/spreadsheets/d/<TIMETABLE_2026_ID>/edit?gid=846435577](https://docs.google.com/spreadsheets/d/<TIMETABLE_2026_ID>/edit?gid=846435577)  
     * Formula: 
 
 ```

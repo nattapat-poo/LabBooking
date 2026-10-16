@@ -4,9 +4,64 @@
 **Date:** October 28, 2025 (v1.0) | May 06, 2025 (v1.1.2) | May 11, 2026 (v1.1.3) | July 8, 2026 (v1.1.3c)  
 **Steerer:** Mek  
 **PRD drafter AI:** Gemini 3.0 | Model \= Pro, Thinking  
-**Status:** PRD \= Locked, Design Spec \= Locked, Backend \= Audited
+**Status:** PRD = Locked, Design Spec = Locked, Backend = Audited  
+**Active Engineering Target:** **v1.4.0a** (Governing Security & Ecosystem Alignment)
 
-This tab contains the core specification document for the application's current version (V1.1). It details the functional requirements (features, user flows), data models (database schema), and the technical contract (API specification) defining how the application should be built and behave.
+---
+
+### 🚨 **CRITICAL AMENDMENT NOTE — Version 1.4.0a (October 2026)**
+*This amendment formally overrides conflicting historical sections within this PRD with the confirmed operational directives established by Lead Architect Mek:*
+
+1. **Role Authority & Equality:**
+   - **`TA` = `LabTech` Equality:** `TA` holds the exact same operational and authorization level as `LabTech`. Both can approve standard bookings, approve postponements, assign technicians, override rooms, and manage lab outages (`Maintenance` & `SetupHold`).
+   - **`Admin` Super-Privilege:** `Admin` possesses all system privileges (approving bookings, managing outages, assigning staff, configuring system variables, and running diagnostics).
+   - **`HoD` Read-Only Scope:** `HoD` (Head of Department) **cannot** approve standard bookings. `HoD` access is restricted to an executive read-only overview for capacity analysis, forensic logs (`Logs`), and telemetry metrics (`Stats`).
+   - **`Teacher` Permissions:** Teachers can book labs, view schedules, view the **Master Calendar (read-only view of all school bookings)**, and view forensic logs and telemetry stats. Teachers have authority to edit, cancel, and request postponement **only for their own bookings** (`TargetUserID` matching session email). A teacher cannot cancel or postpone another teacher's booking.
+
+2. **Two-Way Approval Postponement Workflow & Status:**
+   - **Teacher-Initiated Postponement:** If the booking teacher requests a slot reschedule, status transitions to `POSTPONE_PENDING_TALT`. TALT must approve the request before the target slot is swapped.
+   - **TALT-Initiated Postponement:** If TALT moves or swaps a teacher's booked slot, status transitions to `POSTPONE_PENDING_TEACHER`. The booking teacher must approve before the swap is finalized.
+   - **Atomic Mutual Exclusion:** Upon reciprocal approval, releasing the old slot and locking the target slot occurs inside a single atomic `LockService` transaction.
+   - **Status Nomenclature:** Canonical status for rejected bookings is strictly **`Denied`** (retaining legacy compatibility).
+
+3. **Lead Time Policy, 24-Hour Cancellation Lock & Urgent Bypass:**
+   - **Advance Booking Lead Time:** Requires at least **2 instructional school days**, verified dynamically against the `Academic_Calendar` tab in Master DB 2026.
+   - **Cancellation & Postponement Lock:** Teachers are **locked from cancelling or postponing** within **24 hours** of the requested slot start time.
+   - **TALT Universal Bypass:** TALT personnel (`TA`, `LabTech`, `Admin`) have full authority to bypass lead-time rules and cancellation locks on teachers' behalf for all actions.
+   - **Mandatory Audit Tracking & Remark Stacking:**
+     - In `Bookings.Remark`: Remarks must **append** rather than overwrite, stacked in **chronological ascending order** downwards (e.g. `[DENIED 2026-10-16 09:00 by Fern]: Insufficient glassware\n[URGENT_BYPASS 2026-10-16 10:30 by Mek]: Teacher emergency setup approved`).
+     - In `Logs`: Action logged as `URGENT_BOOKING_BYPASS` logging requesting teacher, subject, operating TALT, and timestamp.
+
+4. **On-Behalf Booking Attribution & Parameters:**
+   - When a booking is submitted on behalf of another user (e.g. TALT booking for a teacher), the system records:
+     - `SubmittedByUserID`: The ID/email of the operator who submitted the transaction.
+     - `User`: The operator's nickname.
+     - `TargetUserID`: The ID/email of the teacher who owns the booking (holds cancellation & postponement rights).
+     - `Teacher`: The booking owner's nickname.
+     - `ConfirmUserID` / `ConfirmedBy`: The ID and nickname of the approving staff.
+     - `AssignedTaltID` / `AssignedTaltName`: The ID(s) and nickname(s) of allocated support technicians.
+
+5. **Federated Multi-Spreadsheet Architecture (10 Tabs across 3 Spreadsheets):**
+   - **Local Transactional Spreadsheet (`<LOCAL_SPREADSHEET_ID>`):**
+     - `Bookings` (25 columns, replaces `Transactions`), `Outages` (13 columns), `Duties` (8 columns), `Config` (5 columns), `Logs` (7 columns), `Stats` (12 columns).
+   - **Master DB 2026 (`<MASTER_DB_ID>`) [READ-ONLY]:**
+     - `Users` (8 columns), `Subjects` (5 columns), `Room` (4 columns, replaces `Labs`), `Academic_Calendar` (6 columns, replaces `Calendar`), `Bell_Schedules` (8 columns, replaces `Bell`).
+   - **Timetable 2026 (`<TIMETABLE_2026_ID>`) [READ-ONLY]:**
+     - `Index` sheet (7 columns, replaces `TeacherTimeTables`).
+
+6. **Canonical Teacher Join & Attribute Normalization:**
+   - Teachers join between session email (`Users.Email`) $\rightarrow$ nickname (`Users.DisplayName`) $\rightarrow$ `Timetable 2026` (`Index.Teacher`).
+   - `isHoD` is derived dynamically via `Role === "HoD"`.
+   - `Can_Edit_Config` is derived dynamically via `Role === "Admin"`.
+   - `hasCompletedTutorial` is persisted in browser `localStorage`.
+   - `PrimaryGrade` is deprecated.
+
+7. **Deployment Topology — Standalone Web App URL (No Google Site Embedding):**
+   - The application will be deployed strictly as a **Standalone Web App URL** (`https://script.google.com/a/.../exec`).
+   - Embedding inside a Google Site iframe is **rejected and prohibited**.
+   - `HtmlService.XFrameOptionsMode.DEFAULT` (`SAMEORIGIN`) is strictly enforced; `ALLOWALL` is eliminated to prevent clickjacking (`F-13`) and avoid third-party cookie blocking / Safari ITP login loops.
+
+---
 
 [1\. Executive Summary](#1.-executive-summary)
 

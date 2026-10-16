@@ -25,3 +25,12 @@
 - [ ] End-to-end rehearsal across Teacher and LabTech workflows.
 - [ ] Synchronize versioning across config tabs and promote to stable benchmark release.
 
+### Milestone 4: Security Hardening & v1.4.0a Remediation (Active Architecture)
+- [ ] **Phase 0:** Baseline safety, Staging Identity Spike (`docs/IDENTITY_DECISION.md`), verification tooling (`verify_phase.js`), and schema contracts.
+- [ ] **Phase 1:** Fail-closed identity perimeter, domain whitelist (`@mahidol.ac.th`, `@student.mahidol.ac.th`, `@student.mahidol.edu`), canonical `PERMISSIONS` matrix enforcement, and diagnostics isolation.
+- [ ] **Phase 2:** Booking transaction engine repair, two-way postponement swap inside `LockService`, urgent 24h lead-time bypass audit logging, and federated cross-sheet data mapping.
+- [ ] **Phase 3:** Data consistency, targeted cell updates (eliminate full-table overwrites), Google Calendar idempotency with cancellation hooks, and bounded 5-minute Master DB cache TTLs.
+- [ ] **Phase 4:** Frontend XSS elimination (`innerHTML` replacement with DOM construction), formula injection neutralization (`sanitizeCell_`), and test runner hardening.
+- [ ] **Phase 5:** Consolidated verification sweeps, high-concurrency collision tests, and full traceability audit in `docs/TEST_RESULTS.md`.
+- [ ] **Phase 6:** Script Properties secret migration, minimal OAuth scopes in `appsscript.json`, and staging release.
+

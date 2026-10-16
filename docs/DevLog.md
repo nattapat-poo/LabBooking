@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-10-15: Version 1.4.0a Architecture & Security Baseline
+* **Lead Architect:** Nattapat Poolyam (Mek)
+* **Agent:** Google Antigravity
+* **Scope:** Specification of v1.4.0a Security Hardening, 8-Tab Federated Database Schema Contract, Canonical Role Permissions, Two-Way Postponement, and Urgent Bypass Logging.
+
+### Key Architectural Milestones:
+1. **Version Elevation to v1.4.0a:**
+   - Formalized `v1.4.0a` across `Project_Profile.md`, `Planning.md`, `CHANGELOG.md`, `IMPLEMENTATION_PLAN.md`, and PRD Amendment Note.
+2. **Federated Multi-Spreadsheet Contract:**
+   - Replaced monolithic single-sheet structure with 3 federated spreadsheets: Local Sheet (`Bookings`, `Outages`, `Config`, `Logs`, `Stats`), Master DB 2026 (`Users`, `BellSchedule`), and Timetable 2026 (`Index`).
+   - Documented complete 8-tab schema contract in `docs/SCHEMA_CONTRACT.md`.
+3. **Confirmed Role Authority Matrix (`PERMISSIONS`):**
+   - Established equality between `TA` and `LabTech` (full approval, technician assignment, room override, and outage management authority).
+   - Restricted `HoD` to executive read-only analytics (cannot approve bookings).
+   - Granted teachers visibility over forensic logs and stats in addition to personal schedule management.
+4. **Two-Way Approval Postponement & Urgent 24h Bypass:**
+   - Designed reciprocal approval workflow for slot rescheduling.
+   - Formalized 24-hour lead time in `Asia/Bangkok` with mandatory audit tracking (`[URGENT_BYPASS]`) for TALT emergency bypasses.
+5. **On-Behalf Attribution Verification:**
+   - Confirmed 25-column `Bookings` schema mapping for `SubmittedByUserID`, `TargetUserID`, `ConfirmUserID`, and `AssignedTaltID`.
+
+---
+
 ## 2026-10-10: Governing Ecosystem Skills Alignment
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Google Antigravity
