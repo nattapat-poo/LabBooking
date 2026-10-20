@@ -1,3 +1,5 @@
+> ⚠️ Partly superseded by [PRD_AMENDMENT_v1.4.0b.md](./PRD_AMENDMENT_v1.4.0b.md). Where they conflict, the amendment wins.
+
 ## **Appendix**
 
 * Link to Google Sheet containing school schedules.  

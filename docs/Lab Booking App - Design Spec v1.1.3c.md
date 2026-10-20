@@ -1,3 +1,5 @@
+> ⚠️ Partly superseded by [PRD_AMENDMENT_v1.4.0b.md](./PRD_AMENDMENT_v1.4.0b.md). Where they conflict, the amendment wins.
+
 # **Design Specification**
 
 This Design Specification serves as the definitive blueprint for the MUIDS Lab Booking App v1.1.3c, acting as the critical architectural bridge between the functional mandates of the PRD and the final code implementation. We aren’t just making things look "pretty"—though the Mahidol Blue theme is non-negotiable—we are defining the spatial hierarchy, interactive states, and Tailwind CSS patterns that ensure every pixel serves a purpose. By outlining objectives such as the safety-first Proxy Mode and the high-efficiency **Selected Slots** container, this document provides the exact "Code-Wireframes" and modular instructions needed to build a consistent, accessible, and high-performance interface. Essentially, it is the guardrail that keeps our UI from descending into chaos, ensuring that whether a user is a teacher booking a lab or a TALT managing a batch, the experience is seamless, intentional, and perfectly aligned with our modular 1:1 Mirror Promotion Protocol.
