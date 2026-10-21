@@ -7,7 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] — Planning baseline v1.4.0b (2026-10-19)
 
-### 🛡️ Clarified Architecture & Security Decisions (D-21 … D-36)
+### 🛡️ Revision 2: Owner Clarifications & Closed Open Items (2026-10-19)
+Decisions D-37 … D-45 in [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md).
+
+#### Added
+* **Default `BellType` rule (D-37):** when `Academic_Calendar.BellScheduleOverride` is blank, effective schedule is `Wed` on Wednesday, otherwise `Regular` (`P2-33`).
+* **All `Room` rows bookable (D-38):** all rooms in `Room` are bookable for class/lab activities (no `RoomType` filter); timetable verification retained; extensible seam `isRoomEligible_` added for future timetable room restrictions (**BL-01**; `P2-34`).
+* **Target role eligibility (D-43):** booking owner must resolve to an eligible role (`Teacher`, `TA`, `LabTech`, `Admin`); attempts targeting an ineligible role fail with `TARGET_ROLE_INELIGIBLE` (`P2-35`).
+* **Calendar failure marker vocabulary (D-40):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary (`CALENDAR_API`, `CALENDAR_QUOTA`, `CALENDAR_NOT_FOUND`, `INVALID_TIME`); retries tracked outside sheet schema (`P2-36`).
+* **Status migration procedure (D-42):** approved procedure for migrating legacy status strings (dated backup, DEV first, idempotent, counts only, unknown strings block go-live; `P2-32`).
+* **Identity spike account-coverage policy (D-44):** Admin tested on DEV via Owner staff account; consumer Google proxy for G10; G11-12 Workspace student unverified / best-effort; no emails in committed docs (`P0-19`); prerequisite: isolated DEV copies of Master DB and Timetable (`P0-18`).
+* **Extended distinct-value dump report (D-37, D-38, D-42):** `P0-17` extended to report distinct values and counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII).
+
+#### Changed
+* **HoD strictly read-only (D-43):** HoD cannot book, cannot proxy, and **cannot be the `TargetUserID` of an on-behalf booking**. The earlier workaround permitting proxy booking for an HoD is completely withdrawn from all documents.
+* **Non-statuses confirmed (D-41):** `Action Required` and `Error (Calendar)` confirmed non-statuses; recorded in `Remark`/`Logs` only.
+* **Live spellings confirmed (D-39):** exact tab spelling `Bookings` and header `IsActive` confirmed.
+* **ADR-0002 reconfirmed (D-45):** status updated to "Accepted — reconfirmed by Owner 2026-10-19".
+
+### 🛡️ Revision 1: Clarified Architecture & Security Decisions (D-21 … D-36)
 Plan: [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) · Contract: [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · Checklist: [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · PRD changes: [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md)
 
 ### Added

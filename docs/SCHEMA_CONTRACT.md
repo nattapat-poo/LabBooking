@@ -60,7 +60,19 @@ Read-only enforcement is layered: (1) the deploying account holds **Viewer** per
 | U | `AssignedTaltID` | String | Yes | **UserID(s)** of assigned technician(s), comma-separated. |
 | V | `AssignedTaltName` | String | Yes | Nickname(s) of assigned technician(s) (snapshot). |
 | W | `Remark` | String | Yes | Append-only note stack, chronological ascending: `[YYYY-MM-DD HH:mm Nickname]: text`. Holds denial reasons and `[URGENT_BYPASS …]` tags. Never overwritten. |
-| X | `GCalEventID` | String | Yes | Google Calendar event ID. Empty = not synced. `ERROR:<code>` = sync failed, eligible for retry with backoff. *(Convention ASSUMED; see §8.)* |
+| X | `GCalEventID` | String | Yes | Google Calendar event ID. Empty = not synced. `ERROR:<code>` = sync failed, eligible for retry with backoff (confirmed by D-40). See vocabulary below. |
+
+#### Calendar Sync Failure Vocabulary (`GCalEventID = ERROR:<code>`) — D-40 *(Vocabulary ASSUMED)*
+When a Google Calendar event sync fails, `GCalEventID` records `ERROR:<code>` using the following standardized error codes:
+
+| Code | Meaning | Recovery / Action |
+|---|---|---|
+| `CALENDAR_API` | Google Calendar API transient error (e.g. HTTP 5xx or network glitch). | Automated retry with exponential backoff; manual retry via `ACTION_TRIGGER_CALENDAR`. |
+| `CALENDAR_QUOTA` | Google Calendar API daily/user rate limit or quota exceeded. | Retry after quota replenishment interval. |
+| `CALENDAR_NOT_FOUND` | Configured `CALENDAR_ID` does not exist or service account lacks write access. | Requires admin intervention to verify Script Properties. |
+| `INVALID_TIME` | Start/End timestamp was malformed or end time is not strictly after start time. | Block retry until slot timing metadata is validated. |
+
+> **Retry State Tracking (D-40):** Retry attempt counts and exponential backoff timestamps are tracked **outside the sheet schema** (stored in `CacheService` or `ScriptProperties` keyed by `BookingID`). The sheet cell stores only the current `ERROR:<code>`. TALT retains a manual retry action (`ACTION_TRIGGER_CALENDAR`).
 | Y | `LinkedBookingID` | String | Yes | For postponement: the `BookingID` of the counterpart row (§7.5). |
 
 ### 2.2 Tab: `Outages` (13 columns)
@@ -219,6 +231,11 @@ Revocation is performed by **deleting the user's row** (or clearing `Role`). Acc
 | `POSTPONED` | Postponed | Original booking superseded by an approved postponement. Terminal. |
 
 Legacy PRD strings are mapped in [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md). Code, docs and tests must use exactly these stored values (`P2-26`).
+
+### 6.1 Non-Statuses (D-41)
+Legacy PRD strings **`Action Required`** (schedule revalidation alert) and **`Error (Calendar)`** (calendar sync error) are **non-statuses**. They are never written into `Bookings.Status`. Instead:
+- Revalidation discrepancies are recorded in `Bookings.Remark` and logged to `Logs`.
+- Calendar sync failures are recorded in `Bookings.GCalEventID` as `ERROR:<code>` (D-40) and logged to `Logs`.
 
 ---
 
