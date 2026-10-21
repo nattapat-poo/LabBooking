@@ -3,7 +3,7 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Governance:** [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md), `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills`
 **Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>`
-**Last synchronised with the plan:** 2026-10-19
+**Last synchronised with the plan:** 2026-10-19 (rev. 2, 123 checklist rows)
 
 ---
 
@@ -39,7 +39,9 @@
 | `P0-14` | Docs lint: no `file:///`, no `C:\`, no 44-character IDs, tab counts match the contract | D-34 | `node scripts/verify_phase.js --phase 0` | Zero violations | static | setup-matt-pocock-skills | ☐ | | |
 | `P0-15` | Spike acceptance criteria and disqualifiers (D1–D8) written **before** the first test run | D-33 | Inspect `IDENTITY_DECISION.md` history | Criteria committed before results | static | gas-best-practices | ☐ | | |
 | `P0-16` | Spike evidence redacted (domain + pass/fail only), dedicated test accounts, probe undeployed after use | D-33, D-09 | Inspect evidence and deployment list | No emails committed; probe removed | staging / owner | gas-best-practices | ☐ | | |
-| `P0-17` | Owner-run, read-only header dump of all 12 consumed tabs; header names and SHA-256 of each header row committed; array-formula report | D-05, D-36 | Inspect `schema/` output vs `SCHEMA_CONTRACT.md` | Contract matches live headers or a diff is resolved | staging / owner | lab-oops-standards | ☐ | | |
+| `P0-17` | Owner-run, read-only header dump of all 12 consumed tabs; distinct `Status`, `BellType`, `RoomType` and `Users.Role` values with counts (no PII); array-formula report | D-05, D-36, D-42 | Inspect `schema/` output vs `SCHEMA_CONTRACT.md` | Contract matches live headers; distinct values recorded; or diff resolved | staging / owner | lab-oops-standards | ☐ | | |
+| `P0-18` | Isolated DEV copies of Master DB 2026 and Timetable 2026 exist; production Master DB is never modified | D-14, D-44 | Owner verification | DEV spreadsheet IDs configured in Script Properties | staging / owner | gas-best-practices | ☐ | | |
+| `P0-19` | Spike account-coverage matrix committed; unverified accounts marked best-effort; zero emails in committed docs | D-33, D-44 | Inspect `docs/IDENTITY_DECISION.md` | Account coverage table committed; no emails exposed | static | setup-matt-pocock-skills | ☐ | | |
 
 ---
 
@@ -110,13 +112,17 @@
 | `P2-23` | Master Calendar read allowed for teachers and HoD; modification of others' bookings denied | D-10 | Unit test `testMasterCalendarRead()` | Allowed read; denied write | unit | lab-oops-standards | ☐ | | |
 | `P2-24` | Derived attributes: `isHoD`, `Can_Edit_Config`; tutorial in `localStorage`; `PrimaryGrade` removed | D-18 | Inspect `Utils_Security.js` and frontend | Derived dynamically | static / unit | lab-oops-standards | ☐ | | |
 | `P2-25` | Postponement cancellation works in both modes; no timeout; auto-revert when the earlier slot start is reached | D-23, ADR-0003 | Unit tests `testCancelPostponeRequestBothModes()`, `testPostponeAutoRevertAtSlotStart()` | Original returns to `APPROVED`; `N` `CANCELLED`; `POSTPONE_AUTO_REVERT` logged | unit | gas-best-practices | ☐ | | |
-| `P2-26` | Status values in code, tests and docs exactly equal the contract's seven values | D-22 | `node scripts/verify_phase.js --phase 2` | No unknown status literal | static / unit | lab-oops-standards | ☐ | | |
+| `P2-26` | Status values in code, tests and docs exactly equal the contract's seven values (`PENDING`, `APPROVED`, `DENIED`, `CANCELLED`, `POSTPONE_PENDING_TALT`, `POSTPONE_PENDING_TEACHER`, `POSTPONED`) | D-22 | `node scripts/verify_phase.js --phase 2` | No unknown status literal | static / unit | lab-oops-standards | ☐ | | |
 | `P2-27` | Bookable-slot rule enforced (Room, instructional date, bell period, outage, live conflicts) | D-29 | Unit test `testBookableSlotDerivation()` | Each failing condition rejected with its own code | unit | lab-oops-standards | ☐ | | |
 | `P2-28` | Forensic-log endpoint is read-only, returns allowlisted columns, sanitised text, paginated; `Student` denied | D-25 | Unit test `testForensicViewerReadOnly()` | No write path; Student → `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
 | `P2-29` | `Outages` and `Duties` contracts (new column order; `Duties.IsActive`) validated | D-36 | Unit tests `testHeaderContractMatch('Outages')`, `('Duties')` | Match; `IsActive` honoured | unit | lab-oops-standards | ☐ | | |
 | `P2-30` | Behaviour-preservation suite derived from PRD §7/§14 passes (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message) | PRD amendment §3 | Run suite | All pass | unit / staging | gas-best-practices | ☐ | | |
 | `P2-31` | `TIMETABLE_USER_UNRESOLVED` thrown for zero or multiple teacher matches | D-15, D-31 | Unit test | Fails closed | unit | gas-best-practices | ☐ | | |
-| `P2-32` | Existing rows with legacy status strings migrated (owner-approved plan) | D-22 | Owner-manual | No legacy strings remain | owner-manual | lab-oops-standards | ☐ | | |
+| `P2-32` | Legacy status strings migrated using PRD amendment §2 mapping (dated backup, DEV first, idempotent, counts only, unknown strings block go-live) | D-22, D-42 | Owner-manual script execution | No legacy strings remain; counts logged | staging / owner | lab-oops-standards | ☐ | | |
+| `P2-33` | Default `BellType` rule: `Wed` on Wednesday, otherwise `Regular` when override is blank | D-37 | Unit test `testDefaultBellTypeByWeekday()` | Effective bell type matches weekday | unit | gas-best-practices | ☐ | | |
+| `P2-34` | All `Room` rows bookable (no `RoomType` filter); timetable verification retained; `isRoomEligible_` seam present and called | D-38, BL-01 | Unit test `testAllRoomsBookableWithSeam()` | Room without RoomType bookable; seam called | unit | gas-best-practices | ☐ | | |
+| `P2-35` | `TARGET_ROLE_INELIGIBLE` thrown when booking target is HoD or Student (HoD cannot be on-behalf target) | D-43 | Unit test `testHodCannotBeBookingTarget()` | Throws `TARGET_ROLE_INELIGIBLE` | unit | gas-best-practices | ☐ | | |
+| `P2-36` | `GCalEventID` `ERROR:<code>` vocabulary enforced; retry attempts tracked outside sheet schema; manual retry works | D-40 | Unit test `testCalendarErrorCodeVocabulary()` | Standard code recorded; retry state external | unit | gas-best-practices | ☐ | | |
 
 ---
 
