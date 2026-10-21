@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.4.0b",
+  "name": "MUIDS Lab Booking System Schema Contract",
+  "description": "Single source of truth machine-readable schema for the 12 consumed tabs across 3 federated spreadsheets",
+  "updatedAt": "2026-10-21",
+  "totalConsumedTabs": 12,
+  "statuses": [
+    "PENDING",
+    "APPROVED",
+    "DENIED",
+    "CANCELLED",
+    "POSTPONE_PENDING_TALT",
+    "POSTPONE_PENDING_TEACHER",
+    "POSTPONED"
+  ],
+  "roles": [
+    "Teacher",
+    "TA",
+    "LabTech",
+    "Admin",
+    "HoD",
+    "Student"
+  ],
+  "taltStaffRoles": [
+    "TA",
+    "LabTech",
+    "Admin"
+  ],
+  "spreadsheets": {
+    "local": {
+      "placeholderId": "<LOCAL_SPREADSHEET_ID>",
+      "access": "READ_WRITE",
+      "tabs": {
+        "Bookings": {
+          "columnCount": 25,
+          "columns": [
+            { "index": 0, "col": "A", "header": "BookingID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "BatchID", "type": "String", "nullable": true },
+            { "index": 2, "col": "C", "header": "SubmittedByUserID", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "User", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "TargetUserID", "type": "String", "nullable": false },
+            { "index": 5, "col": "F", "header": "Teacher", "type": "String", "nullable": false },
+            { "index": 6, "col": "G", "header": "Subject", "type": "String", "nullable": false },
+            { "index": 7, "col": "H", "header": "LabID", "type": "String", "nullable": false },
+            { "index": 8, "col": "I", "header": "LabName", "type": "String", "nullable": false },
+            { "index": 9, "col": "J", "header": "Date", "type": "Date", "nullable": false },
+            { "index": 10, "col": "K", "header": "Period", "type": "String", "nullable": false },
+            { "index": 11, "col": "L", "header": "Section", "type": "String", "nullable": false },
+            { "index": 12, "col": "M", "header": "DayType", "type": "String", "nullable": false },
+            { "index": 13, "col": "N", "header": "BellType", "type": "String", "nullable": false },
+            { "index": 14, "col": "O", "header": "TimeSlotID", "type": "String", "nullable": false },
+            { "index": 15, "col": "P", "header": "LabTitle", "type": "String", "nullable": false },
+            { "index": 16, "col": "Q", "header": "Status", "type": "String", "nullable": false },
+            { "index": 17, "col": "R", "header": "BookingTimeStamp", "type": "DateTime", "nullable": false },
+            { "index": 18, "col": "S", "header": "ConfirmUserId", "type": "String", "nullable": true },
+            { "index": 19, "col": "T", "header": "ConfirmedBy", "type": "String", "nullable": true },
+            { "index": 20, "col": "U", "header": "AssignedTaltID", "type": "String", "nullable": true },
+            { "index": 21, "col": "V", "header": "AssignedTaltName", "type": "String", "nullable": true },
+            { "index": 22, "col": "W", "header": "Remark", "type": "String", "nullable": true },
+            { "index": 23, "col": "X", "header": "GCalEventID", "type": "String", "nullable": true },
+            { "index": 24, "col": "Y", "header": "LinkedBookingID", "type": "String", "nullable": true }
+          ]
+        },
+        "Outages": {
+          "columnCount": 13,
+          "columns": [
+            { "index": 0, "col": "A", "header": "OutageID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "LabID", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "LabName", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "StartDate", "type": "Date", "nullable": false },
+            { "index": 4, "col": "E", "header": "EndDate", "type": "Date", "nullable": false },
+            { "index": 5, "col": "F", "header": "AllDay", "type": "Boolean", "nullable": false },
+            { "index": 6, "col": "G", "header": "StartPeriod", "type": "String", "nullable": true },
+            { "index": 7, "col": "H", "header": "EndPeriod", "type": "String", "nullable": true },
+            { "index": 8, "col": "I", "header": "OutageType", "type": "String", "nullable": false },
+            { "index": 9, "col": "J", "header": "LinkedSubject", "type": "String", "nullable": true },
+            { "index": 10, "col": "K", "header": "SuppressEmail", "type": "Boolean", "nullable": false },
+            { "index": 11, "col": "L", "header": "Reason", "type": "String", "nullable": true },
+            { "index": 12, "col": "M", "header": "Status", "type": "String", "nullable": false }
+          ]
+        },
+        "Duties": {
+          "columnCount": 9,
+          "columns": [
+            { "index": 0, "col": "A", "header": "DutyID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "TeachingBlockID", "type": "String", "nullable": true },
+            { "index": 2, "col": "C", "header": "UserID", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Teacher", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "DayType", "type": "String", "nullable": false },
+            { "index": 5, "col": "F", "header": "Period", "type": "String", "nullable": false },
+            { "index": 6, "col": "G", "header": "Subject", "type": "String", "nullable": false },
+            { "index": 7, "col": "H", "header": "DutyDescription", "type": "String", "nullable": true },
+            { "index": 8, "col": "I", "header": "IsActive", "type": "Boolean", "nullable": false }
+          ]
+        },
+        "Config": {
+          "columnCount": 5,
+          "columns": [
+            { "index": 0, "col": "A", "header": "Category", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "Config_Key", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "Config_Value", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Description", "type": "String", "nullable": true },
+            { "index": 4, "col": "E", "header": "Placeholders", "type": "String", "nullable": true }
+          ]
+        },
+        "Logs": {
+          "columnCount": 7,
+          "columns": [
+            { "index": 0, "col": "A", "header": "Timestamp", "type": "DateTime", "nullable": false },
+            { "index": 1, "col": "B", "header": "User ID", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "Action", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Result Status", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "Total Latency (ms)", "type": "Integer", "nullable": false },
+            { "index": 5, "col": "F", "header": "Lock Contention?", "type": "Boolean", "nullable": false },
+            { "index": 6, "col": "G", "header": "Error/Outcome Message", "type": "String", "nullable": false }
+          ]
+        },
+        "Stats": {
+          "columnCount": 12,
+          "columns": [
+            { "index": 0, "col": "A", "header": "StatDate", "type": "Date", "nullable": false },
+            { "index": 1, "col": "B", "header": "MetricName", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "MetricCategory", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "PeriodIdentifier", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "TotalRequests", "type": "Integer", "nullable": false },
+            { "index": 5, "col": "F", "header": "TotalApproved", "type": "Integer", "nullable": false },
+            { "index": 6, "col": "G", "header": "TotalRejected", "type": "Integer", "nullable": false },
+            { "index": 7, "col": "H", "header": "TotalCancelled", "type": "Integer", "nullable": false },
+            { "index": 8, "col": "I", "header": "UrgentBypassCount", "type": "Integer", "nullable": false },
+            { "index": 9, "col": "J", "header": "AvgLatencyMs", "type": "Float", "nullable": false },
+            { "index": 10, "col": "K", "header": "LockContentionCount", "type": "Integer", "nullable": false },
+            { "index": 11, "col": "L", "header": "LastUpdated", "type": "DateTime", "nullable": false }
+          ]
+        }
+      }
+    },
+    "master_db": {
+      "placeholderId": "<MASTER_DB_ID>",
+      "access": "READ_ONLY",
+      "tabs": {
+        "Users": {
+          "columnCount": 8,
+          "columns": [
+            { "index": 0, "col": "A", "header": "UserID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "FirstName", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "LastName", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Email", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "DisplayName", "type": "String", "nullable": false },
+            { "index": 5, "col": "F", "header": "Role", "type": "String", "nullable": false },
+            { "index": 6, "col": "G", "header": "JoinedAY", "type": "String", "nullable": false },
+            { "index": 7, "col": "H", "header": "PrimarySubject", "type": "String", "nullable": false }
+          ]
+        },
+        "Subjects": {
+          "columnCount": 5,
+          "columns": [
+            { "index": 0, "col": "A", "header": "SubjectID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "Subject", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "CourseTitle", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Grade", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "SubjectCategory", "type": "String", "nullable": false }
+          ]
+        },
+        "Academic_Calendar": {
+          "columnCount": 10,
+          "columns": [
+            { "index": 0, "col": "A", "header": "Date", "type": "Date", "nullable": false },
+            { "index": 1, "col": "B", "header": "DayOfWeek", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "DayType", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Semester", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "Quarter", "type": "String", "nullable": false },
+            { "index": 5, "col": "F", "header": "WeekNumber", "type": "Integer", "nullable": false },
+            { "index": 6, "col": "G", "header": "IsInstructional", "type": "Boolean", "nullable": false },
+            { "index": 7, "col": "H", "header": "EventType", "type": "String", "nullable": false },
+            { "index": 8, "col": "I", "header": "BellScheduleOverride", "type": "String", "nullable": true },
+            { "index": 9, "col": "J", "header": "Notes", "type": "String", "nullable": true }
+          ]
+        },
+        "Bell_Schedules": {
+          "columnCount": 8,
+          "columns": [
+            { "index": 0, "col": "A", "header": "BellType", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "Period", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "StartTime", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "EndTime", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "DurationMinutes", "type": "Integer", "nullable": false },
+            { "index": 5, "col": "F", "header": "TargetGrades", "type": "String", "nullable": false },
+            { "index": 6, "col": "G", "header": "IsLunchPeriod", "type": "Boolean", "nullable": false },
+            { "index": 7, "col": "H", "header": "Description", "type": "String", "nullable": true }
+          ]
+        },
+        "Room": {
+          "columnCount": 5,
+          "columns": [
+            { "index": 0, "col": "A", "header": "RoomID", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "RoomName", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "SourceSystemCode", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Floor", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "RoomType", "type": "String", "nullable": false }
+          ]
+        }
+      }
+    },
+    "timetable": {
+      "placeholderId": "<TIMETABLE_2026_ID>",
+      "access": "READ_ONLY",
+      "tabs": {
+        "Index": {
+          "columnCount": 7,
+          "columns": [
+            { "index": 0, "col": "A", "header": "Teacher", "type": "String", "nullable": false },
+            { "index": 1, "col": "B", "header": "Day", "type": "String", "nullable": false },
+            { "index": 2, "col": "C", "header": "Period", "type": "String", "nullable": false },
+            { "index": 3, "col": "D", "header": "Subject", "type": "String", "nullable": false },
+            { "index": 4, "col": "E", "header": "Class", "type": "String", "nullable": false },
+            { "index": 5, "col": "F", "header": "Room", "type": "String", "nullable": false },
+            { "index": 6, "col": "G", "header": "Section", "type": "String", "nullable": false }
+          ]
+        }
+      }
+    }
+  }
+}
