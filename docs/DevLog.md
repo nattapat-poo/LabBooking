@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-10-21: Phase 0 Foundation, PR #1 Merge & Tooling Scaffolding
+* **Lead Architect:** Nattapat Poolyam (Mek)
+* **Agent:** Google Antigravity
+* **Scope:** Merged PR #1 into `main`; created immutable rollback anchor tag `pre-hardening-baseline` on commit `b984891`; established working branch `security/production-hardening`; formalized living audit ledger, function exposure matrix, identity spike protocol, machine-readable schema contract, and offline verification test harness. *(Phase 0 Scaffolding only; App_Script/ unchanged, zero Apps Script code pulled/pushed).*
+
+### Milestones & Decisions Implemented
+1. **PR #1 Merged to `main`:** Integrated v1.4.0b architectural clarifications, D-01..D-36, ADR-0002 (SuperAdmin Script Property & complete PIN removal), ADR-0003 (linked-row postponement model), and locked PRD/Design amendment pointers.
+2. **Rollback Baseline Anchored (`P0-02`):** Tagged `pre-hardening-baseline` on explicit baseline commit `b984891aef1713e991db37d3aa6168a53cbb486b` and pushed to remote origin. Confirmed `App_Script/` has zero diff against baseline.
+3. **Dedicated Working Branch (`P0-01`):** Created and checked out `security/production-hardening` from `main` and set up remote tracking.
+4. **Living Audit Ledger Formalized (`P0-03`):** Authored `docs/SECURITY_AUDIT.md` classifying all findings F-01 through F-18 (confirmed, root cause, severity, target phase, verification test).
+5. **Access Control Matrix & Exposure Map (`P0-04`):** Authored `docs/ACCESS_CONTROL_MATRIX.md` categorizing all 50 files in `App_Script/`, establishing the public RPC allowlist (22 endpoints) in `API_Bridge.js`, and mapping internal functions for trailing `_` privatization.
+6. **Identity Spike Protocol Pre-Registered (`P0-15`):** Authored `docs/IDENTITY_DECISION.md` containing pre-registered disqualifiers D1–D8 and 4×4 evaluation matrix across the 3 email domains before staging probe deployment.
+7. **Single Schema Contract (`schema/contract.json`):** Authored machine-readable schema specification for the 12 consumed tabs, column definitions, data types, nullability, and 7-status lifecycle.
+8. **Offline Unit Test Harness (`P0-05`):** Created `test/gas-stubs.js` and `test/run_tests.js` executing 34 unit tests covering GAS stubs, formula injection sanitization, permissions matrix, fail-closed gatekeepers, and postponement state machine.
+9. **Automated Phase Verification Runner (`P0-06`):** Created `scripts/verify_phase.js` enforcing checklist uniqueness, test execution, schema validation, git baseline isolation, and docs hygiene lint.
+10. **Git History Pattern Scanner (`P0-07`):** Created `scripts/scan_history.js` performing pattern scans across full history (reporting counts only, zero plain secrets logged).
+11. **Continuous Integration Pipeline (`P0-13`):** Created `.github/workflows/ci.yml` running Phase 0 verification and history scans on PRs and branch pushes.
+12. **Owner Header Dump Helper (`P0-17`):** Authored `scripts/header_dump_tool.gs` for read-only inspection of Row 1 headers and Row 2 formulas across the 12 tabs.
+
+---
+
 ## 2026-10-19: v1.4.0b Clarifications & Documentation Normalisation
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Claude (documentation review) with Google Antigravity (implementation)

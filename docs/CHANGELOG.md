@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 > **Versions 1.4.0a and 1.4.0b are documentation/planning baselines.** No application code has changed since 1.1.3c. Planned work is recorded under `[Unreleased]` until code ships.
 
+## [Unreleased] — Phase 0 Scaffolding & Tooling Execution (2026-10-21)
+
+### Phase 0 Infrastructure & Tooling Scaffolding
+* **Git Isolation:** Merged PR #1 to `main`; created immutable rollback anchor tag `pre-hardening-baseline` on commit `b984891`; created working branch `security/production-hardening`. Verified `App_Script/` 100% untouched.
+* **Living Security Audit Ledger (`docs/SECURITY_AUDIT.md`):** Complete classification of vulnerabilities F-01 through F-18 (confirmed, root cause, severity, target phase, verification test).
+* **Access Control Matrix (`docs/ACCESS_CONTROL_MATRIX.md`):** Comprehensive exposure map of all 50 files in `App_Script/`, establishing the 22-endpoint public allowlist in `API_Bridge.js` and mapping internal functions for trailing `_` privatization.
+* **Identity Spike Protocol (`docs/IDENTITY_DECISION.md`):** Pre-registered disqualifiers D1–D8, 4×4 test matrix across the 3 email domains, and staging probe specification.
+* **Single Machine-Readable Schema Contract (`schema/contract.json`):** Validated schema specification for the 12 consumed tabs, column types, nullability, and 7-status lifecycle.
+* **Offline Unit Test Harness (`test/gas-stubs.js`, `test/run_tests.js`):** Standalone Node.js test environment with 34 tests passing across GAS stubs, sanitization, permissions matrix, and state machine.
+* **Verification Runner & Lint (`scripts/verify_phase.js`):** Automated verification runner enforcing checklist integrity, tests, schema contracts, git baseline isolation, and docs hygiene.
+* **Pattern History Scanner (`scripts/scan_history.js`):** Audited full git commit history for 44-character IDs, calendar IDs, and emails, reporting counts only without plain values.
+* **Continuous Integration (`.github/workflows/ci.yml`):** GitHub Actions workflow executing verification runner and pattern scan.
+* **Lead Architect Header Dump Tool (`scripts/header_dump_tool.gs`):** Read-only GAS script for owner inspection of Row 1 headers and Row 2 formulas across the 12 consumed tabs.
+
 ## [Unreleased] — Planning baseline v1.4.0b (2026-10-19)
 
 ### 🛡️ Clarified Architecture & Security Decisions (D-21 … D-36)

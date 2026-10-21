@@ -10,7 +10,8 @@
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **SuperAdmin:** configured in the Script Property `SUPERADMIN_EMAILS` (never stored in code or docs; see ADR-0002)
 * **Timezone:** `Asia/Bangkok` (UTC+07:00)
-* **Current Version:** `v1.1.3c` (code) · `v1.4.0b` (planning baseline)
+* **Current Version:** `v1.1.3c` (code) · `v1.4.0b` (Phase 0 Scaffolding in progress)
+* **Active Branch:** `security/production-hardening` (anchored to `pre-hardening-baseline` @ `b984891`)
 * **Platform & Stack:** Google Apps Script (V8) + Google Sheets + Tailwind CSS + Lucide Icons
 
 ---
