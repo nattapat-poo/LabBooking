@@ -6,7 +6,7 @@ Status: Accepted
 ## Context
 Project 01 (Smart Lab Booking System) operates within the **Lab Oops OS** ecosystem (*Science Laboratory Operations & Oppositely-Organized Problems Solved Operating System*) at MUIDS.
 To maintain cross-project consistency, reliability, and security across all 13 child science laboratory systems, the ecosystem enforces a strict three-tier skills hierarchy:
-1. **Primary Governing Architecture**: `lab-oops-standards` (Master architectural guidelines, 3-tier caching, SuperAdmin security, universal branding, non-uppercase acronym, 2-column split footer, Stealth Admin Gateway `Ctrl + Shift + Q` / PIN `2026`, and strict RBAC).
+1. **Primary Governing Architecture**: `lab-oops-standards` (Master architectural guidelines, 3-tier caching, SuperAdmin security, universal branding, non-uppercase acronym, 2-column split footer, Stealth Admin Gateway `Ctrl + Shift + Q`, and strict RBAC; see [ADR-0002](./0002-superadmin-pin-removal-and-standard-deviations.md) for PIN removal).
 2. **Complementary Engineering**: `gas-best-practices` (Universal `Result<T>` envelope `{ ok: true, data: ..., message: "..." }`, `LockService` concurrency guards, safe identity resolution).
 3. **Scaffolding Engine**: `mattpocock/skills` (Scaffolding `docs/`, `GLOSSARY.md`, Architecture Decision Records under `docs/adr/`, sourced from `https://github.com/mattpocock/skills`).
 
@@ -31,7 +31,7 @@ Prior to this alignment, several deviations were identified:
 4. **Universal Branding & Stealth Admin Gateway**:
    - Apply non-uppercase acronym styling with emerald highlighted letters (`text-emerald-400 font-extrabold`).
    - Implement responsive 2-column split footer with official developer signature `Vibe Coded by Nattapat Poolyam, 2026`.
-   - Implement Stealth Admin Gateway triggered via `Ctrl + Shift + Q` (or `Cmd + Shift + Q`) and by clicking developer signature, guarded by security PIN `2026`.
+   - Implement Stealth Admin Gateway triggered via `Ctrl + Shift + Q` (or `Cmd + Shift + Q`) and by clicking developer signature (client-side PIN removed per ADR-0002/D-27).
 5. **Documentation Standard**:
    - Standardize architecture specifications, planning, dev logs, ADRs, and changelogs strictly under `docs/`.
 

@@ -1,98 +1,122 @@
-# 🛡️ Phase Verification Checklist: MUIDS Lab Booking System Remediation
+# 🛡️ Phase Verification Checklist: MUIDS Lab Booking System Remediation (v1.4.0b)
 
-**Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)  
-**Governance:** `docs/IMPLEMENTATION_PLAN.md`, `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`  
-**Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>` (specified in Phase 0, executable in Phase 0+)
-
----
-
-## 📋 Checklist Conventions & Rules
-
-1. **Stable IDs:** Every requirement has a permanent ID (`P0-01`, `P1-01`, etc.) that is never reused or renumbered.
-2. **Traceability:** Every row maps directly to an audit finding (`F-xx`), revision item (`R-xx`), or owner decision (`D-xx`).
-3. **Evidence Requirement:** A row can ONLY be marked `☑ done` if it contains a concrete commit SHA, file path, and test log reference.
-4. **No Silent Deletions:** Rows cannot be deleted. Any requirement marked `⊘ N/A` requires explicit owner approval and a documented reason.
-5. **Review Protocol:** Independent reviewers or AI agents must verify rows using the commands listed under "How to verify".
-
-**Legend:**
-- ☐ `not started`
-- ◐ `in progress`
-- ☑ `done`
-- ☒ `failed`
-- ⊘ `N/A` (needs owner approval)
+**Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
+**Governance:** [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md), `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills`
+**Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>`
+**Last synchronised with the plan:** 2026-10-19
 
 ---
 
-## Phase 0: Baseline, Safety, Call Graph & Setup
+## 📋 Conventions & Rules
+
+1. **Stable IDs.** Every requirement has a permanent ID that is never reused or renumbered. A requirement that moves to another phase keeps its ID, is marked `⊘` with the reason *"moved to <new ID> (owner approved)"*, and the new row carries the work.
+2. **Traceability.** Every row maps to a finding (`F-xx`), revision (`R-xx`) or decision (`D-xx`) in the plan's ledger.
+3. **Evidence.** A row may be `☑ done` only with a commit SHA, file path and test-log reference.
+4. **No silent deletions.** `⊘ N/A` needs owner approval and a reason.
+5. **Review.** Independent reviewers use the commands in "How to verify".
+
+**Legend:** ☐ not started · ◐ in progress · ☑ done · ☒ failed · ⊘ N/A or moved (owner approval recorded)
+
+---
+
+## Phase 0: Baseline, Safety, Identity Spike, Tooling & Hygiene
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P0-01` | Dedicated working branch created from clean commit | Plan §2, R-16 | `git branch --show-current` | Output is `security/production-hardening` | static | gas-best-practices | ☐ | | |
-| `P0-02` | Rollback commit hash recorded in docs and git tag created | Plan §2, R-16 | `git tag -l "pre-hardening-baseline"` | Tag exists pointing to baseline commit | static | gas-best-practices | ☐ | | |
-| `P0-03` | Living audit ledger created classifying all 17 findings | F-01..F-17 | Inspect `docs/SECURITY_AUDIT.md` | All 17 findings classified with code refs | static | lab-oops-standards | ☐ | | |
-| `P0-04` | Function call graph and exposure inventory generated | F-02, R-08 | Inspect `docs/ACCESS_CONTROL_MATRIX.md` | All 50 App_Script files inventoried into 5 categories | static | lab-oops-standards | ☐ | | |
-| `P0-05` | Node test harness environment configured with Gas stubs | R-10 | `node test/run_tests.js` | Test harness boots without runtime errors | unit | gas-best-practices | ☐ | | |
-| `P0-06` | Automated phase verification runner created | §3.2 | `node scripts/verify_phase.js --phase 0` | Exit code 0, JSON summary emitted | static | mattpocock/skills | ☐ | | |
-| `P0-07` | Repo privacy & secret scan executed across git history | R-06, F-14 | `git log -S "<LOCAL_SPREADSHEET_ID>"` | Audit report of committed IDs delivered | static | lab-oops-standards | ☐ | | |
-| `P0-08` | Staging Identity Spike executed across auth models | R-01 | Inspect `docs/IDENTITY_DECISION.md` | Evidence matrix for USER_DEPLOYING vs ACCESSING | staging | gas-best-practices | ☐ | | |
-| `P0-09` | Skills and standards alignment documented | Plan §1 | Inspect `docs/IMPLEMENTATION_PLAN.md` §1 | 3 installed skills mapped with precedence | static | lab-oops-standards | ☐ | | |
-| `P0-10` | Test fixtures sanitized from banned `@mahidol.edu` domain to `@mahidol.ac.th` | R-02, D-01, D-17 | Inspect `Health_UAT.js` | All fixture emails use `uat_tester@mahidol.ac.th` | static / unit | gas-best-practices | ☐ | | |
+| `P0-01` | Dedicated working branch created from `main` | Plan §3, R-16 | `git branch --show-current` | `security/production-hardening` | static | gas-best-practices | ☐ | | |
+| `P0-02` | Rollback tag created **on the explicit baseline SHA** (not HEAD) and pushed | R-16, D-34 | `git rev-parse pre-hardening-baseline^{commit}` | Equals the full SHA of baseline `b984891` | static | gas-best-practices | ☐ | | |
+| `P0-03` | Living audit ledger created, classifying F-01 … F-18 | F-01..F-18 | Inspect `docs/SECURITY_AUDIT.md` | All findings classified with code refs | static | setup-matt-pocock-skills | ☐ | | |
+| `P0-04` | Function call graph and exposure inventory generated | F-02, R-08 | Inspect `docs/ACCESS_CONTROL_MATRIX.md` | All 50 files inventoried into 5 categories | static | setup-matt-pocock-skills | ☐ | | |
+| `P0-05` | Node test harness with GAS stubs | R-10 | `node test/run_tests.js` | Boots without errors | unit | gas-best-practices | ☐ | | |
+| `P0-06` | Automated verification runner created | Plan §4.1 | `node scripts/verify_phase.js --phase 0` | Exit 0, summary emitted | static | setup-matt-pocock-skills | ☐ | | |
+| `P0-07` | Secret/ID scan of **full git history using a pattern** (not a placeholder string) | R-06, F-14, D-34 | Scanner or `git log -p --all` filtered by the 44-character Google ID pattern and `@group.calendar.google.com` | Report of counts only (no values) delivered *(corrected 2026-10-19)* | static | lab-oops-standards | ☐ | | |
+| `P0-08` | Staging Identity Spike executed | R-01, D-06 | Inspect `docs/IDENTITY_DECISION.md` | Evidence matrix per model/access setting | staging | gas-best-practices | ☐ | | |
+| `P0-09` | Skills and standards mapping documented, rule files verified to exist | Plan §1 | Inspect plan §1 and list each cited rule path | Every cited rule file exists | static | lab-oops-standards | ☐ | | |
+| `P0-10` | Test fixtures moved from banned `@mahidol.edu` to `uat_tester@mahidol.ac.th` | R-02, D-01, D-17 | `git grep "@mahidol.edu" -- App_Script` | Zero hits in fixtures | static / unit | gas-best-practices | ☐ | | |
+| `P0-11` | At branch creation, `App_Script/` is unchanged since the baseline | R-16 | `git diff --stat <baseline> HEAD -- App_Script` | Empty output | static | gas-best-practices | ☐ | | |
+| `P0-12` | `main` protected (PR required, verify check required, no force-push); GitHub secret scanning and push protection enabled | D-34 | Owner screenshot or `gh api` result (redacted) | Settings enabled | owner-manual | gas-best-practices | ☐ | | |
+| `P0-13` | CI job runs the pattern scan on every PR | D-34 | Inspect workflow file | Job present and passing | static | gas-best-practices | ☐ | | |
+| `P0-14` | Docs lint: no `file:///`, no `C:\`, no 44-character IDs, tab counts match the contract | D-34 | `node scripts/verify_phase.js --phase 0` | Zero violations | static | setup-matt-pocock-skills | ☐ | | |
+| `P0-15` | Spike acceptance criteria and disqualifiers (D1–D8) written **before** the first test run | D-33 | Inspect `IDENTITY_DECISION.md` history | Criteria committed before results | static | gas-best-practices | ☐ | | |
+| `P0-16` | Spike evidence redacted (domain + pass/fail only), dedicated test accounts, probe undeployed after use | D-33, D-09 | Inspect evidence and deployment list | No emails committed; probe removed | staging / owner | gas-best-practices | ☐ | | |
+| `P0-17` | Owner-run, read-only header dump of all 12 consumed tabs; header names and SHA-256 of each header row committed; array-formula report | D-05, D-36 | Inspect `schema/` output vs `SCHEMA_CONTRACT.md` | Contract matches live headers or a diff is resolved | staging / owner | lab-oops-standards | ☐ | | |
 
 ---
 
-## Phase 1: Authentication, Fail-Closed Identity & RBAC Enforcement
+## Phase 1: Authentication, Fail-Closed Identity, RBAC, Configuration & Cross-Sheet Reader
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P1-01` | Gatekeeper throws `AUTH_DENIED` on unauthenticated / unauthorized calls | F-01, R-01 | Unit test: `testGatekeeperThrowsOnUnauthorized()` | Throws typed error; does not return `{authorized: false}` | unit | lab-oops-standards | ☐ | | |
-| `P1-02` | Server resolves caller identity solely via `Session.getActiveUser().getEmail()` | F-02, F-03 | grep `getEffectiveUser` in `Utils_Security.js` | Zero hits in active identity resolution path | static / unit | lab-oops-standards | ☐ | | |
-| `P1-03` | Hardcoded superadmin email removed as identity fallback | F-03 | grep `ECOSYSTEM_SUPERADMIN` in `Utils_Security.js` identity resolver | Zero hits in caller email fallback | static | lab-oops-standards | ☐ | | |
-| `P1-04` | DEV_MOCK_USER_EMAIL completely removed from `Utils_Security.js` as an impersonation vulnerability | F-03, D-16 | grep `DEV_MOCK_USER_EMAIL` in `Utils_Security.js` | Zero hits; mock impersonation path completely deleted | static | gas-best-practices | ☐ | | |
-| `P1-05` | Domain whitelist strictly matches `@mahidol.ac.th`, `@student.mahidol.ac.th`, `@student.mahidol.edu` | R-02, D-01 | Unit test: `testDomainWhitelistLookalikes()` | Exact domain match; look-alikes (`@mahidol.edu`, `@evilmahidol.ac.th`) rejected | unit | lab-oops-standards | ☐ | | |
-| `P1-06` | Pre-enforcement scan of `Users` sheet reports non-whitelisted domain count without PII | R-02 | Run pre-check utility in staging | Count of non-whitelisted emails reported | staging | gas-best-practices | ☐ | | |
-| `P1-07` | Central `PERMISSIONS` table enforced in `Utils_Security.js` | R-03, D-02 | Unit test: `testPermissionsMatrixEnforcement()` | Allowed roles pass; unlisted roles fail | unit | lab-oops-standards | ☐ | | |
-| `P1-08` | `Teacher` restricted to cancelling own bookings only; cannot cancel other teachers | R-03, D-02 | Unit test: `testTeacherCannotCancelOtherTeacherBooking()` | Throws `UNAUTHORIZED_ACTION` | unit | lab-oops-standards | ☐ | | |
-| `P1-09` | `TA` holds identical approval authority to `LabTech` | R-03, D-02 | Unit test: `testTaCanApproveBooking()` | Approves successfully; permissions match LabTech | unit | lab-oops-standards | ☐ | | |
-| `P1-10` | Non-public internal functions renamed with trailing underscore `_` | F-02, R-08 | grep `function rbacExecute` across `App_Script/` | Functions end with `_` or wrapped in API_Bridge | static | gas-best-practices | ☐ | | |
-| `P1-11` | Read APIs enforce identity and data scoping | F-02, R-08 | Unit test: `testReadApiDataScoping()` | Teachers only receive own records; Admins see all | unit | lab-oops-standards | ☐ | | |
-| `P1-12` | Public callable allowlist strictly verified | F-02, R-08 | `node scripts/verify_phase.js --phase 1` | All un-underscored functions match allowlist | static | gas-best-practices | ☐ | | |
-| `P1-13` | Diagnostics gated behind Admin role and `ENABLE_DIAGNOSTICS` Script Property | F-04, R-07 | Unit test: `testDiagnosticsDisabledByDefault()` | Denied when flag false or caller non-admin | unit | lab-oops-standards | ☐ | | |
-| `P1-14` | Secure Config Accessor implemented for Script Properties | R-07 | grep `PropertiesService.getScriptProperties` centralized | Single accessor in `Utils_Config.js` | static | gas-best-practices | ☐ | | |
-| `P1-15` | `Main.doGet` admin route check signature fixed and enforced | F-10 | Inspect `Main.doGet` in `Main.js` | Signature matches `(email, roles)` and gates route | static / unit | lab-oops-standards | ☐ | | |
-| `P1-16` | Bogus role rejection test (BRG-RTE.01) passes with authentic denial | F-01 | Unit test runner | Test passes with real `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
-| `P1-17` | `getMainSpreadsheet()` eliminates silent fallback and throws `DATABASE_UNAVAILABLE` fail closed; `FALLBACK_SHEET_ID` removed | D-13 | Inspect `getMainSpreadsheet()` in `Utils_Config.js` | Throws typed error on missing ID; zero occurrences of `FALLBACK_SHEET_ID` | static / unit | gas-best-practices | ☐ | | |
+| `P1-01` | Gatekeeper throws `AUTH_DENIED` on unauthenticated/unauthorised calls | F-01, R-01 | Unit test `testGatekeeperThrowsOnUnauthorized()` | Typed error, never `{authorized:false}` | unit | gas-best-practices | ☐ | | |
+| `P1-02` | Caller identity resolved solely via `Session.getActiveUser().getEmail()` | F-02, F-03 | grep `getEffectiveUser` in `Utils_Security.js` | Zero hits in the identity path | static / unit | gas-best-practices | ☐ | | |
+| `P1-03` | Hardcoded superadmin removed as an identity fallback and as an automatic `admin` role | F-03, D-26, ADR-0002 | grep `ECOSYSTEM_SUPERADMIN` | Zero hits in identity resolution | static | lab-oops-standards | ☐ | | |
+| `P1-04` | `DEV_MOCK_USER_EMAIL` code path deleted | F-03, D-16 | grep `DEV_MOCK_USER_EMAIL` across `App_Script/` | Zero hits | static | gas-best-practices | ☐ | | |
+| `P1-05` | Domain whitelist is exact for the three domains | R-02, D-01 | Unit test `testDomainWhitelistLookalikes()` | Look-alikes (`@mahidol.edu`, `@evilmahidol.ac.th`, `x@y@mahidol.ac.th`) rejected | unit | lab-oops-standards | ☐ | | |
+| `P1-06` | Pre-enforcement audit reports counts of `Users` rows outside the whitelist (no PII) | R-02 | Run audit on staging via the reader (`P1-19`) | Count reported | staging | gas-best-practices | ☐ | | |
+| `P1-07` | Central `PERMISSIONS` table enforced | R-03, D-10 | Unit test `testPermissionsMatrixEnforcement()` | Every cell of plan §2.1 behaves as specified | unit | lab-oops-standards | ☐ | | |
+| `P1-08` | Teacher cannot cancel another teacher's booking | R-03, D-02 | Unit test `testTeacherCannotCancelOtherTeacherBooking()` | Throws **`AUTH_DENIED`** | unit | lab-oops-standards | ☐ | | |
+| `P1-09` | `TA` has identical approval authority to `LabTech` | R-03, D-03 | Unit test `testTaCanApproveBooking()` | Same results as `LabTech` | unit | lab-oops-standards | ☐ | | |
+| `P1-10` | Internal functions renamed with trailing `_` | F-02, R-08 | grep `function rbacExecute` | Names end with `_` or are bridge-wrapped | static | gas-best-practices | ☐ | | |
+| `P1-11` | Read APIs enforce identity and role scoping | F-02, R-08 | Unit test `testReadApiDataScoping()` | Scoped per matrix | unit | lab-oops-standards | ☐ | | |
+| `P1-12` | Public callable allowlist verified | F-02, R-08 | `node scripts/verify_phase.js --phase 1` | All un-underscored functions are in the allowlist | static | gas-best-practices | ☐ | | |
+| `P1-13` | Diagnostics gated by Admin/SuperAdmin and `ENABLE_DIAGNOSTICS` | F-04, R-07 | Unit test `testDiagnosticsDisabledByDefault()` | Denied when flag false or caller non-admin | unit | lab-oops-standards | ☐ | | |
+| `P1-14` | Single secure config accessor over Script Properties | R-07 | grep `PropertiesService.getScriptProperties` | One accessor in `Utils_Config.js` | static | gas-best-practices | ☐ | | |
+| `P1-15` | `Main.doGet` admin-route check fixed and enforced | F-10 | Inspect `Main.doGet` | Signature `(email, roles)`; fails closed | static / unit | lab-oops-standards | ☐ | | |
+| `P1-16` | BRG-RTE.01 passes with genuine denial | F-01 | Unit runner | Real `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
+| `P1-17` | `getMainSpreadsheet()` throws `DATABASE_UNAVAILABLE`; `FALLBACK_SHEET_ID` removed | D-13 | Inspect `Utils_Config.js` | Typed error; zero occurrences of the constant | static / unit | gas-best-practices | ☐ | | |
+| `P1-18` | All spreadsheet/calendar IDs and `SUPERADMIN_EMAILS` read from Script Properties; **zero hardcoded IDs** *(moved from `P6-01`)* | F-14, R-07, D-35 | pattern scan of `App_Script/` | Zero hits | static | gas-best-practices | ☐ | | |
+| `P1-19` | Cross-sheet reader `getUserDirectory_()` with federated cache keys, TTL ≤ 300 s, header validation *(moved from `P2-03`)* | R-05, D-05, D-35 | Unit test `testCrossSheetReaderCacheKey()` | Keys contain `spreadsheetId:tab`; TTL ≤ 300 | unit | gas-best-practices | ☐ | | |
+| `P1-20` | Ownership uses `TargetUserID` resolved through `Users`; no `TEACHER_EMAIL` ownership logic | D-21 | Unit test `testOwnershipByUserId()` + grep `TEACHER_EMAIL` | Email → UserID compare; zero hits in ownership code | unit / static | lab-oops-standards | ☐ | | |
+| `P1-21` | **Student** role: every action Denied; perimeter pass only | D-08 | Unit test `testStudentZeroPermissions()` | All matrix actions → `AUTH_DENIED` | unit | lab-oops-standards | ☐ | | |
+| `P1-22` | **HoD** executive read-only: all mutating actions Denied, read actions allowed | D-10, D-24 | Unit test `testHodReadOnly()` | Approve/cancel/submit/postpone/assign/outage/config → `AUTH_DENIED` | unit | lab-oops-standards | ☐ | | |
+| `P1-23` | `ALLOWALL` replaced with `XFrameOptionsMode.DEFAULT` in all three places in `Main.js` *(moved from `P6-04`)* | F-13, D-20, D-35 | `git grep ALLOWALL -- App_Script` | Zero hits | static | gas-best-practices | ☐ | | |
+| `P1-24` | Client-side admin PIN removed from code and docs; shortcut visible only to server-verified Admin/SuperAdmin | F-18, D-27 | grep PIN gateway strings; unit test on the verified-admin flag | Zero hits | static / unit | lab-oops-standards | ☐ | | |
+| `P1-25` | SuperAdmin resolved only from `SUPERADMIN_EMAILS` and a resolved user; unresolved identity never maps to SuperAdmin; Master DB outage allows diagnostics-only | D-26, ADR-0002 | Unit test `testSuperAdminResolution()` | Behaves per ADR-0002 | unit | lab-oops-standards | ☐ | | |
+| `P1-26` | Impersonation: Admin/SuperAdmin only; cannot target Admin/SuperAdmin; server-side state; production = preview + dry-run; writes only on DEV; logged with the real admin | D-16 | Unit test `testImpersonationRules()` | All rules enforced | unit | gas-best-practices | ☐ | | |
+| `P1-27` | Deleting a `Users` row denies access within ≤ 5 min; `UserID` verified stable (non-formula, never reused) | D-30, D-12 | Unit test with cache expiry + owner-run audit | Denied after TTL; audit shows no row-derived IDs | unit / staging | gas-best-practices | ☐ | | |
+| `P1-28` | One-time teacher-join audit: every `Index.Teacher` resolves to exactly one `Users.DisplayName`; unresolved/ambiguous → `TIMETABLE_USER_UNRESOLVED` | D-15, D-31 | Owner-run audit (counts only) + unit test `testTimetableUserUnresolvedFailsClosed()` | Zero unresolved/ambiguous or owner-accepted list | staging / unit | gas-best-practices | ☐ | | |
+| `P1-29` | Every permission, role, domain, ownership or identity failure throws `AUTH_DENIED` | R-03 | Unit test `testAuthDeniedTaxonomy()` | Single error code; reason code only in `Logs` | unit | lab-oops-standards | ☐ | | |
+| `P1-30` | DEV/PROD isolation: DEV and PROD IDs differ; UAT and diagnostics refuse the PROD ID | D-14 | Unit test `testUatRefusesProdId()` | Refusal with typed error | unit | gas-best-practices | ☐ | | |
+| `P1-31` | Client-supplied identity parameters (`loggedInUserId`, `userEmail`) are ignored or rejected on mismatch | F-02, PRD amendment #15 | Unit test `testClientIdentityIgnored()` | Mismatch → `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
 
 ---
 
-## Phase 2: Booking Transaction Engine & Federated Data
+## Phase 2: Booking Transaction Engine & Schema Alignment
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P2-01` | `TX_COL` aligned with live `Bookings` header contract | F-08, R-05 | Unit test: `testHeaderContractMatch('Bookings')` | 100% column name match, zero index drift | unit | gas-best-practices | ☐ | | |
-| `P2-02` | `docs/SCHEMA_CONTRACT.md` authored for all 10 tabs across 3 federated spreadsheets | R-05, D-05 | Inspect `docs/SCHEMA_CONTRACT.md` | Exact headers documented for Local Sheet, Master DB, and Timetable | static | lab-oops-standards | ☐ | | |
-| `P2-03` | Cross-sheet data access helper implemented for Master DB with federated cache keys | R-05, D-03 | Unit test: `testCrossSheetReaderCacheKey()` | Keys contain spreadsheetId + tabName | unit | gas-best-practices | ☐ | | |
-| `P2-04` | Master DB is strictly read-only; no write mutations exist | R-05 | grep `appendRow\|setValues` targeting Master DB tabs | Zero write operations | static | lab-oops-standards | ☐ | | |
-| `P2-05` | `coreApproveBooking`, `coreRejectBooking`, `coreCancelBooking` implemented | F-08 | grep `coreApproveBooking` in `API_Write_Core.js` | Functions defined, exported, and callable | static / unit | gas-best-practices | ☐ | | |
-| `P2-06` | Server generates UUID booking IDs via `Utilities.getUuid()` | F-05, F-17 | grep `Math.random` in booking generation | Zero hits; `Utilities.getUuid()` used | static | gas-best-practices | ☐ | | |
-| `P2-07` | Atomic conflict detection (room, date, period) executed inside LockService | F-05, R-11 | Concurrency unit test: simulate collision | Second transaction rejected with structured error | unit | gas-best-practices | ☐ | | |
-| `P2-08` | `SpreadsheetApp.flush()` executed before releasing LockService | R-11 | grep `flush()` before `releaseLock()` in write paths | Flush called in all write transactions | static | gas-best-practices | ☐ | | |
-| `P2-09` | Optional lock fallback (`cb => cb()`) completely eliminated | F-09 | grep `typeof withLock` across `App_Script/` | Zero hits; LockService acquisition throws on timeout | static | gas-best-practices | ☐ | | |
-| `P2-10` | 2 instructional days lead time + 24h cancel lock enforced; TALT universal bypass logged | F-05, R-09, D-07 | Unit test: `testLeadTimeAndCancelLock()` | Non-TALT rejected < 2 days / < 24h cancel; TALT bypass writes [URGENT_BYPASS] remark & log | unit | gas-best-practices | ☐ | | |
-| `P2-11` | Persistent setup outage (`SetupHold`) blocks conflicting room bookings | Feature, Spec | Unit test: book slot during active SetupHold | Rejected; linked activity passes | unit | lab-oops-standards | ☐ | | |
-| `P2-12` | Two-way approval-gated postponement reserves target slot and releases old slot atomically | R-04, D-04 | Unit test: `testTwoWayApprovalPostponementSwap()` | Teacher move requires TALT approve; TALT move requires Teacher approve; atomic swap inside lock | unit | lab-oops-standards | ☐ | | |
-| `P2-13` | Rejection sets explicit `Denied` status and appends reason in chronological order downwards | F-11, D-19 | Unit test: `testRejectionPreservesReasonChronological()` | Status is `Denied`; reason appended to `Remark` downwards | unit | lab-oops-standards | ☐ | | |
-| `P2-14` | Idempotency key cache prevents duplicate submissions on network retry | R-12 | Unit test: `testDuplicateSubmissionIdempotency()` | Second call returns cached original response | unit | gas-best-practices | ☐ | | |
-| `P2-15` | Client-side strict "cart/checkout" ban refined | F-15 | Unit test: submit with teacher name "Carter" | Payload accepted without false positive | unit | gas-best-practices | ☐ | | |
-| `P2-16` | Schema mapper throws on header mismatch instead of silent index fallback | F-16 | Unit test: map row with missing required header | Throws explicit descriptive error | unit | gas-best-practices | ☐ | | |
-| `P2-17` | `LOG_COL` signature reconciled with `_writeLogEntry` | F-16 | Inspect `Telemetry.js` and `Utils_Schema.js` | Parameter count matches column count (7 columns) | static / unit | lab-oops-standards | ☐ | | |
-| `P2-18` | `Index.html` include casing fixed (`JS_TALTView.html`) | F-08 | Inspect `Index.html` | Casing matches file system exactly | static | gas-best-practices | ☐ | | |
-| `P2-19` | Email template keys resolvable in `SYSTEM_CONSTANTS` | F-08 | Unit test: `testGetEmailTemplateAllKeys()` | All template keys resolve without throwing | unit | gas-best-practices | ☐ | | |
-| `P2-20` | Canonical teacher join implemented in `Utils_DataMapper.js` | D-15 | Unit test: `testCanonicalTeacherJoin()` | Session email resolves through `DisplayName` to timetable nickname | unit | gas-best-practices | ☐ | | |
-| `P2-21` | `Stats` telemetry schema implemented with 12 structured columns | F-16, D-05 | Unit test: `testStatsSheetSchema()` | All 12 telemetry columns mapped and written accurately | unit | lab-oops-standards | ☐ | | |
-| `P2-22` | On-behalf booking attribution parameters recorded and verified | D-11 | Unit test: `testOnBehalfAttribution()` | `SubmittedByUserID`, `TargetUserID`, `ConfirmUserId`, `AssignedTaltID` recorded in row | unit | lab-oops-standards | ☐ | | |
-| `P2-23` | Teacher read access to Master Calendar permitted; edit/cancel restricted to own bookings | D-10 | Unit test: `testTeacherMasterCalendarRead()` | `ACTION_VIEW_ALL_BOOKINGS` allowed; modifying other bookings denied | unit | lab-oops-standards | ☐ | | |
-| `P2-24` | User attributes dynamically derived; `hasCompletedTutorial` in localStorage; `PrimaryGrade` removed | D-18 | Inspect `Utils_Security.js` & frontend | `isHoD` & `Can_Edit_Config` derived dynamically; `PrimaryGrade` removed | static / unit | lab-oops-standards | ☐ | | |
-
+| `P2-01` | `TX_COL` matches the live `Bookings` contract | F-08, R-05 | Unit test `testHeaderContractMatch('Bookings')` | 100% match | unit | gas-best-practices | ☐ | | |
+| `P2-02` | `SCHEMA_CONTRACT.md` documents all **12 consumed tabs** (plus not-consumed tabs) | R-05, D-05 | Inspect contract | Headers and counts correct | static | lab-oops-standards | ☐ | | |
+| `P2-03` | *(Cross-sheet reader)* | R-05, **D-05** | — | ⊘ **Moved to `P1-19`** (owner approved 2026-10-19) | — | — | ⊘ | `P1-19` | |
+| `P2-04` | Master DB and Timetable are strictly read-only; no write calls | R-05 | grep `appendRow\|setValues` targeting external tabs | Zero | static | lab-oops-standards | ☐ | | |
+| `P2-05` | `coreApproveBooking`, `coreRejectBooking`, `coreCancelBooking` implemented | F-08 | grep in `API_Write_Core.js` | Defined and callable | static / unit | gas-best-practices | ☐ | | |
+| `P2-06` | Booking IDs via `Utilities.getUuid()` | F-05, F-17 | grep `Math.random` | Zero hits | static | gas-best-practices | ☐ | | |
+| `P2-07` | Atomic conflict detection inside `LockService` | F-05, R-11 | Concurrency unit test | Second transaction rejected | unit | gas-best-practices | ☐ | | |
+| `P2-08` | `SpreadsheetApp.flush()` before releasing the lock | R-11 | grep `flush()` before `releaseLock()` | Present in all write paths | static | gas-best-practices | ☐ | | |
+| `P2-09` | Optional lock fallback eliminated | F-09 | grep `typeof withLock` | Zero hits; lock timeout throws | static | gas-best-practices | ☐ | | |
+| `P2-10` | **2 instructional days** lead time (via `Academic_Calendar.IsInstructional`) + 24 h cancel/postpone lock enforced; TALT bypass logged | F-05, R-09, D-07 | Unit test `testLeadTimeAndCancelLock()` | Non-TALT rejected; TALT bypass writes `[URGENT_BYPASS]` and `URGENT_BOOKING_BYPASS` | unit | gas-best-practices | ☐ | | |
+| `P2-11` | `SetupHold` outage blocks conflicting bookings except for `LinkedSubject` | D-28 | Unit test | Rejected; linked subject passes | unit | lab-oops-standards | ☐ | | |
+| `P2-12` | Linked-row, two-way postponement (original + proposed-slot row, both blocking) with atomic approval | R-04, D-04, D-23, ADR-0003 | Unit test `testTwoWayApprovalPostponementSwap()` | Approve: `N`→`APPROVED`, `O`→`POSTPONED` in one lock | unit | lab-oops-standards | ☐ | | |
+| `P2-13` | Denial sets status **`DENIED`** and appends the reason to `Remark` chronologically | F-11, D-19, D-22 | Unit test `testRejectionPreservesReasonChronological()` | Status `DENIED`; remark appended | unit | lab-oops-standards | ☐ | | |
+| `P2-14` | Idempotency key prevents duplicate submissions | R-12 | Unit test `testDuplicateSubmissionIdempotency()` | Second call returns the original response | unit | gas-best-practices | ☐ | | |
+| `P2-15` | Client "cart/checkout" check refined | F-15 | Unit test with teacher name "Carter" | Accepted | unit | gas-best-practices | ☐ | | |
+| `P2-16` | Mapper throws on header mismatch (case-insensitive, trimmed) | F-16 | Unit test | `SCHEMA_HEADER_MISMATCH` | unit | gas-best-practices | ☐ | | |
+| `P2-17` | `LOG_COL` and `_writeLogEntry` agree (7 columns) | F-16 | Inspect `Telemetry.js`, `Utils_Schema.js` | Counts match | static / unit | lab-oops-standards | ☐ | | |
+| `P2-18` | `Index.html` include casing fixed | F-08 | Inspect `Index.html` | Matches file names exactly | static | gas-best-practices | ☐ | | |
+| `P2-19` | Email template keys resolvable | F-08 | Unit test `testGetEmailTemplateAllKeys()` | All keys resolve | unit | gas-best-practices | ☐ | | |
+| `P2-20` | Canonical teacher join implemented | D-15 | Unit test `testCanonicalTeacherJoin()` | Email → `DisplayName` → `Index.Teacher` | unit | gas-best-practices | ☐ | | |
+| `P2-21` | `Stats` implemented with 12 columns | F-16, D-05 | Unit test `testStatsSheetSchema()` | All 12 mapped | unit | lab-oops-standards | ☐ | | |
+| `P2-22` | On-behalf attribution recorded | D-11 | Unit test `testOnBehalfAttribution()` | `SubmittedByUserID`, `TargetUserID`, `ConfirmUserId`, `AssignedTaltID` stored | unit | lab-oops-standards | ☐ | | |
+| `P2-23` | Master Calendar read allowed for teachers and HoD; modification of others' bookings denied | D-10 | Unit test `testMasterCalendarRead()` | Allowed read; denied write | unit | lab-oops-standards | ☐ | | |
+| `P2-24` | Derived attributes: `isHoD`, `Can_Edit_Config`; tutorial in `localStorage`; `PrimaryGrade` removed | D-18 | Inspect `Utils_Security.js` and frontend | Derived dynamically | static / unit | lab-oops-standards | ☐ | | |
+| `P2-25` | Postponement cancellation works in both modes; no timeout; auto-revert when the earlier slot start is reached | D-23, ADR-0003 | Unit tests `testCancelPostponeRequestBothModes()`, `testPostponeAutoRevertAtSlotStart()` | Original returns to `APPROVED`; `N` `CANCELLED`; `POSTPONE_AUTO_REVERT` logged | unit | gas-best-practices | ☐ | | |
+| `P2-26` | Status values in code, tests and docs exactly equal the contract's seven values | D-22 | `node scripts/verify_phase.js --phase 2` | No unknown status literal | static / unit | lab-oops-standards | ☐ | | |
+| `P2-27` | Bookable-slot rule enforced (Room, instructional date, bell period, outage, live conflicts) | D-29 | Unit test `testBookableSlotDerivation()` | Each failing condition rejected with its own code | unit | lab-oops-standards | ☐ | | |
+| `P2-28` | Forensic-log endpoint is read-only, returns allowlisted columns, sanitised text, paginated; `Student` denied | D-25 | Unit test `testForensicViewerReadOnly()` | No write path; Student → `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
+| `P2-29` | `Outages` and `Duties` contracts (new column order; `Duties.IsActive`) validated | D-36 | Unit tests `testHeaderContractMatch('Outages')`, `('Duties')` | Match; `IsActive` honoured | unit | lab-oops-standards | ☐ | | |
+| `P2-30` | Behaviour-preservation suite derived from PRD §7/§14 passes (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message) | PRD amendment §3 | Run suite | All pass | unit / staging | gas-best-practices | ☐ | | |
+| `P2-31` | `TIMETABLE_USER_UNRESOLVED` thrown for zero or multiple teacher matches | D-15, D-31 | Unit test | Fails closed | unit | gas-best-practices | ☐ | | |
+| `P2-32` | Existing rows with legacy status strings migrated (owner-approved plan) | D-22 | Owner-manual | No legacy strings remain | owner-manual | lab-oops-standards | ☐ | | |
 
 ---
 
@@ -100,70 +124,71 @@
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P3-01` | Full-range `getDataRange().setValues()` rewrites replaced by targeted cell updates | F-11 | grep `getDataRange\(\)\.setValues` across mutation endpoints | Zero whole-table overwrite calls | static | gas-best-practices | ☐ | | |
-| `P3-02` | Google Calendar event creation preceded by duplicate lookup | F-11, R-14 | Unit test: `testCalendarDuplicateCheck()` | Look up existing event ID before calling createEvent | unit | gas-best-practices | ☐ | | |
-| `P3-03` | Calendar event ID persisted immediately upon creation | F-11, R-14 | Unit test: `testCalendarEventIdPersistence()` | Event ID written to sheet in same transaction | unit | gas-best-practices | ☐ | | |
-| `P3-04` | Booking cancellation automatically deletes / cancels linked Calendar event | F-11, R-14 | Unit test: `testCancelDeletesCalendarEvent()` | Linked calendar event deleted on booking cancel | unit | gas-best-practices | ☐ | | |
-| `P3-05` | Calendar sync retry mechanism handles `ERROR:` rows with exponential backoff | F-11, R-14 | Unit test: `testCalendarSyncRetryBackoff()` | Failed rows retried up to max threshold | unit | gas-best-practices | ☐ | | |
-| `P3-06` | Native Date objects in time cells formatted safely for `Asia/Bangkok` | F-11 | Unit test: parse date cell with native Date | Returns correct HH:mm string without NaN | unit | lab-oops-standards | ☐ | | |
-| `P3-07` | Layer-2 `PropertiesService` snapshots expire via TTL and version key | F-12, R-13 | Unit test: `testLayer2CacheTtlExpiration()` | Expired snapshots return null and re-fetch | unit | gas-best-practices | ☐ | | |
-| `P3-08` | `clearAllCaches` uses correct script-wide key pattern | F-12 | Inspect `Utils_Cache.js` | Keys cleared match script cache namespace | static / unit | gas-best-practices | ☐ | | |
-| `P3-09` | Role and user profile cache TTL bounded to maximum acceptable revocation delay | R-13 | Inspect TTL constant in `Utils_Cache.js` | TTL <= 5 minutes (300 seconds) | static | lab-oops-standards | ☐ | | |
-| `P3-10` | Cache is never used as authority for booking conflict detection | R-11 | Inspect `checkRoomCollision` code path | Reads live sheet data inside LockService | static | gas-best-practices | ☐ | | |
+| `P3-01` | Full-range `getDataRange().setValues()` rewrites replaced by targeted updates | F-11 | grep across mutation endpoints | Zero | static | gas-best-practices | ☐ | | |
+| `P3-02` | Calendar creation preceded by duplicate lookup | F-11, R-14 | Unit test `testCalendarDuplicateCheck()` | Lookup before create | unit | gas-best-practices | ☐ | | |
+| `P3-03` | `GCalEventID` persisted immediately after creation | F-11, R-14 | Unit test `testCalendarEventIdPersistence()` | Written in the same transaction | unit | gas-best-practices | ☐ | | |
+| `P3-04` | Cancellation deletes the linked calendar event | F-11, R-14 | Unit test `testCancelDeletesCalendarEvent()` | Event deleted | unit | gas-best-practices | ☐ | | |
+| `P3-05` | Retry with backoff for `ERROR:` rows | F-11, R-14 | Unit test `testCalendarSyncRetryBackoff()` | Retried up to the maximum | unit | gas-best-practices | ☐ | | |
+| `P3-06` | Date objects in time cells formatted safely for `Asia/Bangkok` | F-11 | Unit test | Correct `HH:mm` | unit | lab-oops-standards | ☐ | | |
+| `P3-07` | Layer-2 snapshots expire via TTL and version key | F-12, R-13 | Unit test `testLayer2CacheTtlExpiration()` | Expired → refetch | unit | gas-best-practices | ☐ | | |
+| `P3-08` | `clearAllCaches` uses the correct key pattern | F-12 | Inspect `Utils_Cache.js` | Matches namespace | static / unit | gas-best-practices | ☐ | | |
+| `P3-09` | Role/profile/directory cache TTL ≤ 300 s | R-13, D-12 | Inspect TTL constants | ≤ 300 | static | lab-oops-standards | ☐ | | |
+| `P3-10` | Cache never authoritative for conflict detection | R-11 | Inspect conflict path | Live read inside the lock | static | gas-best-practices | ☐ | | |
+| `P3-11` | Scheduled job and on-read check perform postponement auto-revert | D-23 | Unit test with a past slot | Reverted and logged | unit | gas-best-practices | ☐ | | |
+| `P3-12` | Postponement approval swaps calendar events (old removed, new created) | D-23, R-14 | Unit test `testPostponeSwapsCalendarEvents()` | One event for `N`, none for `O` | unit | gas-best-practices | ☐ | | |
 
 ---
 
-## Phase 4: Frontend Hardening, Formula Neutralization & Diagnostics Isolation
+## Phase 4: Frontend Hardening, Formula Neutralisation & Diagnostics Isolation
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P4-01` | Formula injection neutralizer `sanitizeCell_` implemented | F-06 | Unit test: `testSanitizeCellFormulas()` | Values starting with `=`, `+`, `-`, `@`, tab prefixed with `'` | unit | gas-best-practices | ☐ | | |
-| `P4-02` | All user-supplied inputs sanitized before sheet write operations | F-06 | grep sheet write paths for sanitization call | All dynamic values passed through `sanitizeCell_` | static | gas-best-practices | ☐ | | |
-| `P4-03` | `innerHTML` concatenation eliminated in `JS_TALTView.html` | F-07 | Inspect `JS_TALTView.html` | DOM construction / `textContent` used | static | lab-oops-standards | ☐ | | |
-| `P4-04` | `innerHTML` concatenation eliminated in `Modal_BatchAction.html` & other modals | F-07 | Inspect modal HTML files | Safe DOM population used | static | lab-oops-standards | ☐ | | |
-| `P4-05` | HTML email template placeholder hydration escapes dynamic variables | F-07 | Unit test: `testHydrateTemplateEscapesHtml()` | `<script>` and `<img>` tags escaped in output | unit | gas-best-practices | ☐ | | |
-| `P4-06` | UAT test suite prohibited from mutating production spreadsheet rows | F-04 | Inspect `Health_UAT.js` | Target spreadsheet forced to staging/mock copy | static / unit | gas-best-practices | ☐ | | |
-| `P4-07` | Client test runners cannot invoke arbitrary server functions by name | F-04 | Inspect `Test_Runner.html` & `Diag_Console.html` | Dynamic function routing removed | static | gas-best-practices | ☐ | | |
+| `P4-01` | `sanitizeCell_` implemented | F-06 | Unit test `testSanitizeCellFormulas()` | `=`, `+`, `-`, `@`, tab, CR prefixed with `'` | unit | gas-best-practices | ☐ | | |
+| `P4-02` | All user-supplied values sanitised before sheet writes | F-06 | grep write paths | All routed through `sanitizeCell_` | static | gas-best-practices | ☐ | | |
+| `P4-03` | `innerHTML` interpolation eliminated in `JS_TALTView.html` | F-07 | Inspect file | DOM APIs / `textContent` | static | lab-oops-standards | ☐ | | |
+| `P4-04` | Same in `Modal_BatchAction.html` and other modals | F-07 | Inspect files | Safe population | static | lab-oops-standards | ☐ | | |
+| `P4-05` | Email placeholder hydration escapes values | F-07 | Unit test `testHydrateTemplateEscapesHtml()` | Tags escaped | unit | gas-best-practices | ☐ | | |
+| `P4-06` | UAT cannot mutate the production sheet | F-04 | Inspect `Health_UAT.js` | Staging/mock only | static / unit | gas-best-practices | ☐ | | |
+| `P4-07` | Test runners cannot invoke arbitrary server functions by name | F-04 | Inspect `Test_Runner.html`, `Diag_Console.html` | Dynamic routing removed | static | gas-best-practices | ☐ | | |
+| `P4-08` | Impersonation banner visible whenever impersonation is active | D-16 | UI test / inspection | Banner present and cannot be dismissed | static / staging | lab-oops-standards | ☐ | | |
+| `P4-09` | Forensic viewer UI is read-only (no inputs, edit controls or write calls) | D-25 | Inspect viewer HTML/JS | No write path | static | lab-oops-standards | ☐ | | |
 
 ---
 
-## Phase 5: Consolidated Verification & End-to-End Sweeps
+## Phase 5: Consolidated Verification
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P5-01` | Automated static sweep: zero unchecked gatekeepers or client-supplied identities | All, §3.2 | `node scripts/verify_phase.js --phase 5` | Zero violations across all 50 files | static | gas-best-practices | ☐ | | |
-| `P5-02` | End-to-end authorization matrix suite executed across all 5 roles | F-01..F-03 | Run test suite against staging | All 5 roles verify expected allow/deny behavior | staging | lab-oops-standards | ☐ | | |
-| `P5-03` | Concurrent booking collision test executed | F-05, R-11 | Run parallel submission test | Exactly 1 booking succeeds; 1 fails cleanly | staging / unit | gas-best-practices | ☐ | | |
-| `P5-04` | Full traceability matrix documented in `docs/TEST_RESULTS.md` | All | Inspect `docs/TEST_RESULTS.md` | F-01 through F-17 mapped to test logs | static | mattpocock/skills | ☐ | | |
-| `P5-05` | Zero unresolved requirements in `PHASE_CHECKLIST.md` | §3.1 | `node scripts/verify_phase.js --phase 5` | All P0-P4 rows marked ☑ with evidence | static | mattpocock/skills | ☐ | | |
+| `P5-01` | Static sweep: no unchecked gatekeepers or client-supplied identities | All | `node scripts/verify_phase.js --phase 5` | Zero violations | static | gas-best-practices | ☐ | | |
+| `P5-02` | Authorization matrix executed for all 6 roles and SuperAdmin | F-01..F-03 | Run suite on staging | All allow/deny as specified | staging | lab-oops-standards | ☐ | | |
+| `P5-03` | Concurrent booking collision test executed (state the evidence level honestly) | F-05, R-11 | Parallel submission test | Exactly one succeeds | staging / unit | gas-best-practices | ☐ | | |
+| `P5-04` | Traceability matrix in `docs/TEST_RESULTS.md` | All | Inspect file | F-01 … F-18 mapped to test logs | static | setup-matt-pocock-skills | ☐ | | |
+| `P5-05` | No unresolved required rows in this checklist | Plan §4 | `node scripts/verify_phase.js --phase 5` | All ☑ with evidence or ⊘ with approval | static | setup-matt-pocock-skills | ☐ | | |
+| `P5-06` | Documentation-consistency lint passes (tab counts, status enum, no `TEACHER_EMAIL`, no PIN) | D-34 | `node scripts/verify_phase.js --phase 5` | Zero violations | static | setup-matt-pocock-skills | ☐ | | |
+| `P5-07` | ADR-0001 … ADR-0003 present and referenced by the plan | ADR-0002 | Inspect `docs/adr/` | Present | static | setup-matt-pocock-skills | ☐ | | |
 
 ---
 
-## Phase 6: Hardening, Script Properties Migration & Staging Deployment
+## Phase 6: Hardening, Scopes & Staging Deployment
 
 | ID | Requirement | Traces to | How to verify | Expected result | Evidence Level | Skill Applied | Status | Evidence | Verified By |
 |---|---|---|---|---|---|---|---|---|---|
-| `P6-01` | All spreadsheet IDs, calendar ID, superadmin email migrated to Script Properties | F-14, R-07 | grep hardcoded IDs in `App_Script/` | Zero hits; all read via `Utils_Config.get()` | static | gas-best-practices | ☐ | | |
-| `P6-02` | Git history scanned for exposed IDs and documented | F-14, R-06 | Inspect `docs/SECURITY_AUDIT.md` | Scan report delivered; owner decision recorded | static | lab-oops-standards | ☐ | | |
-| `P6-03` | Minimal OAuth scopes declared in `appsscript.json` | F-13, R-15 | Inspect `appsscript.json` | Explicit scopes defined; minimal privilege | static | gas-best-practices | ☐ | | |
-| `P6-04` | XFrameOptionsMode locked to DEFAULT; Google Site iframe embedding rejected; ALLOWALL eliminated | F-13, D-20 | Inspect `Main.js` HtmlOutput | `ALLOWALL` replaced with default mode; iframe embedding blocked | static | gas-best-practices | ☐ | | |
-| `P6-05` | Misleading "AUDIT: Cycle 13 Cleared" headers and dead code removed | F-17 | grep "AUDIT: Cycle" across files | Zero hits; dead files archived/removed | static | lab-oops-standards | ☐ | | |
-| `P6-06` | Universal response envelope `Result<T>` verified across all callable endpoints | AGENTS.md | `node scripts/verify_phase.js --phase 6` | 100% of callable endpoints return Result<T> | static | lab-oops-standards | ☐ | | |
-| `P6-07` | Deployment and rollback manual documented in `docs/DEPLOYMENT_ROLLBACK.md` | R-16 | Inspect `docs/DEPLOYMENT_ROLLBACK.md` | Step-by-step deploy & rollback procedures | static | gas-best-practices | ☐ | | |
-| `P6-08` | Final staging deployment smoke-test executed and signed off | §6 | Smoke-test submit -> approve -> calendar -> cancel | All flows pass on staging | staging / owner | lab-oops-standards | ☐ | | |
+| `P6-01` | *(ID migration to Script Properties)* | F-14, R-07 | — | ⊘ **Moved to `P1-18`** (owner approved 2026-10-19) | — | — | ⊘ | `P1-18` | |
+| `P6-02` | Git history scan reported; owner decision recorded | F-14, R-06 | Inspect `docs/SECURITY_AUDIT.md` | Report delivered | static | lab-oops-standards | ☐ | | |
+| `P6-03` | Minimal explicit OAuth scopes, including the identity scope, tested on staging | F-13, R-15 | Inspect `appsscript.json`; staging run | Identity still resolves | static / staging | gas-best-practices | ☐ | | |
+| `P6-04` | *(Framing fix)* | F-13, D-20 | — | ⊘ **Moved to `P1-23`** (owner approved 2026-10-19) | — | — | ⊘ | `P1-23` | |
+| `P6-05` | Misleading "AUDIT: Cycle 13 Cleared" headers and dead code removed | F-17 | grep | Zero | static | lab-oops-standards | ☐ | | |
+| `P6-06` | `Result<T>` envelope across all callable endpoints | AGENTS.md | `node scripts/verify_phase.js --phase 6` | 100% | static | lab-oops-standards | ☐ | | |
+| `P6-07` | Deployment and rollback manual documented | R-16 | Inspect `docs/DEPLOYMENT_ROLLBACK.md` | Steps complete | static | gas-best-practices | ☐ | | |
+| `P6-08` | Staging smoke test (submit → approve → calendar → cancel → postpone) signed off | Plan §3 | Run on staging | All pass | staging / owner | lab-oops-standards | ☐ | | |
+| `P6-09` | Regression guard: zero hardcoded IDs, zero `ALLOWALL`, zero PIN text | D-20, D-27, D-35 | `node scripts/verify_phase.js --phase 6` | Zero hits | static | gas-best-practices | ☐ | | |
 
 ---
 
-## 🔍 Independent Review Protocol: How a Reviewer Verifies a Phase
+## 🔍 Independent Review Protocol
 
-When an independent AI agent or human auditor reviews a completed phase:
-
-1. **Run Automated Verification:** Execute `node scripts/verify_phase.js --phase <N>` from the repository root. Ensure exit code is `0`.
-2. **Examine Evidence Links:** Open `docs/PHASE_CHECKLIST.md` and verify that every row marked `☑ done` contains a non-empty `Evidence` field linking to a commit SHA, file path, or test log.
-3. **Spot-Check Code:** Pick at least three rows marked `☑ done` at random and open the referenced source files to confirm the requirement is genuinely satisfied in the code.
-4. **Scope-Creep & Anti-Gaming Inspection:**
-   - Inspect the git diff: `git diff <baseline_sha>..HEAD --stat`.
-   - Confirm only files planned for this phase were altered.
-   - Verify that no test assertions were weakened, commented out, or bypassed.
-   - Verify that no checklist rows were deleted (rows may only be marked `⊘ N/A` with owner approval).
-5. **Sign Off:** Record name/ID and timestamp under the `Verified By` column.
+1. Run `node scripts/verify_phase.js --phase <N>`; the exit code must be `0`.
+2. Open this file and confirm every `☑` row has a non-empty Evidence field.
+3. Spot-check at least three `☑` rows by reading the cited code.
+4. Run `git diff <baseline>..HEAD --stat`; confirm only planned files changed, no assertion was weakened, and no row was deleted.
+5. Record your name/ID and the date under `Verified By`.
