@@ -3,6 +3,9 @@
 ---
 
 ## 2026-10-19: Revision 2 — Owner Clarifications (D-37 … D-45) & PR #1 Hardening
+* **2026-10-21 Owner Clarification & Prerequisite Confirmation:**
+  - **P0-18 Confirmed:** Owner confirmed all Google Sheets have DEV copies; checklist row `P0-18` marked complete (`☑`).
+  - **O-3 / P0-17 Not Yet Processed:** Acknowledged that live schema header dump has not yet been run; remains open for Phase 0 execution.
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Claude (documentation review) with Google Antigravity (implementation)
 * **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD to exact 1-line banner addition. *(Documentation only; no code changed).*

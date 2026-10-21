@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased] — Planning baseline v1.4.0b (2026-10-19)
 
 ### 🛡️ Revision 2: Owner Clarifications & Closed Open Items (2026-10-19)
+* **DEV Google Sheets confirmed (P0-18):** Owner confirmed (2026-10-21) that all Google Sheets have DEV copies; production Master DB and Timetable remain untouched.
+* **Header dump status acknowledged (O-3 / P0-17):** Owner clarified header dump is not yet processed; remains scheduled for Phase 0 execution.
 Decisions D-37 … D-45 in [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md).
 
 #### Added

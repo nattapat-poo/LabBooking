@@ -384,9 +384,17 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 ## 🔓 6. Sequencing of Feature Work (D-28)
 Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) start **after Gate 6** to avoid concurrent edits to the same files. The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
-## ❓ 7. Open Items for the Owner
-1. Default `BellType` when `BellScheduleOverride` is blank (Contract O-1).
-2. Whether `Room` contains non-lab rooms (Contract O-5).
-3. Live header verification and array-formula check (`P0-17`).
-4. Migration of any existing rows that use legacy status strings.
-5. Exact header spelling `IsActive` and tab name `Bookings` (case-insensitive matching covers casing).
+## ❓ 7. Open and Resolved Items for the Owner
+
+### Resolved / Confirmed Items
+1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable verification retained; extensible seam `isRoomEligible_` added; restriction logic deferred to BL-01.
+3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
+4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
+5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.
+6. **Legacy Status Migration (O-7 / D-42):** CONFIRMED — Migration procedure with backup and DEV run first.
+7. **DEV Copies Prerequisite (O-9 / P0-18):** CONFIRMED by Owner (2026-10-21) — Isolated DEV copies of all Google Sheets confirmed to exist; production sheets untouched.
+
+### Open Items (Phase 0 Execution)
+1. **Live Header & Distinct Value Dump (O-3 / `P0-17`):** Open (not yet processed). To be executed by Owner in Phase 0 across the 12 consumed tabs, reporting distinct values and counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII).
+2. **Master DB Role Strings (`P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.

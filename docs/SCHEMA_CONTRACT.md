@@ -270,13 +270,16 @@ Non-student roles may open a read-only viewer over `Logs`: event details and act
 
 ---
 
-## 8. Open Items (must be closed before Phase 2)
+## 8. Open and Resolved Items (Phase 0 & Phase 2 Alignment)
 
-| # | Item | Status |
+| # | Item | Status / Resolution |
 |---|---|---|
-| O-1 | Default `BellType` when `Academic_Calendar.BellScheduleOverride` is blank (candidate: `Wed` on Wednesdays, otherwise `Regular`). | **OPEN — owner to confirm** |
-| O-2 | Live verification of every header in this contract (`P0-17`), including whether any `Bookings` column holds an array formula. | OPEN |
-| O-3 | `GCalEventID` convention (`ERROR:<code>` for failed sync) because `Bookings` has no separate calendar-status column. | ASSUMED |
-| O-4 | PRD statuses `Action Required` (revalidation) and `Error (Calendar)` are not in the owner-approved enum. Revalidation results are recorded in `Remark` and `Logs` only. | ASSUMED |
-| O-5 | Whether `Room` contains non-lab rooms. If it does, a filter column is needed because bookability does not currently use `RoomType`. | OPEN |
-| O-6 | Exact tab spelling `Bookings` (owner's list says `Booking`). Canonical name is `Bookings`. | ASSUMED |
+| **O-1** | Default `BellType` when `Academic_Calendar.BellScheduleOverride` is blank | **RESOLVED (D-37):** Effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular`. Value spellings verified in `P0-17`. |
+| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained; future restrictions deferred to **BL-01** via `isRoomEligible_` seam. |
+| **O-3** | Live header dump & array-formula check across 12 consumed tabs (`P0-17`) | **OPEN (not yet processed):** Scheduled for owner-run execution in Phase 0 (`P0-17`). Extended to report distinct values with counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII). |
+| **O-4** | Live tab name and header spelling (`Bookings` vs `Booking`, `IsActive`) | **RESOLVED (D-39):** Exact live tab name is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive. |
+| **O-5** | `GCalEventID` failure convention and code vocabulary | **RESOLVED (D-40):** `ERROR:<code>` confirmed. Proposed vocabulary (`CALENDAR_API`, `CALENDAR_QUOTA`, `CALENDAR_NOT_FOUND`, `INVALID_TIME`) adopted (ASSUMED). Retry counts stored outside sheet. |
+| **O-6** | Legacy PRD statuses `Action Required` and `Error (Calendar)` | **RESOLVED (D-41):** Confirmed non-statuses; recorded in `Remark` and `Logs` only. |
+| **O-7** | Legacy status string migration | **RESOLVED (D-42):** Migration procedure approved (backup copy, test on DEV first, idempotent, log counts only). Unknown status strings block go-live. |
+| **O-8** | Stored role strings in Master DB `Users.Role` | **OPEN:** Verify that all active rows in `Users.Role` use canonical values (`Teacher`, `TA`, `LabTech`, `Admin`, `HoD`, `Student`). Verified via `P0-17`. |
+| **O-9** | DEV copies of Master DB 2026 and Timetable 2026 (`P0-18`) | **CONFIRMED (Owner 2026-10-21):** Isolated DEV copies of all Google Sheets confirmed to exist; production Master DB is never modified. |
