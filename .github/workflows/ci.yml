@@ -1,0 +1,31 @@
+name: Production Hardening CI & Verification
+
+on:
+  push:
+    branches:
+      - main
+      - security/production-hardening
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Phase Verification & Hygiene Sweep
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Phase 0 Automated Verifier
+        run: node scripts/verify_phase.js --phase 0
+
+      - name: Run Git History Pattern Scanner
+        run: node scripts/scan_history.js
