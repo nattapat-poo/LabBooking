@@ -42,3 +42,14 @@ One phase at a time; each ends at an owner gate with an evidence pack (`docs/PHA
 
 ## 🔒 Sequencing Rule (D-28)
 Feature work and security work touch the same files (`JS_TALTView.html`, modals, `Outages` logic). To avoid conflicting edits, no feature milestone starts before Gate 6, and no feature branch may merge into `security/production-hardening`.
+
+---
+
+## 📋 Ecosystem Follow-Ups & Backlog (After Gate 6)
+
+### Ecosystem Follow-Ups (D-45)
+1. **Update `lab-oops-standards` Skill:** Revise Rule 26 (eliminating client-side PIN gateway in favor of server-verified shortcuts), update SuperAdmin resolution (eliminating fail-open fallback in favor of `SUPERADMIN_EMAILS` Script Property), and align standard sheet schemas with project requirements (ADR-0002, D-45).
+2. **Review Sibling Lab Oops Applications:** Audit child science lab applications that inherited the client-side PIN gateway and fail-open SuperAdmin fallback patterns.
+
+### Backlog Items
+* **BL-01 (Room-Booking Timetable Restrictions):** Define and implement restrictive business rules governing which teachers may book specific rooms based on the master timetable. (Validation seam `isRoomEligible_` established in Phase 2 via D-38; returns `true` until BL-01 rule specification is confirmed).

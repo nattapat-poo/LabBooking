@@ -100,7 +100,7 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 *`Source` names the decision that determines the row. Cells not literally quoted by the Owner but implied by a confirmed decision are marked by that decision's ID and are re-verified at Gate 1.*
 
 **Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Denied** for the `Student` role until a Student module exists.
-**HoD policy (D-10, D-24):** HoD is executive read-only. A teaching HoD who needs a booking asks a `TA`/`LabTech`/`Admin` to book on their behalf.
+**HoD policy (D-10, D-24, D-43):** HoD is strictly executive read-only: cannot book, cannot act as proxy, and **cannot be the `TargetUserID` of an on-behalf booking**. Any booking attempt targeting an HoD fails with `TARGET_ROLE_INELIGIBLE`. The earlier workaround permitting proxy booking for an HoD is completely withdrawn (D-43).
 **Error taxonomy:** every permission, role, domain, ownership or identity failure throws `AUTH_DENIED` (the reason code is written to `Logs` only). Business-rule failures (lead time, conflicts) use their own codes.
 
 #### Booking Ownership & Audit Attribution (D-21, D-11)
@@ -246,6 +246,16 @@ flowchart TD
 *Details in [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md).*
 * **Findings / revisions:** baseline for F-01 … F-18, R-01, R-06, R-10, R-16, D-33, D-34.
 * **Workstreams:** (1) git isolation with a rollback tag **by explicit SHA**; (2) pattern-based secret/ID scan and branch protection; (3) **Identity Spike** with pre-registered disqualifiers and redacted evidence; (4) Node test harness; (5) `verify_phase.js`; (6) ledger and exposure matrix; (7) `Health_UAT.js` fixture sanitation; (8) owner-run read-only header dump to verify the contract; (9) docs lint.
+**Account Coverage Matrix & Scope (D-44):**
+| Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
+|---|---|---|---|
+| Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |
+| Consumer Google Account | Owner personal account | Serves as non-Workspace negative control (`AUTH_DENIED` by domain whitelist) and proxy for Microsoft-hosted G10 accounts. | Cannot validate student domain whitelisting (tested via unit tests). |
+| Workspace Student (`@student.mahidol.edu`) | Dedicated test account (if available) | Tests legacy Google Workspace student domain behavior. | Remains **unverified / best-effort** until dedicated test account exists. |
+| Teacher / TA / LabTech | Unit stubs & Admin preview-impersonation | Validates permission logic, state transitions, and read-only preview. | Live multi-user concurrency on staging (validated at Phase 5). |
+
+> **Prerequisite (D-44 / P0-18):** Isolated DEV copies of Master DB 2026 and Timetable 2026 must be configured before running tests; the production Master DB is **never modified**.
+
 * **DoD:** `docs/IDENTITY_DECISION.md` approved; `node scripts/verify_phase.js --phase 0` exits 0; zero application logic changed except fixture sanitation.
 * **Gate 0:** STOP.
 
@@ -267,7 +277,16 @@ flowchart TD
 
 ### Phase 2 — Booking Transaction Engine & Schema Alignment
 * **Findings:** `F-05`, `F-08`, `F-09`, `F-15`, `F-16`, `R-04`, `R-05`, `R-09`, `R-11`, `R-12`, D-04, D-07, D-19, D-21 … D-23, D-25, D-29, D-36.
-* **Workstreams:** (1) align `TX_COL`, `USR_COL`, `LOG_COL` and the `Stats` schema with the contract (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive`); (2) wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys and the `JS_TALTView` include; refine the "cart/checkout" check; (3) **atomic validation inside the lock** (UUIDs, bookable-slot rule §2.3, 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, no optional-lock fallback, `flush()` before unlock); (4) **idempotency** (client request ID in `CacheService`, 6 h TTL + natural-key collision); (5) **status enum** incl. `DENIED` and `POSTPONED` in code, documented in plan, contract and PRD amendment; chronological `Remark` stacking; (6) **linked-row postponement** with cancellation in both modes and auto-revert (§2.2); (7) canonical teacher join with `TIMETABLE_USER_UNRESOLVED`; (8) read-only forensic-log endpoint (§2.9).
+* **Workstreams:**
+  1. **Schema alignment:** align `TX_COL`, `USR_COL`, `LOG_COL` and `Stats` schemas (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive` per D-36, D-39).
+  2. **Wiring repair:** wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys; eliminate "cart" terminology.
+  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
+  4. **Idempotency:** client request ID in `CacheService` (6 h TTL) + natural-key collision prevention.
+  5. **Status enum & migration:** enforce 7 stored values incl. `DENIED` and `POSTPONED`; chronological `Remark` stacking; execute legacy status migration procedure (D-42 / `P2-32`).
+  6. **Linked-row postponement:** two-way approval with cancellation in both modes and auto-revert (§2.2, ADR-0003).
+  7. **Calendar failure marker:** enforce `GCalEventID = ERROR:<code>` vocabulary (D-40); track retries outside sheet schema.
+  8. **Canonical teacher join:** resolve session email → nickname → timetable index with `TIMETABLE_USER_UNRESOLVED` fail-closed.
+  9. **Forensic log endpoint:** read-only viewer endpoint (§2.9).
 * **Behaviour preservation:** before changing the engine, add characterisation tests from PRD §7/§14 (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message).
 * **DoD:** submit → approve → deny → cancel → postpone cycle works on staging; concurrency collision test passes; header mismatch throws; `verify_phase.js --phase 2` exits 0.
 * **Gate 2:** STOP.
@@ -350,15 +369,32 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-34 | Process hygiene | Tag by SHA; branch protection; scanning; relative links; single schema source; `[Unreleased]` changelog | CONFIRMED | Owner 2026-10-19 |
 | D-35 | Phase moves | Reader and all ID migration → Phase 1 | CONFIRMED | Owner 2026-10-19 |
 | D-36 | Column order | Outages and Duties per contract; `Duties.IsActive` added | CONFIRMED | Owner 2026-10-19 |
+| D-37 | Default `BellType` | When `Academic_Calendar.BellScheduleOverride` is blank, effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular` | CONFIRMED (rule); ASSUMED (spelling) | Owner 2026-10-19 |
+| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained; future restrictions deferred to BL-01 via `isRoomEligible_` seam | CONFIRMED | Owner 2026-10-19 |
+| D-39 | Live spellings | Exact tab spelling is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive | CONFIRMED | Owner 2026-10-19 |
+| D-40 | Calendar failure marker | Failed sync recorded as `GCalEventID = ERROR:<code>` with standard code vocabulary; retry attempts tracked outside sheet schema | CONFIRMED (marker); ASSUMED (codes/retry) | Owner 2026-10-19 |
+| D-41 | Non-statuses | `Action Required` and `Error (Calendar)` are non-statuses; recorded in `Remark` and `Logs` only | CONFIRMED | Owner 2026-10-19 |
+| D-42 | Status migration | Migrate legacy statuses using PRD amendment §2 mapping (backup copy, DEV first, idempotent, counts only, unknown strings block go-live) | CONFIRMED | Owner 2026-10-19 |
+| D-43 | HoD restriction | HoD is strictly read-only: cannot book, cannot proxy, and cannot be `TargetUserID` of on-behalf booking (`TARGET_ROLE_INELIGIBLE`); workaround withdrawn | CONFIRMED (interpretation to reconfirm) | Owner 2026-10-19 |
+| D-44 | Test account policy | Admin on DEV via staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite | CONFIRMED | Owner 2026-10-19 |
+| D-45 | ADR-0002 reconfirmed | SuperAdmin via Script Property, PIN removal, project schema authority, global standards updated later | CONFIRMED | Owner 2026-10-19 |
 
 ---
 
 ## 🔓 6. Sequencing of Feature Work (D-28)
 Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) start **after Gate 6** to avoid concurrent edits to the same files. The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
-## ❓ 7. Open Items for the Owner
-1. Default `BellType` when `BellScheduleOverride` is blank (Contract O-1).
-2. Whether `Room` contains non-lab rooms (Contract O-5).
-3. Live header verification and array-formula check (`P0-17`).
-4. Migration of any existing rows that use legacy status strings.
-5. Exact header spelling `IsActive` and tab name `Bookings` (case-insensitive matching covers casing).
+## ❓ 7. Open and Resolved Items for the Owner
+
+### Resolved / Confirmed Items
+1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable verification retained; extensible seam `isRoomEligible_` added; restriction logic deferred to BL-01.
+3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
+4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
+5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.
+6. **Legacy Status Migration (O-7 / D-42):** CONFIRMED — Migration procedure with backup and DEV run first.
+7. **DEV Copies Prerequisite (O-9 / P0-18):** CONFIRMED by Owner (2026-10-21) — Isolated DEV copies of all Google Sheets confirmed to exist; production sheets untouched.
+
+### Open Items (Phase 0 Execution)
+1. **Live Header & Distinct Value Dump (O-3 / `P0-17`):** Open (not yet processed). To be executed by Owner in Phase 0 across the 12 consumed tabs, reporting distinct values and counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII).
+2. **Master DB Role Strings (`P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.

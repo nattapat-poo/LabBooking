@@ -71,7 +71,17 @@ The repository stays **public** (D-09), so the controls must be strong.
 | D7 | Results are not reproducible in a fresh browser profile with a single signed-in account, on Chrome **and** mobile Safari. |
 | D8 | It needs broader OAuth scopes than the minimal set, or shows consent screens users cannot complete. |
 
-**Method.** Use **dedicated test accounts** on each domain (never real students). Run each cell at least twice, after sign-out and sign-in. Include negative controls (a non-whitelisted account must be denied). **Staff results decide the model; student results are best-effort** and must not force a weaker design.
+**Method & Account Coverage Policy (D-44):**
+| Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
+|---|---|---|---|
+| Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |
+| Consumer Google Account | Owner personal account | Serves as non-Workspace negative control (`AUTH_DENIED` by domain whitelist) and proxy for Microsoft-hosted G10 accounts. | Cannot validate student domain whitelisting (tested via unit tests). |
+| Workspace Student (`@student.mahidol.edu`) | Dedicated test account (if available) | Tests legacy Google Workspace student domain behavior. | Remains **unverified / best-effort** until dedicated test account exists. |
+| Teacher / TA / LabTech | Unit stubs & Admin preview-impersonation | Validates permission logic, state transitions, and read-only preview. | Live multi-user concurrency on staging (validated at Phase 5). |
+
+> **Prerequisite (D-44 / P0-18):** Isolated DEV copies of Master DB 2026 and Timetable 2026 must be configured before running tests; the production Master DB is **never modified**.
+
+Use dedicated test accounts on each domain (never real students). Run each cell at least twice, after sign-out and sign-in. Include negative controls (a non-whitelisted account must be denied). **Staff results decide the model; student results are best-effort** and must not force a weaker design.
 
 **Evidence handling (public repo).** Record domain, model, access setting and pass/fail only. Do not commit any email address or the raw probe output. Undeploy the probe when finished.
 
@@ -117,6 +127,8 @@ The owner runs a **read-only** header dump over the 12 consumed tabs. Commit onl
 | `P0-15` | Spike criteria pre-registered | Commit history | ☐ |
 | `P0-16` | Spike evidence redacted; probe removed | Inspect | ☐ |
 | `P0-17` | Header dump verified | `schema/` vs contract | ☐ |
+| `P0-18` | DEV copies of Master DB and Timetable exist | Owner statement in AGY session, 2026-10-21 (no IDs) | ☑ |
+| `P0-19` | Spike account-coverage matrix committed | Inspect `docs/IDENTITY_DECISION.md` | ☐ |
 
 ## 5. Gate 0 Exit Criteria
 

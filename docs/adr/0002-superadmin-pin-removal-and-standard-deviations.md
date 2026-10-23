@@ -1,9 +1,9 @@
 # ADR-0002: SuperAdmin via Script Properties, removal of the client-side admin PIN, and deviations from `lab-oops-standards`
 
-* **Status:** Accepted (Owner directive 2026-10-19)
+* **Status:** Accepted — reconfirmed by Owner 2026-10-19
 * **Date:** 2026-10-19
 * **Deciders:** Lead Architect (Owner)
-* **Relates to:** F-03, F-18, D-16, D-26, D-27, [ADR-0001](./0001-governing-ecosystem-alignment.md)
+* **Relates to:** F-03, F-18, D-16, D-26, D-27, D-45, [ADR-0001](./0001-governing-ecosystem-alignment.md)
 
 ## Context
 
@@ -26,6 +26,7 @@ The plan's precedence rule states that security findings and Owner decisions ove
    * No PIN check, PIN label or PIN text may remain in `App_Script/` or `docs/`.
    * The `Ctrl + Shift + Q` shortcut may remain, but it only reveals the admin panel for a session the **server** has verified as `Admin` or SuperAdmin, and every action behind it is authorised server-side.
 3. **Schema deviations are accepted and recorded.** The live `Config`, `Logs` and `Stats` schemas in `SCHEMA_CONTRACT.md` are authoritative for this project.
+4. **Global standards alignment deferred (D-45).** The global `lab-oops-standards` skill will be updated later, when sibling Lab Oops projects are reviewed.
 
 ## Consequences
 

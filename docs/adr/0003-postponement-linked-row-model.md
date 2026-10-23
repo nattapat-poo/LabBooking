@@ -27,3 +27,4 @@ Postponement requires approval from the other party: a teacher's request is appr
 * Conflict detection treats the two pending statuses as occupying statuses.
 * The `Logs` sheet records events only. It is **not** used to store workflow state, because log writes are best-effort and the viewer is visible to teachers.
 * A scheduled job plus an on-read check performs the auto-revert.
+* The postponement workflow integrates with the seven canonical `Bookings.Status` enum values (`PENDING`, `APPROVED`, `DENIED`, `CANCELLED`, `POSTPONE_PENDING_TALT`, `POSTPONE_PENDING_TEACHER`, `POSTPONED`).

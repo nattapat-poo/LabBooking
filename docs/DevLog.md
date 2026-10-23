@@ -2,7 +2,32 @@
 
 ---
 
-## 2026-10-19: v1.4.0b Clarifications & Documentation Normalisation
+## 2026-10-19: Revision 2 — Owner Clarifications (D-37 … D-45) & PR #1 Hardening
+* **2026-10-21 Owner Clarification & Prerequisite Confirmation:**
+  - **P0-18 Confirmed:** Owner confirmed all Google Sheets have DEV copies; checklist row `P0-18` marked complete (`☑`).
+  - **O-3 / P0-17 Not Yet Processed:** Acknowledged that live schema header dump has not yet been run; remains open for Phase 0 execution.
+* **Lead Architect:** Nattapat Poolyam (Mek)
+* **Agent:** Claude (documentation review) with Google Antigravity (implementation)
+* **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD to exact 1-line banner addition. *(Documentation only; no code changed).*
+
+### Decisions Recorded
+1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.
+2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained in `API_Validation.js`; seam `isRoomEligible_` added for backlog BL-01.
+3. **D-39 (Live Spellings):** Exact tab spelling is `Bookings`; header is `IsActive`.
+4. **D-40 (Calendar Failure Marker):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary; retry counts stored outside sheet.
+5. **D-41 (Non-Statuses):** `Action Required` and `Error (Calendar)` confirmed non-statuses.
+6. **D-42 (Status Migration):** Procedure approved (dated backup, DEV first, idempotent, counts only, unknown strings block go-live).
+7. **D-43 (HoD Strictly Read-Only):** HoD cannot book, cannot proxy, and **cannot be the `TargetUserID` of an on-behalf booking** (`TARGET_ROLE_INELIGIBLE`). Workaround withdrawn.
+8. **D-44 (Identity Spike Account Coverage):** Admin tested on DEV via Owner staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite (`P0-18`).
+9. **D-45 (ADR-0002 Reconfirmed):** SuperAdmin via Script Property, PIN removal, project schema authority, global standards update deferred.
+
+### Document Repairs & Synchronization
+* **Locked PRD Repaired:** Restored `docs/Lab Booking App - PRD v1.1.3c.md` from `main` to undo inadvertent reversion of 1.4.0a text; added single superseding banner line matching Appendix and Design Spec.
+* **Checklist Extended:** Added `P0-18`, `P0-19`, `P2-33`, `P2-34`, `P2-35`, `P2-36`; extended `P0-17` and `P2-32`; verified 123 unique IDs with zero gaps and no `P6-10`.
+
+---
+
+## 2026-10-19: Revision 1 — v1.4.0b Clarifications & Documentation Normalisation
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Claude (documentation review) with Google Antigravity (implementation)
 * **Scope:** Normalised tab/column lists across all documents; recorded decisions D-21 … D-36; no application code changed.
