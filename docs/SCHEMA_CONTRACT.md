@@ -61,6 +61,7 @@ Read-only enforcement is layered: (1) the deploying account holds **Viewer** per
 | V | `AssignedTaltName` | String | Yes | Nickname(s) of assigned technician(s) (snapshot). |
 | W | `Remark` | String | Yes | Append-only note stack, chronological ascending: `[YYYY-MM-DD HH:mm Nickname]: text`. Holds denial reasons and `[URGENT_BYPASS …]` tags. Never overwritten. |
 | X | `GCalEventID` | String | Yes | Google Calendar event ID. Empty = not synced. `ERROR:<code>` = sync failed, eligible for retry with backoff (confirmed by D-40). See vocabulary below. |
+| Y | `LinkedBookingID` | String | Yes | For postponement: the `BookingID` of the counterpart row (§7.5). |
 
 #### Calendar Sync Failure Vocabulary (`GCalEventID = ERROR:<code>`) — D-40 *(Vocabulary ASSUMED)*
 When a Google Calendar event sync fails, `GCalEventID` records `ERROR:<code>` using the following standardized error codes:
@@ -73,7 +74,6 @@ When a Google Calendar event sync fails, `GCalEventID` records `ERROR:<code>` us
 | `INVALID_TIME` | Start/End timestamp was malformed or end time is not strictly after start time. | Block retry until slot timing metadata is validated. |
 
 > **Retry State Tracking (D-40):** Retry attempt counts and exponential backoff timestamps are tracked **outside the sheet schema** (stored in `CacheService` or `ScriptProperties` keyed by `BookingID`). The sheet cell stores only the current `ERROR:<code>`. TALT retains a manual retry action (`ACTION_TRIGGER_CALENDAR`).
-| Y | `LinkedBookingID` | String | Yes | For postponement: the `BookingID` of the counterpart row (§7.5). |
 
 ### 2.2 Tab: `Outages` (13 columns)
 
