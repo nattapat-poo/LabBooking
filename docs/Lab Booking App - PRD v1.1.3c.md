@@ -7,11 +7,13 @@
 **Steerer:** Mek  
 **PRD drafter AI:** Gemini 3.0 | Model \= Pro, Thinking  
 **Status:** PRD = Locked, Design Spec = Locked, Backend = Audited  
-**Active Engineering Target:** **v1.4.0a** (Governing Security & Ecosystem Alignment)
+**Active Engineering Target:** **v1.4.0b** (Governing Security & Ecosystem Alignment)
 
 ---
 
 ### 🚨 **CRITICAL AMENDMENT NOTE — Version 1.4.0a (October 2026)**
+> ⚠️ **SUPERSEDED in full by [PRD_AMENDMENT_v1.4.0b.md](./PRD_AMENDMENT_v1.4.0b.md).** Kept for history only. Where this note differs on tab/column counts, status casing, ownership (UserID only), postponement (linked rows, ADR-0003), HoD (strictly read-only) or deployment, the v1.4.0b amendment wins.
+
 *This amendment formally overrides conflicting historical sections within this PRD with the confirmed operational directives established by Lead Architect Mek:*
 
 1. **Role Authority & Equality:**
