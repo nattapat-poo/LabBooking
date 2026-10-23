@@ -40,7 +40,7 @@
 | `P0-15` | Spike acceptance criteria and disqualifiers (D1–D8) written **before** the first test run | D-33 | Inspect `IDENTITY_DECISION.md` history | Criteria committed before results | static | gas-best-practices | ☐ | | |
 | `P0-16` | Spike evidence redacted (domain + pass/fail only), dedicated test accounts, probe undeployed after use | D-33, D-09 | Inspect evidence and deployment list | No emails committed; probe removed | staging / owner | gas-best-practices | ☐ | | |
 | `P0-17` | Owner-run, read-only header dump of all 12 consumed tabs; distinct `Status`, `BellType`, `RoomType` and `Users.Role` values with counts (no PII); array-formula report | D-05, D-36, D-42 | Inspect `schema/` output vs `SCHEMA_CONTRACT.md` | Contract matches live headers; distinct values recorded; or diff resolved | staging / owner | lab-oops-standards | ☐ | | |
-| `P0-18` | Isolated DEV copies of Master DB 2026 and Timetable 2026 exist; production Master DB is never modified | D-14, D-44 | Owner verification | Confirmed by Owner (2026-10-21); isolated DEV copies of all Google Sheets exist | staging / owner | gas-best-practices | ☑ | 2026-10-21 | |
+| `P0-18` | Isolated DEV copies of Master DB 2026 and Timetable 2026 exist; production Master DB is never modified | D-14, D-44 | Owner verification | Confirmed by Owner (2026-10-21); isolated DEV copies of all Google Sheets exist | staging / owner | gas-best-practices | ☑ | Owner statement in AGY session, 2026-10-21 (no IDs) | |
 | `P0-19` | Spike account-coverage matrix committed; unverified accounts marked best-effort; zero emails in committed docs | D-33, D-44 | Inspect `docs/IDENTITY_DECISION.md` | Account coverage table committed; no emails exposed | static | setup-matt-pocock-skills | ☐ | | |
 
 ---

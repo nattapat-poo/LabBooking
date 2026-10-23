@@ -127,7 +127,7 @@ The owner runs a **read-only** header dump over the 12 consumed tabs. Commit onl
 | `P0-15` | Spike criteria pre-registered | Commit history | ☐ |
 | `P0-16` | Spike evidence redacted; probe removed | Inspect | ☐ |
 | `P0-17` | Header dump verified | `schema/` vs contract | ☐ |
-| `P0-18` | DEV copies of Master DB and Timetable exist | Owner verification | ☑ |
+| `P0-18` | DEV copies of Master DB and Timetable exist | Owner statement in AGY session, 2026-10-21 (no IDs) | ☑ |
 | `P0-19` | Spike account-coverage matrix committed | Inspect `docs/IDENTITY_DECISION.md` | ☐ |
 
 ## 5. Gate 0 Exit Criteria
