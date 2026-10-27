@@ -23,6 +23,7 @@ Postponement requires approval from the other party: a teacher's request is appr
 
 ## Consequences
 
+* The timetable assignment rule (D-46) applies strictly to the proposed slot row `N`: it must be another scheduled class for the same target teacher, subject, and section. Make-up sessions are not postponements; they are handled by the separate make-up session proposal (D-49).
 * The proposed slot is stored in the existing schema, transactionally, with no schema change.
 * Conflict detection treats the two pending statuses as occupying statuses.
 * The `Logs` sheet records events only. It is **not** used to store workflow state, because log writes are best-effort and the viewer is visible to teachers.

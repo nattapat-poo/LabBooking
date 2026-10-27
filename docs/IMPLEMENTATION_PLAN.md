@@ -138,7 +138,7 @@ stateDiagram-v2
 
 **Rules**
 1. **Blocking:** `PENDING`, `APPROVED`, `POSTPONE_PENDING_TALT` and `POSTPONE_PENDING_TEACHER` occupy their slot. Conflict checks read live data inside the lock.
-2. **Linked-row postponement:** a request keeps the original row `O` and inserts a proposed-slot row `N` with the same pending status and `LinkedBookingID = O.BookingID` (both slots blocked). Approval sets `N` → `APPROVED` and `O` → `POSTPONED` in one lock. Denial or cancellation sets `N` → `CANCELLED` and `O` → `APPROVED`.
+2. **Linked-row postponement:** a request keeps the original row `O` and inserts a proposed-slot row `N` with the same pending status and `LinkedBookingID = O.BookingID` (both slots occupied). Validation of proposed slot `N` enforces the timetable assignment rule (D-46): it must be another scheduled class for the same target teacher, subject, and section. Make-up sessions are not postponements (handled by D-49). Approval sets `N` → `APPROVED` and `O` → `POSTPONED` in one script lock. Denial or cancellation sets `N` → `CANCELLED` and `O` → `APPROVED`.
 3. **Cancellation in both modes:** the initiator or any `TA`/`LabTech`/`Admin` may cancel a pending request. **No timeout** exists. Safety invariant: when the earlier of the two slot start times is reached while pending, the request auto-reverts and `POSTPONE_AUTO_REVERT` is logged.
 4. **Denial reasons** are appended to `Remark` (chronological ascending, never overwritten) on every row involved.
 5. **Locks:** teachers cannot cancel or request postponement within 24 h of the slot start. TALT bypass is allowed with `[URGENT_BYPASS …]` audit logging. A TALT-initiated swap still requires the owner's approval.
@@ -182,7 +182,7 @@ flowchart LR
 - **Fail closed:** Master DB unreachable or a required header missing → authorization denies; schedule reads return a clear error, never defaults.
 - **Bookable slot (D-29):** Room exists ∧ date is instructional ∧ period exists for the effective bell type ∧ no active outage ∧ no occupying booking (see Contract §7.1).
 - **Revocation (D-30):** delete the user's row in Master DB `Users`; access ends within 5 minutes. `UserID` must be stable and never reused (audit `P1-27`).
-- **Teacher join (D-15, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`). A booking is valid only if an assigned teaching block exists in `Index` matching `DayType`, `Period`, `Subject`, and `Section`; free periods, non-teaching blocks, and teachers with zero `Index` rows are rejected with `TIMETABLE_NOT_ASSIGNED` (D-15, D-46). One-time audit `P1-28`.
+- **Teacher join (D-46, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`). A booking is valid only if an assigned teaching block exists in `Index` matching `DayType`, `Period`, `Subject`, and `Section`; free periods, non-teaching blocks, and teachers with zero `Index` rows are rejected with `TIMETABLE_NOT_ASSIGNED` (D-46). One-time audit `P1-28`.
 - **Interface seam:** all role and directory reads go through `getUserDirectory_()` so tests can stub it.
 
 ---
@@ -410,6 +410,6 @@ The `Outages` columns are already in the contract, so `SetupHold` enforcement is
 ### Open Items (Phase 0 Execution)
 1. **Live Header & Distinct Value Dump (O-3 / `P0-17`):** Open (not yet processed). To be executed by Owner in Phase 0 across the 12 consumed tabs, reporting distinct values and counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII).
 2. **Master DB Role Strings (O-8 / `P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.
-3. **Teaching-Block Classification (O-10):** OPEN — A block is teaching iff `Index.Subject` resolves to Master DB `Subjects` and is not in `NON_TEACHING_SUBJECTS` exclusion list. Distinct subject counts reported in `P0-17`.
-4. **Special Session Override (O-11):** OPEN — Default: no override for staff; all bookings must satisfy assignment rule unless Owner later directs otherwise.
+3. **Teaching-Block Classification (O-10):** OPEN — In Master DB `Subjects`, Column B `Subject` is the short title (e.g. `Gen.Bio`, `Envi`, matching `Index.Subject`); Column C `CourseTitle` is not used for matching. A block is teaching iff `Index.Subject` equals `Subjects.Subject` (Column B) and is not in `NON_TEACHING_SUBJECTS` exclusion list (or derived from `Subjects.SubjectCategory`). Distinct subject and category counts reported in `P0-17`.
+4. **Special Session Override & Postponement (O-11):** OPEN (Default = NO OVERRIDE) — No override of timetable assignment rule exists (D-46); postponements must target another scheduled class of the same teacher, subject, and section. Make-up sessions are handled by the separate proposed make-up session type (D-49).
 5. **Subject Colour Tokens (O-12):** OPEN — Owner to provide subject→hex colour mapping from TimeTable project for `docs/DESIGN_TOKENS_SUBJECT_COLORS.md`.

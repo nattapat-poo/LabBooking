@@ -275,7 +275,11 @@ The business rule restricting which teachers may book which rooms based on the t
 This seam returns `true` unconditionally today, establishing the call site for future BL-01 room restrictions as an *additional check* on top of the timetable assignment rule without modifying core booking flow.
 
 ### 7.8 Teaching-block classification (O-10 / D-46)
-A block in `Index` is classified as a **teaching block** iff its `Subject` resolves to a row in Master DB `Subjects` (trimmed, case-insensitive) **and** is not matched by an exclusion list kept in the local `Config` tab (key `NON_TEACHING_SUBJECTS`, e.g., `Homeroom`, `Study Hall`, `LD*`, `Meeting*`, `Outside`). Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0-17` reports distinct `Index.Subject` values and their resolution against `Subjects` (counts only).
+In Master DB `Subjects`, Column B `Subject` is the canonical short title (e.g. `Gen.Bio`, `Envi`, matching `Index.Subject` and timetable grids), while Column C `CourseTitle` is the full descriptive title. `CourseTitle` is **not** used for matching. `Bookings.Subject` stores the short title.
+
+A block in `Index` is classified as a **teaching block** iff its `Index.Subject` equals (trimmed, case-insensitive) a **`Subjects.Subject`** value (Column B) **and** is not matched by an exclusion list kept in the local `Config` tab (key `NON_TEACHING_SUBJECTS`, e.g., `Homeroom`, `Study Hall`, `LD*`, `Meeting*`, `Outside`, `Wellbeing`). If `Subjects.SubjectCategory` categorizes advisory and common non-teaching blocks, the exclusion list may optionally be derived from `SubjectCategory` (to be confirmed by the Owner from the `P0-17` verification report).
+
+Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0-17` reports distinct `Index.Subject` values with counts, whether each equals a `Subjects.Subject`, and distinct `Subjects.SubjectCategory` values (counts only).
 
 ---
 
@@ -292,6 +296,6 @@ A block in `Index` is classified as a **teaching block** iff its `Subject` resol
 | **O-7** | Legacy status string migration | **RESOLVED (D-42):** Migration procedure approved (backup copy, test on DEV first, idempotent, log counts only). Unknown status strings block go-live. |
 | **O-8** | Stored role strings in Master DB `Users.Role` | **OPEN:** Verify that all active rows in `Users.Role` use canonical values (`Teacher`, `TA`, `LabTech`, `Admin`, `HoD`, `Student`). Verified via `P0-17`. |
 | **O-9** | DEV copies of Master DB 2026 and Timetable 2026 (`P0-18`) | **CONFIRMED (Owner 2026-10-21):** Isolated DEV copies of all Google Sheets confirmed to exist; production Master DB is never modified. |
-| **O-10** | Teaching vs non-teaching block classification | **OPEN (default in §7.8):** A block is teaching iff `Index.Subject` resolves to Master DB `Subjects` and is not in `NON_TEACHING_SUBJECTS` exclusion list. Owner to confirm after `P0-17` distinct subject count report. |
-| **O-11** | Special session override for staff | **OPEN (default = NO OVERRIDE):** Whether `TA`/`LabTech`/`Admin` need an override to book unassigned or special sessions (make-up classes, lab support). Default: no override. |
+| **O-10** | Teaching vs non-teaching block classification | **OPEN (default in §7.8):** Column B `Subjects.Subject` is short title used for exact matching; `CourseTitle` is not used. Block is teaching iff `Index.Subject` equals `Subjects.Subject` and is not in `NON_TEACHING_SUBJECTS` (or derived from `SubjectCategory`). Owner to confirm from `P0-17`. |
+| **O-11** | Special session override & postponement constraint | **OPEN (default = NO OVERRIDE):** No override of timetable assignment rule exists (D-46); postponements must target another scheduled class of same teacher/subject/section. Make-up sessions handled by proposed D-49 type. |
 | **O-12** | Subject colour design tokens from TimeTable project | **OPEN:** Owner to paste the subject→colour mapping into the AGY chat from the TimeTable project for `docs/DESIGN_TOKENS_SUBJECT_COLORS.md`. |
