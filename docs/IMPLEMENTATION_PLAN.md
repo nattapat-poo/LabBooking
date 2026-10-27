@@ -351,7 +351,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-12 | Role cache TTL | ≤ 5 minutes | CONFIRMED | Owner 2026-10-15 |
 | D-13 | Fail-closed DB | No silent fallback; `DATABASE_UNAVAILABLE`; `FALLBACK_SHEET_ID` removed | CONFIRMED | Owner 2026-10-15 |
 | D-14 | DEV/PROD isolation | Separate DEV and PROD IDs, read from Script Properties; tests refuse PROD | CONFIRMED | Owner 2026-10-15 |
-| D-15 | Teacher join | Session email → `Users.DisplayName` → `Index.Teacher`; identity resolution failure (no `Users` row, duplicate email/DisplayName) throws `TIMETABLE_USER_UNRESOLVED`; zero `Index` rows logs warning (no conflict) | CONFIRMED | Owner 2026-10-15 |
+| D-15 | Teacher join | Session email → Users.DisplayName → Index.Teacher; identity resolution failure (no Users row, duplicate email/DisplayName) throws TIMETABLE_USER_UNRESOLVED; zero Index rows logged warning (HISTORY) | SUPERSEDED by D-46 (Owner 2026-10-27) | Owner 2026-10-15 |
 | D-16 | Impersonation | Admin/SuperAdmin only; production = preview + dry-run; writes only on DEV | CONFIRMED | Owner 2026-10-19 |
 | D-17 | Test fixtures | Use `uat_tester@mahidol.ac.th` | CONFIRMED | Owner 2026-10-15 |
 | D-18 | Derived attributes | `isHoD`, `Can_Edit_Config` derived; tutorial in `localStorage`; `PrimaryGrade` removed | CONFIRMED | Owner 2026-10-15 |
