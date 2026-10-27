@@ -20,7 +20,7 @@
 
 ### Decisions Recorded
 1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.
-2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable conflict check retained in `API_Validation.js` (D-46); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
+2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule retained in `API_Validation.js` (D-46); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
 3. **D-39 (Live Spellings):** Exact tab spelling is `Bookings`; header is `IsActive`.
 4. **D-40 (Calendar Failure Marker):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary; retry counts stored outside sheet.
 5. **D-41 (Non-Statuses):** `Action Required` and `Error (Calendar)` confirmed non-statuses.
@@ -28,7 +28,7 @@
 7. **D-43 (HoD Strictly Read-Only):** HoD cannot book, cannot proxy, and **cannot be the `TargetUserID` of an on-behalf booking** (`TARGET_ROLE_INELIGIBLE`). Workaround withdrawn.
 8. **D-44 (Identity Spike Account Coverage):** Admin tested on DEV via Owner staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite (`P0-18`).
 9. **D-45 (ADR-0002 Reconfirmed):** SuperAdmin via Script Property, PIN removal, project schema authority, global standards update deferred.
-10. **D-46 (Timetable Conflict Check Semantics):** Confirmed existing check in `API_Validation.js` is a conflict check (same subject/section allowed, free period allowed, different class rejected); `TIMETABLE_USER_UNRESOLVED` thrown only for identity resolution failure; zero `Index` rows logs warning; `P2-37` added.
+10. **D-46 (Timetable Assignment Rule):** Owner confirmed Option B (PRD assignment rule). Stricter than live code: bookings require an existing assigned teaching block with matching Subject and Section. Free periods, non-teaching blocks (Homeroom, Study Hall, LD, meetings), and teachers with zero `Index` rows are rejected (`TIMETABLE_NOT_ASSIGNED`). Identity failure throws `TIMETABLE_USER_UNRESOLVED` fail-closed. Added `P2-37` and `P2-38`. Earlier conflict-check entry superseded; staff notice required before deployment.
 
 ### Document Repairs & Synchronization
 * **Locked PRD Repaired:** Restored `docs/Lab Booking App - PRD v1.1.3c.md` from `main` to undo inadvertent reversion of 1.4.0a text; added single superseding banner line matching Appendix and Design Spec.

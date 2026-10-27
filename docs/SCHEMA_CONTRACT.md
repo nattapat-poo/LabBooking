@@ -256,7 +256,7 @@ Ownership = the caller's `Users.UserID` (resolved from the session email) equals
 ### 7.3 Canonical teacher join (`Utils_DataMapper.js`)
 1. Session email → `Users` row (trim, lowercase) → `DisplayName` (or `FirstName` if blank), normalised.
 2. Matching: `TIMETABLE_USER_UNRESOLVED` means the **identity** cannot be resolved (no `Users` row for the session email, duplicate email, or duplicate `DisplayName` across active rows). Fail closed, never guess.
-3. Timetable records in `Timetable 2026` (`Index`) are matched where `Index.Teacher.trim().toLowerCase() === user.DisplayName.trim().toLowerCase()`. A teacher with **zero `Index` rows** is **not** unresolved; they simply have no timetable conflicts (a data-quality warning is logged).
+3. Timetable records in `Timetable 2026` (`Index`) are matched where `Index.Teacher.trim().toLowerCase() === user.DisplayName.trim().toLowerCase()`. Under the timetable assignment rule (D-46), a teacher with **zero `Index` rows** is not assigned to any teaching block and cannot book classes; any booking attempt is rejected with `TIMETABLE_NOT_ASSIGNED`.
 4. A one-time audit (`P1-28`) proves every `Index.Teacher` resolves to exactly one `Users` row.
 
 ### 7.4 Revocation
@@ -269,9 +269,12 @@ Postponement uses a **linked row**. See the plan §2.2 for the state machine. Th
 Non-student roles may open a read-only viewer over `Logs`: event details and actor emails visible; allowlisted columns only; message text sanitised; paginated; **no write endpoint exists**.
 
 ### 7.7 Room eligibility seam (future, BL-01 / D-38 / D-46)
-The business rule restricting which teachers may book which rooms based on the timetable is deferred to backlog item **BL-01**. Today, the validation pipeline retains the timetable conflict check (verifying that the slot does not conflict with a different scheduled class for that teacher), and routes room checks through an extensible seam:
+The business rule restricting which teachers may book which rooms based on the timetable is deferred to backlog item **BL-01**. Today, the validation pipeline retains the timetable assignment rule (verifying that a valid teaching block exists for the target teacher at that `DayType` and `Period` matching the requested `Subject` and `Section` per D-46), and routes room checks through an extensible seam:
 `isRoomEligible_(userId, roomId, dayType, period)`
-This seam returns `true` unconditionally today, establishing the call site for future BL-01 room restrictions as an *additional check* on top of the timetable conflict check without modifying core booking flow.
+This seam returns `true` unconditionally today, establishing the call site for future BL-01 room restrictions as an *additional check* on top of the timetable assignment rule without modifying core booking flow.
+
+### 7.8 Teaching-block classification (O-10 / D-46)
+A block in `Index` is classified as a **teaching block** iff its `Subject` resolves to a row in Master DB `Subjects` (trimmed, case-insensitive) **and** is not matched by an exclusion list kept in the local `Config` tab (key `NON_TEACHING_SUBJECTS`, e.g., `Homeroom`, `Study Hall`, `LD*`, `Meeting*`, `Outside`). Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0-17` reports distinct `Index.Subject` values and their resolution against `Subjects` (counts only).
 
 ---
 
@@ -280,7 +283,7 @@ This seam returns `true` unconditionally today, establishing the call site for f
 | # | Item | Status / Resolution |
 |---|---|---|
 | **O-1** | Default `BellType` when `Academic_Calendar.BellScheduleOverride` is blank | **RESOLVED (D-37):** Effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular`. Value spellings verified in `P0-17`. |
-| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable conflict check retained (D-46); future restrictions deferred to **BL-01** via `isRoomEligible_` seam (an additional check on top of conflict check). |
+| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment check retained (D-46); future restrictions deferred to **BL-01** via `isRoomEligible_` seam (an additional check on top of assignment check). |
 | **O-3** | Live header dump & array-formula check across 12 consumed tabs (`P0-17`) | **OPEN (not yet processed):** Scheduled for owner-run execution in Phase 0 (`P0-17`). Extended to report distinct values with counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII). |
 | **O-4** | Live tab name and header spelling (`Bookings` vs `Booking`, `IsActive`) | **RESOLVED (D-39):** Exact live tab name is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive. |
 | **O-5** | `GCalEventID` failure convention and code vocabulary | **RESOLVED (D-40):** `ERROR:<code>` confirmed. Proposed vocabulary (`CALENDAR_API`, `CALENDAR_QUOTA`, `CALENDAR_NOT_FOUND`, `INVALID_TIME`) adopted (ASSUMED). Retry counts stored outside sheet. |
@@ -288,3 +291,6 @@ This seam returns `true` unconditionally today, establishing the call site for f
 | **O-7** | Legacy status string migration | **RESOLVED (D-42):** Migration procedure approved (backup copy, test on DEV first, idempotent, log counts only). Unknown status strings block go-live. |
 | **O-8** | Stored role strings in Master DB `Users.Role` | **OPEN:** Verify that all active rows in `Users.Role` use canonical values (`Teacher`, `TA`, `LabTech`, `Admin`, `HoD`, `Student`). Verified via `P0-17`. |
 | **O-9** | DEV copies of Master DB 2026 and Timetable 2026 (`P0-18`) | **CONFIRMED (Owner 2026-10-21):** Isolated DEV copies of all Google Sheets confirmed to exist; production Master DB is never modified. |
+| **O-10** | Teaching vs non-teaching block classification | **OPEN (default in §7.8):** A block is teaching iff `Index.Subject` resolves to Master DB `Subjects` and is not in `NON_TEACHING_SUBJECTS` exclusion list. Owner to confirm after `P0-17` distinct subject count report. |
+| **O-11** | Special session override for staff | **OPEN (default = NO OVERRIDE):** Whether `TA`/`LabTech`/`Admin` need an override to book unassigned or special sessions (make-up classes, lab support). Default: no override. |
+| **O-12** | Subject colour design tokens from TimeTable project | **OPEN:** Owner to paste the subject→colour mapping into the AGY chat from the TimeTable project for `docs/DESIGN_TOKENS_SUBJECT_COLORS.md`. |

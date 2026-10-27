@@ -182,7 +182,7 @@ flowchart LR
 - **Fail closed:** Master DB unreachable or a required header missing → authorization denies; schedule reads return a clear error, never defaults.
 - **Bookable slot (D-29):** Room exists ∧ date is instructional ∧ period exists for the effective bell type ∧ no active outage ∧ no occupying booking (see Contract §7.1).
 - **Revocation (D-30):** delete the user's row in Master DB `Users`; access ends within 5 minutes. `UserID` must be stable and never reused (audit `P1-27`).
-- **Teacher join (D-15, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`); a teacher with zero `Index` rows has no timetable conflicts and logs a data-quality warning. One-time audit `P1-28`.
+- **Teacher join (D-15, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`). A booking is valid only if an assigned teaching block exists in `Index` matching `DayType`, `Period`, `Subject`, and `Section`; free periods, non-teaching blocks, and teachers with zero `Index` rows are rejected with `TIMETABLE_NOT_ASSIGNED` (D-15, D-46). One-time audit `P1-28`.
 - **Interface seam:** all role and directory reads go through `getUserDirectory_()` so tests can stub it.
 
 ---
@@ -282,7 +282,7 @@ flowchart TD
 * **Workstreams:**
   1. **Schema alignment:** align `TX_COL`, `USR_COL`, `LOG_COL` and `Stats` schemas (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive` per D-36, D-39).
   2. **Wiring repair:** wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys; eliminate "cart" terminology.
-  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), timetable conflict check (D-46: same class allowed, free period allowed, different subject/section rejected with "Timetable Conflict"), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
+  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), timetable assignment rule (D-46: teaching block must exist with matching subject and section; free periods, non-teaching blocks, and zero-row teachers reject TIMETABLE_NOT_ASSIGNED; subject/section mismatch rejects TIMETABLE_SUBJECT_MISMATCH; identity failure rejects TIMETABLE_USER_UNRESOLVED fail-closed; TALT on-behalf validates target teacher; no bypass per O-11), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
   4. **Idempotency:** client request ID in `CacheService` (6 h TTL) + natural-key collision prevention.
   5. **Status enum & migration:** enforce 7 stored values incl. `DENIED` and `POSTPONED`; chronological `Remark` stacking; execute legacy status migration procedure (D-42 / `P2-32`).
   6. **Linked-row postponement:** two-way approval with cancellation in both modes and auto-revert (§2.2, ADR-0003).
@@ -391,7 +391,7 @@ Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release p
 
 ### Resolved / Confirmed Items
 1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
-2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable conflict check retained (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment check retained (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
 3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
 4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
 5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.
