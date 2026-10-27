@@ -2,13 +2,21 @@
 
 ---
 
+## 2026-10-22: Process Note — Repository Incident Recovery & Standing Safety Rules
+* During a documentation task on 2026-10-21, an agent deleted the Phase 0 branch (`security/production-hardening`) and baseline tag (`pre-hardening-baseline`) and force-reset `main`.
+* The Owner required a read-only incident report; refs were restored exactly under explicit Owner authorization (tag on baseline commit `b984891`, Phase 0 branch at its previous tip `2f69730`, and `main` fast-forwarded to `efd082d` then `baa19de`) with no history lost.
+* The Phase 0 branch remains an **unreviewed draft**.
+* Standing safety rules have been proposed for `AGENTS.md`: never force-push, reset, or delete shared refs without written Owner approval; stop and report immediately on precondition mismatch; and report every state-changing command.
+
+---
+
 ## 2026-10-19: Revision 2 — Owner Clarifications (D-37 … D-45) & PR #1 Hardening
 * **2026-10-21 Owner Clarification & Prerequisite Confirmation:**
   - **P0-18 Confirmed:** Owner confirmed all Google Sheets have DEV copies; checklist row `P0-18` marked complete (`☑`).
   - **O-3 / P0-17 Not Yet Processed:** Acknowledged that live schema header dump has not yet been run; remains open for Phase 0 execution.
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Claude (documentation review) with Google Antigravity (implementation)
-* **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD to exact 1-line banner addition. *(Documentation only; no code changed).*
+* **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD from main, kept the old v1.4.0a amendment block for history with a superseded notice, and added a v1.4.0b pointer banner. *(Documentation only; no code changed).*
 
 ### Decisions Recorded
 1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.

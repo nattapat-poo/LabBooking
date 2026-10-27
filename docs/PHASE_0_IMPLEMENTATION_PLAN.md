@@ -72,6 +72,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 | D8 | It needs broader OAuth scopes than the minimal set, or shows consent screens users cannot complete. |
 
 **Method & Account Coverage Policy (D-44):**
+
 | Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
 |---|---|---|---|
 | Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |

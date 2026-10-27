@@ -246,7 +246,9 @@ flowchart TD
 *Details in [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md).*
 * **Findings / revisions:** baseline for F-01 … F-18, R-01, R-06, R-10, R-16, D-33, D-34.
 * **Workstreams:** (1) git isolation with a rollback tag **by explicit SHA**; (2) pattern-based secret/ID scan and branch protection; (3) **Identity Spike** with pre-registered disqualifiers and redacted evidence; (4) Node test harness; (5) `verify_phase.js`; (6) ledger and exposure matrix; (7) `Health_UAT.js` fixture sanitation; (8) owner-run read-only header dump to verify the contract; (9) docs lint.
+
 **Account Coverage Matrix & Scope (D-44):**
+
 | Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
 |---|---|---|---|
 | Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |
