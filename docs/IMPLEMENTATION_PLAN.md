@@ -182,7 +182,7 @@ flowchart LR
 - **Fail closed:** Master DB unreachable or a required header missing → authorization denies; schedule reads return a clear error, never defaults.
 - **Bookable slot (D-29):** Room exists ∧ date is instructional ∧ period exists for the effective bell type ∧ no active outage ∧ no occupying booking (see Contract §7.1).
 - **Revocation (D-30):** delete the user's row in Master DB `Users`; access ends within 5 minutes. `UserID` must be stable and never reused (audit `P1-27`).
-- **Teacher join (D-15, D-31):** `Session email → Users.DisplayName → Index.Teacher`; zero or multiple matches throw `TIMETABLE_USER_UNRESOLVED`; one-time audit `P1-28`.
+- **Teacher join (D-15, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`); a teacher with zero `Index` rows has no timetable conflicts and logs a data-quality warning. One-time audit `P1-28`.
 - **Interface seam:** all role and directory reads go through `getUserDirectory_()` so tests can stub it.
 
 ---
@@ -280,7 +280,7 @@ flowchart TD
 * **Workstreams:**
   1. **Schema alignment:** align `TX_COL`, `USR_COL`, `LOG_COL` and `Stats` schemas (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive` per D-36, D-39).
   2. **Wiring repair:** wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys; eliminate "cart" terminology.
-  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
+  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), timetable conflict check (D-46: same class allowed, free period allowed, different subject/section rejected with "Timetable Conflict"), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
   4. **Idempotency:** client request ID in `CacheService` (6 h TTL) + natural-key collision prevention.
   5. **Status enum & migration:** enforce 7 stored values incl. `DENIED` and `POSTPONED`; chronological `Remark` stacking; execute legacy status migration procedure (D-42 / `P2-32`).
   6. **Linked-row postponement:** two-way approval with cancellation in both modes and auto-revert (§2.2, ADR-0003).
@@ -347,7 +347,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-12 | Role cache TTL | ≤ 5 minutes | CONFIRMED | Owner 2026-10-15 |
 | D-13 | Fail-closed DB | No silent fallback; `DATABASE_UNAVAILABLE`; `FALLBACK_SHEET_ID` removed | CONFIRMED | Owner 2026-10-15 |
 | D-14 | DEV/PROD isolation | Separate DEV and PROD IDs, read from Script Properties; tests refuse PROD | CONFIRMED | Owner 2026-10-15 |
-| D-15 | Teacher join | Session email → `Users.DisplayName` → `Index.Teacher`; unresolved fails closed | CONFIRMED | Owner 2026-10-15 |
+| D-15 | Teacher join | Session email → `Users.DisplayName` → `Index.Teacher`; identity resolution failure (no `Users` row, duplicate email/DisplayName) throws `TIMETABLE_USER_UNRESOLVED`; zero `Index` rows logs warning (no conflict) | CONFIRMED | Owner 2026-10-15 |
 | D-16 | Impersonation | Admin/SuperAdmin only; production = preview + dry-run; writes only on DEV | CONFIRMED | Owner 2026-10-19 |
 | D-17 | Test fixtures | Use `uat_tester@mahidol.ac.th` | CONFIRMED | Owner 2026-10-15 |
 | D-18 | Derived attributes | `isHoD`, `Can_Edit_Config` derived; tutorial in `localStorage`; `PrimaryGrade` removed | CONFIRMED | Owner 2026-10-15 |
@@ -370,7 +370,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-35 | Phase moves | Reader and all ID migration → Phase 1 | CONFIRMED | Owner 2026-10-19 |
 | D-36 | Column order | Outages and Duties per contract; `Duties.IsActive` added | CONFIRMED | Owner 2026-10-19 |
 | D-37 | Default `BellType` | When `Academic_Calendar.BellScheduleOverride` is blank, effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular` | CONFIRMED (rule); ASSUMED (spelling) | Owner 2026-10-19 |
-| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained; future restrictions deferred to BL-01 via `isRoomEligible_` seam | CONFIRMED | Owner 2026-10-19 |
+| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable conflict check retained; future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of conflict check) | CONFIRMED | Owner 2026-10-19 |
 | D-39 | Live spellings | Exact tab spelling is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive | CONFIRMED | Owner 2026-10-19 |
 | D-40 | Calendar failure marker | Failed sync recorded as `GCalEventID = ERROR:<code>` with standard code vocabulary; retry attempts tracked outside sheet schema | CONFIRMED (marker); ASSUMED (codes/retry) | Owner 2026-10-19 |
 | D-41 | Non-statuses | `Action Required` and `Error (Calendar)` are non-statuses; recorded in `Remark` and `Logs` only | CONFIRMED | Owner 2026-10-19 |
@@ -378,6 +378,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-43 | HoD restriction | HoD is strictly read-only: cannot book, cannot proxy, and cannot be `TargetUserID` of on-behalf booking (`TARGET_ROLE_INELIGIBLE`); workaround withdrawn | CONFIRMED (interpretation to reconfirm) | Owner 2026-10-19 |
 | D-44 | Test account policy | Admin on DEV via staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite | CONFIRMED | Owner 2026-10-19 |
 | D-45 | ADR-0002 reconfirmed | SuperAdmin via Script Property, PIN removal, project schema authority, global standards updated later | CONFIRMED | Owner 2026-10-19 |
+| D-46 | Timetable conflict check | Existing validation is a conflict check (same class allowed, free period allowed, different subject/section rejected with "Timetable Conflict"); Owner approved Part 2; PRD assignment-check discrepancy noted | CONFIRMED | Owner 2026-10-27 |
 
 ---
 
@@ -388,7 +389,7 @@ Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release p
 
 ### Resolved / Confirmed Items
 1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
-2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable verification retained; extensible seam `isRoomEligible_` added; restriction logic deferred to BL-01.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable conflict check retained (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
 3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
 4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
 5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.

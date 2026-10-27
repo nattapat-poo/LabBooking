@@ -3,7 +3,7 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Governance:** [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md), `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills`
 **Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>`
-**Last synchronised with the plan:** 2026-10-19 (rev. 2, 123 checklist rows)
+**Last synchronised with the plan:** 2026-10-27 (Part 2 timetable conflict semantics, 124 checklist rows)
 
 ---
 
@@ -117,12 +117,13 @@
 | `P2-28` | Forensic-log endpoint is read-only, returns allowlisted columns, sanitised text, paginated; `Student` denied | D-25 | Unit test `testForensicViewerReadOnly()` | No write path; Student → `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
 | `P2-29` | `Outages` and `Duties` contracts (new column order; `Duties.IsActive`) validated | D-36 | Unit tests `testHeaderContractMatch('Outages')`, `('Duties')` | Match; `IsActive` honoured | unit | lab-oops-standards | ☐ | | |
 | `P2-30` | Behaviour-preservation suite derived from PRD §7/§14 passes (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message) | PRD amendment §3 | Run suite | All pass | unit / staging | gas-best-practices | ☐ | | |
-| `P2-31` | `TIMETABLE_USER_UNRESOLVED` thrown for zero or multiple teacher matches | D-15, D-31 | Unit test | Fails closed | unit | gas-best-practices | ☐ | | |
+| `P2-31` | `TIMETABLE_USER_UNRESOLVED` thrown for unresolved identity (no `Users` row, duplicate email, duplicate `DisplayName`); zero `Index` rows logs warning | D-15, D-31, D-46 | Unit test | Identity resolution fails closed; zero index rows allowed with warning | unit | gas-best-practices | ☐ | | |
 | `P2-32` | Legacy status strings migrated using PRD amendment §2 mapping (dated backup, DEV first, idempotent, counts only, unknown strings block go-live) | D-22, D-42 | Owner-manual script execution | No legacy strings remain; counts logged | staging / owner | lab-oops-standards | ☐ | | |
 | `P2-33` | Default `BellType` rule: `Wed` on Wednesday, otherwise `Regular` when override is blank | D-37 | Unit test `testDefaultBellTypeByWeekday()` | Effective bell type matches weekday | unit | gas-best-practices | ☐ | | |
-| `P2-34` | All `Room` rows bookable (no `RoomType` filter); timetable verification retained; `isRoomEligible_` seam present and called | D-38, BL-01 | Unit test `testAllRoomsBookableWithSeam()` | Room without RoomType bookable; seam called | unit | gas-best-practices | ☐ | | |
+| `P2-34` | All `Room` rows bookable (no `RoomType` filter); timetable conflict check retained; `isRoomEligible_` seam present as additional check | D-38, D-46, BL-01 | Unit test `testAllRoomsBookableWithSeam()` | Room without RoomType bookable; seam called on top of conflict check | unit | gas-best-practices | ☐ | | |
 | `P2-35` | `TARGET_ROLE_INELIGIBLE` thrown when booking target is HoD or Student (HoD cannot be on-behalf target) | D-43 | Unit test `testHodCannotBeBookingTarget()` | Throws `TARGET_ROLE_INELIGIBLE` | unit | gas-best-practices | ☐ | | |
 | `P2-36` | `GCalEventID` `ERROR:<code>` vocabulary enforced; retry attempts tracked outside sheet schema; manual retry works | D-40 | Unit test `testCalendarErrorCodeVocabulary()` | Standard code recorded; retry state external | unit | gas-best-practices | ☐ | | |
+| `P2-37` | Timetable conflict semantics verified: same class passes, different subject/section rejects, free period passes, zero `Index` rows passes with warning, duplicate `DisplayName` throws `TIMETABLE_USER_UNRESOLVED` | D-15, D-46 | Unit test `testTimetableConflictSemantics()` | Conflict semantics verified per specification table | unit | gas-best-practices | ☐ | | |
 
 ---
 
