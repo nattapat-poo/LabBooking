@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 Decisions D-37 … D-45 in [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md).
 
 #### Added
+* **Make-up session proposal (D-49, P2-39, BL-04, O-13):** Proposed dedicated booking flow for whole-subject make-up lab sessions (typically Period 8 free periods) created by TALT staff with multi-teacher notification, mandatory justification, and `[MAKEUP]` tag in `Remark` (awaiting Owner confirmation).
 * **Booking-grid UI requirements (D-48, BL-02, BL-03):** Teacher booking view shows only assigned teaching blocks; non-teaching/free periods are blank; available blocks are muted transparent, filled on select/pending/booked; Subject and Section autofilled and locked from server blocks endpoint (`P2-38`); UI implementation deferred to post-Gate 6 (**BL-02**); subject color token scaffolding established in `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` (**BL-03**, O-12).
 * **Default `BellType` rule (D-37):** when `Academic_Calendar.BellScheduleOverride` is blank, effective schedule is `Wed` on Wednesday, otherwise `Regular` (`P2-33`).
 * **All `Room` rows bookable (D-38, D-46):** all rooms in `Room` are bookable for class/lab activities (no `RoomType` filter); timetable assignment rule enforced (D-46; PLANNED Phase 2); extensible seam `isRoomEligible_` added for future timetable room restrictions (**BL-01**; `P2-34`).

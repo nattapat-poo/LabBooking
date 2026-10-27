@@ -3,7 +3,7 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Governance:** [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md), `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills`
 **Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>`
-**Last synchronised with the plan:** 2026-10-27 (rev. 3, timetable assignment rule D-46/D-48, HoD D-47, 125 checklist rows)
+**Last synchronised with the plan:** 2026-10-27 (rev. 4, make-up session proposal D-49/P2-39, subject colours O-12, 126 checklist rows)
 
 ---
 
@@ -125,6 +125,7 @@
 | `P2-36` | `GCalEventID` `ERROR:<code>` vocabulary enforced; retry attempts tracked outside sheet schema; manual retry works | D-40 | Unit test `testCalendarErrorCodeVocabulary()` | Standard code recorded; retry state external | unit | gas-best-practices | ☐ | | |
 | `P2-37` | Timetable assignment rule verified: same teaching block passes; different subject/section rejects `TIMETABLE_SUBJECT_MISMATCH`; free period (no row) rejects `TIMETABLE_NOT_ASSIGNED`; non-teaching block (Homeroom, Study Hall, LD, meeting) rejects `TIMETABLE_NOT_ASSIGNED`; zero `Index` rows rejects `TIMETABLE_NOT_ASSIGNED`; TALT on-behalf validates target teacher's timetable; duplicate `DisplayName` throws `TIMETABLE_USER_UNRESOLVED` | D-46 | Unit test `testTimetableAssignmentRule()` | Assignment rule enforced per specification table | unit | gas-best-practices | ☐ | | |
 | `P2-38` | Server exposes target teacher's assigned **teaching** blocks (DayType, Period, Subject, Section) for UI autofill; server rule remains authority if UI bypassed | D-48 | Unit test `testAssignedBlocksEndpoint()` | Returns assigned teaching blocks only; rejects non-teaching blocks | unit | gas-best-practices | ☐ | | |
+| `P2-39` | Make-up session validation rules verified: subject exists in `Subjects`, period is free period (no teaching block), mandatory justification present, starts `PENDING`, notifications route to all subject teachers *(proposed; not required for Gate 2 until Owner confirms D-49)* | D-49 | Unit test `testMakeupSessionRules()` | Validation passes for free period with justification; rejects occupied/scheduled period or blank justification | unit | gas-best-practices | ☐ | | |
 
 ---
 
