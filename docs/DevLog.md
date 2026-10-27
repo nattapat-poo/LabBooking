@@ -20,13 +20,13 @@
 
 ### Decisions Recorded
 1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.
-2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule retained in `API_Validation.js` (D-46); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
+2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule enforced in `API_Validation.js` (D-46; PLANNED Phase 2); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
 3. **D-39 (Live Spellings):** Exact tab spelling is `Bookings`; header is `IsActive`.
 4. **D-40 (Calendar Failure Marker):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary; retry counts stored outside sheet.
 5. **D-41 (Non-Statuses):** `Action Required` and `Error (Calendar)` confirmed non-statuses.
 6. **D-42 (Status Migration):** Procedure approved (dated backup, DEV first, idempotent, counts only, unknown strings block go-live).
 7. **D-43 (HoD Restriction — SUPERSEDED by D-47):** Previously held HoD strictly read-only; superseded by D-47 (Owner 2026-10-27).
-11. **D-47 (HoD as Subject Teacher with Executive View):** HoD role string retained as `HoD`. Subject teacher with executive view: can book own classes under own timetable, cancel (24 h lock), and request postponement; TALT may book on HoD's behalf. Proxy for other teachers, approvals, and administrative actions denied. `TARGET_ROLE_INELIGIBLE` applies to `Student` and unrecognised roles only. Supersedes D-43; revises D-24.
+11. **D-47 (HoD as Subject Teacher with Executive View):** HoD role string UNCHANGED as `HoD`. Subject teacher with executive view: can book own classes under own timetable, cancel (24 h lock), and request postponement; TALT may book on HoD's behalf. On-behalf booking for other teachers, approvals, and administrative actions Not allowed. `TARGET_ROLE_INELIGIBLE` applies to `Student` and unrecognised roles only. Supersedes D-43; revises D-24.
 12. **D-48 (Booking-Grid UI Requirements & Design Tokens):** Teacher grid displays assigned teaching blocks only; unassigned/non-teaching slots are blank; available blocks muted transparent, filled on select/pending/booked; Subject and Section autofilled and locked. Subject colours drawn from `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` (O-12). Scaffolding in place; UI delivery deferred to post-Gate 6 (BL-02, BL-03).
 8. **D-44 (Identity Spike Account Coverage):** Admin tested on DEV via Owner staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite (`P0-18`).
 9. **D-45 (ADR-0002 Reconfirmed):** SuperAdmin via Script Property, PIN removal, project schema authority, global standards update deferred.

@@ -47,7 +47,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 2. **Branch protection on `main`:** pull request required, owner review, `verify_phase` check required, no force-push, no deletion; protect tag patterns; `CODEOWNERS` for `docs/`, `Utils_Security.js` and `appsscript.json`.
 3. **GitHub secret scanning and push protection** enabled.
 4. **CI:** a workflow runs the pattern scan and `verify_phase.js --phase 0` on every pull request.
-5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`.
+5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`. The future `verify_phase.js` docs lint will warn on banned words ("retained", "proxy", bare "conflict") outside allow-listed contexts (per `docs/GLOSSARY.md`).
 6. **Single schema source:** keep `schema/contract.json` (machine-readable) alongside `SCHEMA_CONTRACT.md`; the lint compares them.
 7. **Changelog discipline:** planned work is recorded under `[Unreleased]` until code ships.
 

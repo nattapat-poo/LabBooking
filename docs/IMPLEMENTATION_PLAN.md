@@ -4,7 +4,7 @@
 **Source Location:** `App_Script/` (Google Apps Script web app, 50 files)
 **Governing Standard:** `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills` (conflicts recorded in [ADR-0002](./adr/0002-superadmin-pin-removal-and-standard-deviations.md))
 **Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-19)
-**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`adr/`](./adr/)
+**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`adr/`](./adr/)
 
 > **Status of this document:** a *plan*. No application code has changed yet. `CHANGELOG.md` records planned work under `[Unreleased]` until code ships.
 
@@ -79,27 +79,27 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 
 | Action | Teacher | TA | LabTech | Admin | HoD | Student | Source |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Own** | Denied | D-10, D-47 |
-| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | **Own** | Denied | D-24, D-47 |
-| `ACTION_VIEW_ALL_BOOKINGS` (Master Calendar) | Allowed | Allowed | Allowed | Allowed | Allowed | Denied | D-10 |
-| `ACTION_VIEW_SCHEDULE` | Allowed | Allowed | Allowed | Allowed | Allowed | **Denied** | D-08 |
-| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Own only (24 h lock)** | Denied | D-02, D-47 |
-| `ACTION_APPROVE_BOOKING` | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
-| `ACTION_REJECT_BOOKING` (status `DENIED`) | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
-| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Own (24 h lock)** | Denied | D-04, D-47 |
-| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Reciprocal** | Denied | D-04, D-47 |
-| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | **Own** | Denied | D-23, D-47 |
-| `ACTION_ASSIGN_ROOM_TECH` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
-| `ACTION_MANAGE_OUTAGES` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
-| `ACTION_EDIT_CONFIG` | Denied | Denied | Denied | Allowed | Denied | Denied | D-10 |
-| `ACTION_VIEW_LOGS_STATS` (read-only viewer) | Allowed | Allowed | Allowed | Allowed | Allowed | Denied | D-25 |
-| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Denied | Denied | Denied | Allowed | Denied | Denied | D-10 |
-| `ACTION_IMPERSONATE_PREVIEW` | Denied | Denied | Denied | Allowed | Denied | Denied | D-16 |
-| `ACTION_TRIGGER_CALENDAR` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-24 |
+| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Own** | Not allowed | D-10, D-47 |
+| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | **Own** | Not allowed | D-24, D-47 |
+| `ACTION_VIEW_ALL_BOOKINGS` (Master Calendar) | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-10 |
+| `ACTION_VIEW_SCHEDULE` | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-08 |
+| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Own only (24 h lock)** | Not allowed | D-02, D-47 |
+| `ACTION_APPROVE_BOOKING` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-03, D-10 |
+| `ACTION_REJECT_BOOKING` (status `DENIED`) | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-03, D-10 |
+| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Own (24 h lock)** | Not allowed | D-04, D-47 |
+| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Reciprocal** | Not allowed | D-04, D-47 |
+| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | **Own** | Not allowed | D-23, D-47 |
+| `ACTION_ASSIGN_ROOM_TECH` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-10 |
+| `ACTION_MANAGE_OUTAGES` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-10 |
+| `ACTION_EDIT_CONFIG` | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-10 |
+| `ACTION_VIEW_LOGS_STATS` (read-only viewer) | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-25 |
+| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-10 |
+| `ACTION_IMPERSONATE_PREVIEW` | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-16 |
+| `ACTION_TRIGGER_CALENDAR` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-24 |
 
 *`Source` names the decision that determines the row. Cells not literally quoted by the Owner but implied by a confirmed decision are marked by that decision's ID and are re-verified at Gate 1.*
 
-**Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Denied** for the `Student` role until a Student module exists.
+**Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Not allowed** for the `Student` role until a Student module exists.
 **HoD policy (D-10, D-47; supersedes D-24, D-43):** HoD is a subject teacher with an executive view; role string stays `HoD` (no rename). An HoD may submit, cancel (subject to 24 h lock) and request postponement for their own bookings, and approve TALT-initiated swaps of their own bookings (their own timetable assignment rule applies). A TALT member may book on an HoD's behalf. An HoD may not book on behalf of other teachers and has no approve/deny, assign, outage, config, diagnostics, impersonation, or calendar-trigger rights; has read access to Master Calendar, schedules, logs, and statistics. `TARGET_ROLE_INELIGIBLE` applies to `Student` (and unrecognised roles) only.
 **Error taxonomy:** every permission, role, domain, ownership or identity failure throws `AUTH_DENIED` (the reason code is written to `Logs` only). Business-rule failures (lead time, conflicts) use their own codes.
 
@@ -372,7 +372,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-35 | Phase moves | Reader and all ID migration → Phase 1 | CONFIRMED | Owner 2026-10-19 |
 | D-36 | Column order | Outages and Duties per contract; `Duties.IsActive` added | CONFIRMED | Owner 2026-10-19 |
 | D-37 | Default `BellType` | When `Academic_Calendar.BellScheduleOverride` is blank, effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular` | CONFIRMED (rule); ASSUMED (spelling) | Owner 2026-10-19 |
-| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule retained (D-46); future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of assignment rule) | CONFIRMED | Owner 2026-10-19, 2026-10-27 |
+| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule PLANNED Phase 2 (D-46); future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of assignment rule) | CONFIRMED | Owner 2026-10-19, 2026-10-27 |
 | D-39 | Live spellings | Exact tab spelling is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive | CONFIRMED | Owner 2026-10-19 |
 | D-40 | Calendar failure marker | Failed sync recorded as `GCalEventID = ERROR:<code>` with standard code vocabulary; retry attempts tracked outside sheet schema | CONFIRMED (marker); ASSUMED (codes/retry) | Owner 2026-10-19 |
 | D-41 | Non-statuses | `Action Required` and `Error (Calendar)` are non-statuses; recorded in `Remark` and `Logs` only | CONFIRMED | Owner 2026-10-19 |
@@ -397,14 +397,14 @@ The `Outages` columns are already in the contract, so `SetupHold` enforcement is
 
 ### Resolved / Confirmed Items
 1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
-2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment check retained (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment rule enforced in Phase 2 (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
 3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
 4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
 5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.
 6. **Legacy Status Migration (O-7 / D-42):** CONFIRMED — Migration procedure with backup and DEV run first.
 7. **DEV Copies Prerequisite (O-9 / P0-18):** CONFIRMED by Owner (2026-10-21) — Isolated DEV copies of all Google Sheets confirmed to exist; production sheets untouched.
 
-8. **HoD Role Scope (D-47; supersedes D-43, revises D-24):** CONFIRMED (Owner 2026-10-27) — HoD role string retained as `HoD`. HoD is a subject teacher with executive view: can book own classes under own timetable, cancel (24 h lock), and request postponement; TALT may book on HoD's behalf. HoD cannot proxy for others, cannot approve bookings, and has no administrative rights. `TARGET_ROLE_INELIGIBLE` applies only to `Student` and unrecognised roles.
+8. **HoD Role Scope (D-47; supersedes D-43, revises D-24):** CONFIRMED (Owner 2026-10-27) — HoD role string UNCHANGED as `HoD`. HoD is a subject teacher with executive view: can book own classes under own timetable, cancel (24 h lock), and request postponement; TALT may book on HoD's behalf. HoD cannot submit on-behalf bookings for other teachers, cannot approve bookings, and has no administrative rights. `TARGET_ROLE_INELIGIBLE` applies only to `Student` and unrecognised roles.
 9. **Timetable Assignment Rule (D-46 / D-48):** CONFIRMED (Owner 2026-10-27, Option B) — Owner selected the PRD assignment rule over the code's conflict-check. Teachers can only book periods where they are assigned a teaching block for the matching Subject and Section. Free periods and non-teaching blocks are rejected (`TIMETABLE_NOT_ASSIGNED`). Behaviour change from live code; staff communication required before release. Grid UI requirements defined in D-48 and deferred to BL-02/BL-03.
 
 ### Open Items (Phase 0 Execution)
