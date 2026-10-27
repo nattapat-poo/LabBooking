@@ -23,7 +23,7 @@
 | Client-side admin PIN removed; shortcut only for server-verified Admin/SuperAdmin | §2.7, Phase 1 | D-27, F-18 · `P1-24` |
 | SuperAdmin defined as Script Property (ADR-0002) | §2.6 | D-26 · `P1-25` |
 | Admin-only impersonation: view-only preview, dry-run "try actions" in production | §2.8 | D-16 · `P1-26` |
-| `Student` zero permissions; `HoD` executive read-only | §2.1 | D-08, D-10, D-24 · `P1-21`, `P1-22` |
+| `Student` zero permissions; `HoD` executive view with own-class bookings | §2.1 | D-08, D-10, D-47 · `P1-21`, `P1-22` |
 | Read-only forensic log viewer for all non-student roles | §2.9 | D-25 · `P2-28`, `P4-09` |
 | Room + calendar + bell derive bookability; revocation = delete `Users` row; teacher-join audit | Contract §7 | D-29, D-30, D-31 · `P1-27`, `P1-28` |
 | Identity spike disqualifiers and process hygiene (tag by SHA, branch protection, scanning, doc lint) | Phase 0 | D-33, D-34 · `P0-11` … `P0-17` |
@@ -79,16 +79,16 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 
 | Action | Teacher | TA | LabTech | Admin | HoD | Student | Source |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Denied** | Denied | D-10 |
-| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | Own (read-only) | Denied | D-24 |
+| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Own** | Denied | D-10, D-47 |
+| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | **Own** | Denied | D-24, D-47 |
 | `ACTION_VIEW_ALL_BOOKINGS` (Master Calendar) | Allowed | Allowed | Allowed | Allowed | Allowed | Denied | D-10 |
 | `ACTION_VIEW_SCHEDULE` | Allowed | Allowed | Allowed | Allowed | Allowed | **Denied** | D-08 |
-| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Denied** | Denied | D-02, D-24 |
+| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Own only (24 h lock)** | Denied | D-02, D-47 |
 | `ACTION_APPROVE_BOOKING` | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
 | `ACTION_REJECT_BOOKING` (status `DENIED`) | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
-| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Denied** | Denied | D-04 |
-| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Denied** | Denied | D-04 |
-| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | Denied | Denied | D-23 |
+| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Own (24 h lock)** | Denied | D-04, D-47 |
+| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Reciprocal** | Denied | D-04, D-47 |
+| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | **Own** | Denied | D-23, D-47 |
 | `ACTION_ASSIGN_ROOM_TECH` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
 | `ACTION_MANAGE_OUTAGES` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
 | `ACTION_EDIT_CONFIG` | Denied | Denied | Denied | Allowed | Denied | Denied | D-10 |
@@ -100,7 +100,7 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 *`Source` names the decision that determines the row. Cells not literally quoted by the Owner but implied by a confirmed decision are marked by that decision's ID and are re-verified at Gate 1.*
 
 **Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Denied** for the `Student` role until a Student module exists.
-**HoD policy (D-10, D-24, D-43):** HoD is strictly executive read-only: cannot book, cannot act as proxy, and **cannot be the `TargetUserID` of an on-behalf booking**. Any booking attempt targeting an HoD fails with `TARGET_ROLE_INELIGIBLE`. The earlier workaround permitting proxy booking for an HoD is completely withdrawn (D-43).
+**HoD policy (D-10, D-47; supersedes D-24, D-43):** HoD is a subject teacher with an executive view; role string stays `HoD` (no rename). An HoD may submit, cancel (subject to 24 h lock) and request postponement for their own bookings, and approve TALT-initiated swaps of their own bookings (their own timetable assignment rule applies). A TALT member may book on an HoD's behalf. An HoD may not book on behalf of other teachers and has no approve/deny, assign, outage, config, diagnostics, impersonation, or calendar-trigger rights; has read access to Master Calendar, schedules, logs, and statistics. `TARGET_ROLE_INELIGIBLE` applies to `Student` (and unrecognised roles) only.
 **Error taxonomy:** every permission, role, domain, ownership or identity failure throws `AUTH_DENIED` (the reason code is written to `Logs` only). Business-rule failures (lead time, conflicts) use their own codes.
 
 #### Booking Ownership & Audit Attribution (D-21, D-11)
@@ -282,7 +282,7 @@ flowchart TD
 * **Workstreams:**
   1. **Schema alignment:** align `TX_COL`, `USR_COL`, `LOG_COL` and `Stats` schemas (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive` per D-36, D-39).
   2. **Wiring repair:** wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys; eliminate "cart" terminology.
-  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), timetable assignment rule (D-46: teaching block must exist with matching subject and section; free periods, non-teaching blocks, and zero-row teachers reject TIMETABLE_NOT_ASSIGNED; subject/section mismatch rejects TIMETABLE_SUBJECT_MISMATCH; identity failure rejects TIMETABLE_USER_UNRESOLVED fail-closed; TALT on-behalf validates target teacher; no bypass per O-11), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
+  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` for `Student` / unrecognised roles per D-47; `HoD` is eligible target for TALT), timetable assignment rule (D-46: teaching block must exist with matching subject and section; free periods, non-teaching blocks, and zero-row teachers reject TIMETABLE_NOT_ASSIGNED; subject/section mismatch rejects TIMETABLE_SUBJECT_MISMATCH; identity failure rejects TIMETABLE_USER_UNRESOLVED fail-closed; TALT on-behalf validates target teacher; no bypass per O-11), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
   4. **Idempotency:** client request ID in `CacheService` (6 h TTL) + natural-key collision prevention.
   5. **Status enum & migration:** enforce 7 stored values incl. `DENIED` and `POSTPONED`; chronological `Remark` stacking; execute legacy status migration procedure (D-42 / `P2-32`).
   6. **Linked-row postponement:** two-way approval with cancellation in both modes and auto-revert (§2.2, ADR-0003).

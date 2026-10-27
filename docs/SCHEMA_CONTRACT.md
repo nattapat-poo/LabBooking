@@ -250,8 +250,9 @@ A slot (`LabID`, `Date`, `Period`) is bookable only if **all** hold:
 5. No booking in `PENDING`, `APPROVED`, `POSTPONE_PENDING_TALT` or `POSTPONE_PENDING_TEACHER` occupies the slot (checked live inside the lock, never from cache).
 6. Lead-time and cancel-lock rules (Plan §2.4) are satisfied or legitimately bypassed.
 
-### 7.2 Ownership
+### 7.2 Ownership & Target Role Eligibility (D-47)
 Ownership = the caller's `Users.UserID` (resolved from the session email) equals `Bookings.TargetUserID`. No ownership logic uses an email column.
+`TARGET_ROLE_INELIGIBLE` is thrown if the booking target resolves to `Student` or an unrecognised role. `HoD` is an eligible target for on-behalf booking by TALT, and books own classes under own timetable (D-47; supersedes D-43).
 
 ### 7.3 Canonical teacher join (`Utils_DataMapper.js`)
 1. Session email → `Users` row (trim, lowercase) → `DisplayName` (or `FirstName` if blank), normalised.
