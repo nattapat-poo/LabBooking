@@ -393,7 +393,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) and UI enhancements start **after Gate 6** to avoid concurrent edits to the same files:
 * **BL-01:** Timetable-based room booking restrictions (`isRoomEligible_` seam).
 * **BL-02:** Teacher booking-grid UI overhaul per D-48 (blank unassigned cells, muted available blocks, locked subject/section autofill from `P2-38`).
-* **BL-03:** Subject colour token adoption (`DESIGN_TOKENS_SUBJECT_COLORS.md`).
+* **BL-03:** Subject colour token adoption (`DESIGN_TOKENS_SUBJECT_COLORS.md`; tokens populated from TimeTable mapping).
 * **BL-04:** Make-up session booking type UI and multi-teacher notification flow (D-49).
 The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
@@ -416,5 +416,5 @@ The `Outages` columns are already in the contract, so `SetupHold` enforcement is
 2. **Master DB Role Strings (O-8 / `P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.
 3. **Teaching-Block Classification (O-10):** OPEN — In Master DB `Subjects`, Column B `Subject` is the short title (e.g. `Gen.Bio`, `Envi`, matching `Index.Subject`); Column C `CourseTitle` is not used for matching. A block is teaching iff `Index.Subject` equals `Subjects.Subject` (Column B) and is not in `NON_TEACHING_SUBJECTS` exclusion list (or derived from `Subjects.SubjectCategory`). Distinct subject and category counts reported in `P0-17`.
 4. **Special Session Override & Postponement (O-11):** OPEN (Default = NO OVERRIDE) — No override of timetable assignment rule exists (D-46); postponements must target another scheduled class of the same teacher, subject, and section. Make-up sessions are handled by the separate proposed make-up session type (D-49).
-5. **Subject Colour Tokens (O-12):** OPEN — Owner to provide subject→hex colour mapping from TimeTable project for `docs/DESIGN_TOKENS_SUBJECT_COLORS.md`.
+5. **Subject Colour Tokens (O-12):** RESOLVED — Design tokens populated in `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` from Owner's TimeTable mapping.
 6. **Make-Up Session Booking Policy (O-13 / D-49):** PROPOSED — Owner to confirm D-49 rules: TALT creation with subject-wide teacher email notification, Period 8 free period default, mandatory justification, and whether teachers may also initiate make-up requests.
