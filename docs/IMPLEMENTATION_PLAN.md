@@ -384,8 +384,12 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 
 ---
 
-## 🔓 6. Sequencing of Feature Work (D-28)
-Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) start **after Gate 6** to avoid concurrent edits to the same files. The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
+## 🔓 6. Sequencing of Feature Work (D-28, BL-01, BL-02, BL-03)
+Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) and UI enhancements start **after Gate 6** to avoid concurrent edits to the same files:
+* **BL-01:** Timetable-based room booking restrictions (`isRoomEligible_` seam).
+* **BL-02:** Teacher booking-grid UI overhaul per D-48 (blank unassigned cells, muted available blocks, locked subject/section autofill from `P2-38`).
+* **BL-03:** Subject colour token adoption (`DESIGN_TOKENS_SUBJECT_COLORS.md`).
+The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
 ## ❓ 7. Open and Resolved Items for the Owner
 
