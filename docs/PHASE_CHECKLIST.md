@@ -3,7 +3,7 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Governance:** [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md), `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills`
 **Automated Verification Tool:** `node scripts/verify_phase.js --phase <N>`
-**Last synchronised with the plan:** 2026-10-28 (rev. 5, P0-17 distinct subjects/categories, D-49 make-up rules, 126 checklist rows)
+**Last synchronised with the plan:** 2026-10-28 (rev. 6, 127 checklist rows, P6-10 staff notice, D-50 grandfathering)
 
 ---
 
@@ -116,7 +116,7 @@
 | `P2-27` | Bookable-slot rule enforced (Room, instructional date, bell period, outage, live conflicts) | D-29 | Unit test `testBookableSlotDerivation()` | Each failing condition rejected with its own code | unit | lab-oops-standards | ☐ | | |
 | `P2-28` | Forensic-log endpoint is read-only, returns allowlisted columns, sanitised text, paginated; `Student` denied | D-25 | Unit test `testForensicViewerReadOnly()` | No write path; Student → `AUTH_DENIED` | unit | gas-best-practices | ☐ | | |
 | `P2-29` | `Outages` and `Duties` contracts (new column order; `Duties.IsActive`) validated | D-36 | Unit tests `testHeaderContractMatch('Outages')`, `('Duties')` | Match; `IsActive` honoured | unit | lab-oops-standards | ☐ | | |
-| `P2-30` | Behaviour-preservation suite derived from PRD §7/§14 passes (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message) | PRD amendment §3 | Run suite | All pass | unit / staging | gas-best-practices | ☐ | | |
+| `P2-30` | Behaviour-preservation suite derived from PRD §7/§14 passes (workload limits and bypass, P2 split, short-lab, batch atomicity, outage auto-cancel, calendar guests, lock-busy message, manual revalidation against the timetable assignment rule, result in `Remark`/`Logs`) | PRD amendment §3, D-50 | Run suite | All pass | unit / staging | gas-best-practices | ☐ | | |
 | `P2-31` | `TIMETABLE_USER_UNRESOLVED` thrown only for identity-resolution failure (no `Users` row, duplicate email, duplicate `DisplayName`); fail closed | D-31, D-46 | Unit test `testTimetableUserUnresolvedFailsClosed()` | Identity resolution fails closed; zero index rows throws `TIMETABLE_NOT_ASSIGNED` | unit | gas-best-practices | ☐ | | |
 | `P2-32` | Legacy status strings migrated using PRD amendment §2 mapping (dated backup, DEV first, idempotent, counts only, unknown strings block go-live) | D-22, D-42 | Owner-manual script execution | No legacy strings remain; counts logged | staging / owner | lab-oops-standards | ☐ | | |
 | `P2-33` | Default `BellType` rule: `Wed` on Wednesday, otherwise `Regular` when override is blank | D-37 | Unit test `testDefaultBellTypeByWeekday()` | Effective bell type matches weekday | unit | gas-best-practices | ☐ | | |
@@ -125,7 +125,7 @@
 | `P2-36` | `GCalEventID` `ERROR:<code>` vocabulary enforced; retry attempts tracked outside sheet schema; manual retry works | D-40 | Unit test `testCalendarErrorCodeVocabulary()` | Standard code recorded; retry state external | unit | gas-best-practices | ☐ | | |
 | `P2-37` | Timetable assignment rule verified: same teaching block passes; different subject/section rejects `TIMETABLE_SUBJECT_MISMATCH`; free period (no row) rejects `TIMETABLE_NOT_ASSIGNED`; non-teaching block (Homeroom, Study Hall, LD, meeting) rejects `TIMETABLE_NOT_ASSIGNED`; zero `Index` rows rejects `TIMETABLE_NOT_ASSIGNED`; TALT on-behalf validates target teacher's timetable; duplicate `DisplayName` throws `TIMETABLE_USER_UNRESOLVED` | D-46 | Unit test `testTimetableAssignmentRule()` | Assignment rule enforced per specification table | unit | gas-best-practices | ☐ | | |
 | `P2-38` | Server exposes target teacher's assigned **teaching** blocks (DayType, Period, Subject, Section) for UI autofill; server rule remains authority if UI bypassed | D-48 | Unit test `testAssignedBlocksEndpoint()` | Returns assigned teaching blocks only; rejects non-teaching blocks | unit | gas-best-practices | ☐ | | |
-| `P2-39` | Make-up session rules verified: subject is a teaching subject; period free for all teachers of the subject; justification present; creator is TALT staff (Teacher/HoD/Student → `AUTH_DENIED`); `Section` = `ALL`; recipients derived from `Index` plus extras; owner = creator; recipients not owners; status per MAKEUP APPROVAL (auto-`APPROVED` by creator); `[MAKEUP]` tag and `MAKEUP_BOOKING` log written *(proposed; not required for Gate 2 until the Owner confirms D-49)* | D-49 | Unit test `testMakeupSessionRules()` | Validation passes for TALT creator with free period for all subject teachers, teaching subject, Section ALL, and justification (immediate `APPROVED`, owner=creator, recipients not owners); rejects non-TALT (`AUTH_DENIED`), non-free period (`MAKEUP_PERIOD_NOT_FREE`), non-teaching subject (`MAKEUP_SUBJECT_NOT_TEACHING`), or blank justification | unit | gas-best-practices | ☐ | | |
+| `P2-39` | Make-up session rules verified: subject is a teaching subject; period free for all teachers of the subject; justification present; creator is TALT staff (Teacher/HoD/Student → `AUTH_DENIED`); `Section` = `ALL`; recipients derived from `Index` plus extras; owner = creator; recipients not owners; status per MAKEUP APPROVAL (auto-`APPROVED` by creator); `[MAKEUP]` tag and `MAKEUP_BOOKING` log written *(confirmed D-49)* | D-49 | Unit test `testMakeupSessionRules()` | Validation passes for TALT creator with free period for all subject teachers, teaching subject, Section ALL, and justification (immediate `APPROVED`, owner=creator, recipients not owners); rejects non-TALT (`AUTH_DENIED`), non-free period (`MAKEUP_PERIOD_NOT_FREE`), non-teaching subject (`MAKEUP_SUBJECT_NOT_TEACHING`), or blank justification | unit | gas-best-practices | ☐ | | |
 
 ---
 
@@ -191,6 +191,7 @@
 | `P6-07` | Deployment and rollback manual documented | R-16 | Inspect `docs/DEPLOYMENT_ROLLBACK.md` | Steps complete | static | gas-best-practices | ☐ | | |
 | `P6-08` | Staging smoke test (submit → approve → calendar → cancel → postpone) signed off | Plan §3 | Run on staging | All pass | staging / owner | lab-oops-standards | ☐ | | |
 | `P6-09` | Regression guard: zero hardcoded IDs, zero `ALLOWALL`, zero PIN text | D-20, D-27, D-35 | `node scripts/verify_phase.js --phase 6` | Zero hits | static | gas-best-practices | ☐ | | |
+| `P6-10` | Staff notice about behaviour change (teachers cannot book free periods or non-teaching blocks; make-up sessions created by TALT staff; HoD books own classes) drafted by Owner and sent before production release | D-46, D-48, D-49 | Owner confirmation (message date, no recipients' emails) | Staff notice sent prior to go-live | owner-manual | lab-oops-standards | ☐ | | |
 
 ---
 
