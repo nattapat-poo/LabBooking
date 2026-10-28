@@ -404,6 +404,7 @@ Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release p
 * **BL-02:** Teacher booking-grid UI overhaul per D-48 (blank unassigned cells, muted available blocks, locked subject/section autofill from `P2-38`).
 * **BL-03:** Subject colour token adoption (`DESIGN_TOKENS_SUBJECT_COLORS.md`; tokens populated from TimeTable mapping).
 * **BL-04:** Make-up session booking type UI and multi-teacher notification flow (D-49).
+* **BL-05:** Error code catalogue synchronisation and automated docs lint comparing `docs/ERROR_CODES.md` to error codes in `App_Script/`.
 The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
 ## ❓ 7. Open and Resolved Items for the Owner
