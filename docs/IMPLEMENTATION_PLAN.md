@@ -374,7 +374,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-35 | Phase moves | Reader and all ID migration → Phase 1 | CONFIRMED | Owner 2026-10-19 |
 | D-36 | Column order | Outages and Duties per contract; `Duties.IsActive` added | CONFIRMED | Owner 2026-10-19 |
 | D-37 | Default `BellType` | When `Academic_Calendar.BellScheduleOverride` is blank, effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular` | CONFIRMED (rule); ASSUMED (spelling) | Owner 2026-10-19 |
-| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule PLANNED Phase 2 (D-46); future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of assignment rule) | CONFIRMED | Owner 2026-10-19, 2026-10-27 |
+| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of assignment rule) | CONFIRMED | Owner 2026-10-19, 2026-10-27 |
 | D-39 | Live spellings | Exact tab spelling is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive | CONFIRMED | Owner 2026-10-19 |
 | D-40 | Calendar failure marker | Failed sync recorded as `GCalEventID = ERROR:<code>` with standard code vocabulary; retry attempts tracked outside sheet schema | CONFIRMED (marker); ASSUMED (codes/retry) | Owner 2026-10-19 |
 | D-41 | Non-statuses | `Action Required` and `Error (Calendar)` are non-statuses; recorded in `Remark` and `Logs` only | CONFIRMED | Owner 2026-10-19 |
@@ -401,7 +401,7 @@ The `Outages` columns are already in the contract, so `SetupHold` enforcement is
 
 ### Resolved / Confirmed Items
 1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
-2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment rule enforced in Phase 2 (D-46); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
 3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
 4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
 5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.

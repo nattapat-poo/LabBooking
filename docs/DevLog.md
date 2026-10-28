@@ -20,7 +20,7 @@
 
 ### Decisions Recorded
 1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.
-2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule enforced in `API_Validation.js` (D-46; PLANNED Phase 2); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
+2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
 3. **D-39 (Live Spellings):** Exact tab spelling is `Bookings`; header is `IsActive`.
 4. **D-40 (Calendar Failure Marker):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary; retry counts stored outside sheet.
 5. **D-41 (Non-Statuses):** `Action Required` and `Error (Calendar)` confirmed non-statuses.

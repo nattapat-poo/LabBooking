@@ -270,7 +270,7 @@ Postponement uses a **linked row**. See the plan §2.2 for the state machine. Th
 Non-student roles may open a read-only viewer over `Logs`: event details and actor emails visible; allowlisted columns only; message text sanitised; paginated; **no write endpoint exists**.
 
 ### 7.7 Room eligibility seam (future, BL-01 / D-38 / D-46)
-The business rule restricting which teachers may book which rooms based on the timetable is deferred to backlog item **BL-01**. In the remediation plan (PLANNED Phase 2), the validation pipeline enforces the timetable assignment rule (verifying that a valid teaching block exists for the target teacher at that `DayType` and `Period` matching the requested `Subject` and `Section` per D-46), and routes room checks through an extensible seam:
+The business rule restricting which teachers may book which rooms based on the timetable is deferred to backlog item **BL-01**. In the remediation plan, the validation pipeline will enforce the timetable assignment rule in `API_Validation.js` (PLANNED Phase 2, `P2-37`) (verifying that a valid teaching block exists for the target teacher at that `DayType` and `Period` matching the requested `Subject` and `Section` per D-46), and routes room checks through an extensible seam:
 `isRoomEligible_(userId, roomId, dayType, period)`
 This seam returns `true` unconditionally today, establishing the call site for future BL-01 room restrictions as an *additional check* on top of the timetable assignment rule without modifying core booking flow.
 
@@ -288,7 +288,7 @@ Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0
 | # | Item | Status / Resolution |
 |---|---|---|
 | **O-1** | Default `BellType` when `Academic_Calendar.BellScheduleOverride` is blank | **RESOLVED (D-37):** Effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular`. Value spellings verified in `P0-17`. |
-| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule enforced in Phase 2 (D-46); future restrictions deferred to **BL-01** via `isRoomEligible_` seam (an additional check on top of assignment check). |
+| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); future restrictions deferred to **BL-01** via `isRoomEligible_` seam (an additional check on top of assignment check). |
 | **O-3** | Live header dump & array-formula check across 12 consumed tabs (`P0-17`) | **OPEN (not yet processed):** Scheduled for owner-run execution in Phase 0 (`P0-17`). Extended to report distinct values with counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII). |
 | **O-4** | Live tab name and header spelling (`Bookings` vs `Booking`, `IsActive`) | **RESOLVED (D-39):** Exact live tab name is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive. |
 | **O-5** | `GCalEventID` failure convention and code vocabulary | **RESOLVED (D-40):** `ERROR:<code>` confirmed. Proposed vocabulary (`CALENDAR_API`, `CALENDAR_QUOTA`, `CALENDAR_NOT_FOUND`, `INVALID_TIME`) adopted (ASSUMED). Retry counts stored outside sheet. |
