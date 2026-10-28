@@ -90,13 +90,13 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 | `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Own (24 h lock)** | Not allowed | D-04, D-47 |
 | `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Reciprocal** | Not allowed | D-04, D-47 |
 | `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | **Own** | Not allowed | D-23, D-47 |
-| `ACTION_ASSIGN_ROOM_TECH` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-10 |
-| `ACTION_MANAGE_OUTAGES` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-10 |
-| `ACTION_EDIT_CONFIG` | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-10 |
+| `ACTION_ASSIGN_ROOM_TECH` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_MANAGE_OUTAGES` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_EDIT_CONFIG` | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-10 |
 | `ACTION_VIEW_LOGS_STATS` (read-only viewer) | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-25 |
-| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-10 |
-| `ACTION_IMPERSONATE_PREVIEW` | Not allowed | Denied | Not allowed | Allowed | Not allowed | Denied | D-16 |
-| `ACTION_TRIGGER_CALENDAR` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Denied | D-24 |
+| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_IMPERSONATE_PREVIEW` | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-16 |
+| `ACTION_TRIGGER_CALENDAR` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-24 |
 
 *`Source` names the decision that determines the row. Cells not literally quoted by the Owner but implied by a confirmed decision are marked by that decision's ID and are re-verified at Gate 1.*
 
@@ -270,7 +270,7 @@ flowchart TD
   2. **Domain whitelist:** exact match on the three domains; look-alike and `@mahidol.edu` rejected; a **pre-enforcement audit** reports counts (no PII) of `Users` rows outside the whitelist.
   3. **Configuration & ID migration (moved from P2-03/P6-01):** `Utils_Config.get(key)` over Script Properties. Move the local, DEV, Master DB, Timetable and Calendar IDs and `SUPERADMIN_EMAILS` out of source. `getMainSpreadsheet()` throws `DATABASE_UNAVAILABLE` and `FALLBACK_SHEET_ID` is deleted. Tests and diagnostics refuse the production ID (D-14).
   4. **Cross-sheet reader (moved from P2-03):** `getUserDirectory_()` over Master DB `Users` with federated cache keys, TTL ≤ 300 s, header validation, email → `UserID` resolution.
-  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all denied; `HoD` read-only; `TA` ≡ `LabTech`.
+  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all Not allowed; `HoD` read-only; `TA` ≡ `LabTech`.
   6. **Function exposure & read-API scoping:** internal functions renamed with `_`; explicit public allowlist; read APIs authenticated and scoped (teachers receive only what the matrix allows).
   7. **Framing & PIN:** replace `ALLOWALL` with `DEFAULT` in all three places in `Main.js`; remove the PIN gateway from `Index.html`; shortcut only for server-verified Admin/SuperAdmin; fix `Main.doGet` admin-route check.
   8. **SuperAdmin & break-glass** (§2.6) and **server-side impersonation** (§2.8). UI banner arrives in Phase 4.
