@@ -3,8 +3,8 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Source Location:** `App_Script/` (Google Apps Script web app, 50 files)
 **Governing Standard:** `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills` (conflicts recorded in [ADR-0002](./adr/0002-superadmin-pin-removal-and-standard-deviations.md))
-**Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-19)
-**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`adr/`](./adr/)
+**Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-27)
+**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) · [`ERROR_CODES.md`](./ERROR_CODES.md) · [`adr/`](./adr/)
 
 > **Status of this document:** a *plan*. No application code has changed yet. `CHANGELOG.md` records planned work under `[Unreleased]` until code ships.
 
@@ -28,6 +28,14 @@
 | Room + calendar + bell derive bookability; revocation = delete `Users` row; teacher-join audit | Contract §7 | D-29, D-30, D-31 · `P1-27`, `P1-28` |
 | Identity spike disqualifiers and process hygiene (tag by SHA, branch protection, scanning, doc lint) | Phase 0 | D-33, D-34 · `P0-11` … `P0-17` |
 | Milestones 2–3 (feature work) sequenced after Gate 6 | §6 | D-28 |
+| **rev. 3 (2026-10-27)** | Timetable assignment rule (D-46; Option B) replaces conflict-check semantics | §2.3, PRD Amendment | D-46 · `P2-37` |
+| | HoD role authority: subject teacher with executive view and own-booking rights | §2.1, Contract §7.2 | D-47 · `P1-22`, `P2-35` |
+| | Booking-grid UI requirements & design tokens (assigned teaching blocks only, muted available blocks, locked fields) | §2.1, `DESIGN_TOKENS_SUBJECT_COLORS.md` | D-48 · `P2-38`, BL-02, BL-03 |
+| | Make-up session booking type (TALT creator, auto-`APPROVED`, whole subject `Section = ALL`, subject-wide free period) | §2.1, Contract §8 | D-49 · `P2-39`, BL-04 |
+| | Grandfathering & manual revalidation (existing bookings stay valid; revalidation in `Remark`/`Logs`) | §2.3, §7 | D-50 · `P2-30`, O-14 |
+| | Strict terminology glossary established | [`GLOSSARY.md`](./GLOSSARY.md) | Standard terminology |
+| | Standardised subject color design tokens | [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) | D-48, BL-03, O-12 |
+| | Centralised error code catalogue established | [`ERROR_CODES.md`](./ERROR_CODES.md) | BL-05 |
 
 ---
 
@@ -270,7 +278,7 @@ flowchart TD
   2. **Domain whitelist:** exact match on the three domains; look-alike and `@mahidol.edu` rejected; a **pre-enforcement audit** reports counts (no PII) of `Users` rows outside the whitelist.
   3. **Configuration & ID migration (moved from P2-03/P6-01):** `Utils_Config.get(key)` over Script Properties. Move the local, DEV, Master DB, Timetable and Calendar IDs and `SUPERADMIN_EMAILS` out of source. `getMainSpreadsheet()` throws `DATABASE_UNAVAILABLE` and `FALLBACK_SHEET_ID` is deleted. Tests and diagnostics refuse the production ID (D-14).
   4. **Cross-sheet reader (moved from P2-03):** `getUserDirectory_()` over Master DB `Users` with federated cache keys, TTL ≤ 300 s, header validation, email → `UserID` resolution.
-  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all Not allowed; `HoD` read-only; `TA` ≡ `LabTech`.
+  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all Not allowed; `HoD` executive view with own-booking rights (D-47); `TA` ≡ `LabTech`.
   6. **Function exposure & read-API scoping:** internal functions renamed with `_`; explicit public allowlist; read APIs authenticated and scoped (teachers receive only what the matrix allows).
   7. **Framing & PIN:** replace `ALLOWALL` with `DEFAULT` in all three places in `Main.js`; remove the PIN gateway from `Index.html`; shortcut only for server-verified Admin/SuperAdmin; fix `Main.doGet` admin-route check.
   8. **SuperAdmin & break-glass** (§2.6) and **server-side impersonation** (§2.8). UI banner arrives in Phase 4.
@@ -360,7 +368,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-21 | Ownership | `TargetUserID` holds UserID only; nickname/email via `Users` | CONFIRMED | Owner 2026-10-19 |
 | D-22 | Status enum | `PENDING`, `APPROVED`, `DENIED`, `CANCELLED`, `POSTPONE_PENDING_TALT`, `POSTPONE_PENDING_TEACHER`, `POSTPONED`; plan, contract, PRD amendment, code | CONFIRMED | Owner 2026-10-19 |
 | D-23 | Postponement model | Linked-row; cancellation in both modes; no timeout; auto-revert at slot start | CONFIRMED | Owner 2026-10-19 (accepted recommendation) |
-| D-24 | HoD | Executive read-only | CONFIRMED | Owner 2026-10-19 |
+| D-24 | HoD | Executive read-only (REVISED by D-47: subject teacher with own-class bookings) | REVISED | Owner 2026-10-19, 2026-10-27 |
 | D-25 | Forensic viewer | Read-only for all non-student roles, with event details and emails | CONFIRMED | Owner 2026-10-19 |
 | D-26 | SuperAdmin | Script Property list; never a fallback (ADR-0002) | CONFIRMED | Owner 2026-10-19 |
 | D-27 | Admin PIN | Removed | CONFIRMED | Owner 2026-10-19 |

@@ -40,3 +40,11 @@ The following terms are standardized across all active engineering and specifica
 
 ## 2. Enforcement & Linting Policy
 In accordance with `PHASE_0_IMPLEMENTATION_PLAN.md` (Workstream 0.2), the automated documentation linter (`verify_phase.js --phase 0`) warns on banned words ("retained", "proxy", bare "conflict") appearing in active documentation outside historical or quoted legacy contexts.
+
+---
+
+## 3. Companion References
+* [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) — Remediation blueprint and architecture decisions.
+* [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) — Multi-spreadsheet schema and vocabulary definitions.
+* [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) — Subject color and UI design tokens.
+* [`ERROR_CODES.md`](./ERROR_CODES.md) — Catalogue of standardized system and validation error codes.
