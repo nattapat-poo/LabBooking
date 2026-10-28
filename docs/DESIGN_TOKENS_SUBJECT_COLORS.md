@@ -20,30 +20,30 @@ Subject colours are standardised across the MUIDS ecosystem and mirrored from th
 
 ## 2. Subject Color Mapping Tokens
 
-| Category | Subject (Short Title) | Hex Code | Preview | Notes |
+| Category | Subject (Short Title) | Hex Code | Text colour (YIQ ≥ 135 → dark) | Notes |
 |---|---|:---:|:---:|---|
-| Biology | AP Bio | `#38761d` | <span style="background-color:#38761d;color:#ffffff;padding:2px 8px;border-radius:4px;">#38761d</span> | Advanced Placement Biology |
-| Biology | Gen.Bio | `#b6d7a8` | <span style="background-color:#b6d7a8;color:#0f172a;padding:2px 8px;border-radius:4px;">#b6d7a8</span> | General Biology |
-| Biology | Anatomy | `#00ffff` | <span style="background-color:#00ffff;color:#0f172a;padding:2px 8px;border-radius:4px;">#00ffff</span> | Anatomy & Physiology |
-| Biology | SAS | `#6aa84f` | <span style="background-color:#6aa84f;color:#ffffff;padding:2px 8px;border-radius:4px;">#6aa84f</span> | Senior Applied Science (Bio) |
-| Chemistry | AP Chem | `#1155cc` | <span style="background-color:#1155cc;color:#ffffff;padding:2px 8px;border-radius:4px;">#1155cc</span> | Advanced Placement Chemistry |
-| Chemistry | Gen.Chem | `#6d9eeb` | <span style="background-color:#6d9eeb;color:#0f172a;padding:2px 8px;border-radius:4px;">#6d9eeb</span> | General Chemistry |
-| Chemistry | Found.Chem | `#cfe2f3` | <span style="background-color:#cfe2f3;color:#0f172a;padding:2px 8px;border-radius:4px;">#cfe2f3</span> | Foundation Chemistry |
-| Physics | AP Physics | `#666666` | <span style="background-color:#666666;color:#ffffff;padding:2px 8px;border-radius:4px;">#666666</span> | Advanced Placement Physics |
-| Physics | Gen.Physics | `#d9d9d9` | <span style="background-color:#d9d9d9;color:#0f172a;padding:2px 8px;border-radius:4px;">#d9d9d9</span> | General Physics |
-| Physics | Found.Physics | `#f3f3f3` | <span style="background-color:#f3f3f3;color:#0f172a;padding:2px 8px;border-radius:4px;">#f3f3f3</span> | Foundation Physics (see Note b) |
-| Interdisciplinary | Envi | `#00ff00` | <span style="background-color:#00ff00;color:#0f172a;padding:2px 8px;border-radius:4px;">#00ff00</span> | Environmental Science |
-| Interdisciplinary | Food | `#ffff00` | <span style="background-color:#ffff00;color:#0f172a;padding:2px 8px;border-radius:4px;">#ffff00</span> | Food Science / Nutrition |
-| Interdisciplinary | Engineer | `#d5a6bd` | <span style="background-color:#d5a6bd;color:#0f172a;padding:2px 8px;border-radius:4px;">#d5a6bd</span> | Engineering |
-| Interdisciplinary | Int.Sci | `#ea9999` | <span style="background-color:#ea9999;color:#0f172a;padding:2px 8px;border-radius:4px;">#ea9999</span> | Integrated Science |
-| Health / Sports | Sport Sci | `#ffd966` | <span style="background-color:#ffd966;color:#0f172a;padding:2px 8px;border-radius:4px;">#ffd966</span> | Sports Science |
-| Health / Sports | Health 10 | `#ffe599` | <span style="background-color:#ffe599;color:#0f172a;padding:2px 8px;border-radius:4px;">#ffe599</span> | Health Education Grade 10 |
-| Health / Sports | Health 12 | `#ffe599` | <span style="background-color:#ffe599;color:#0f172a;padding:2px 8px;border-radius:4px;">#ffe599</span> | Health Education Grade 12 |
-| Advisory & Common | Homeroom | `#b4a7d6` | <span style="background-color:#b4a7d6;color:#0f172a;padding:2px 8px;border-radius:4px;">#b4a7d6</span> | Non-teaching block |
-| Advisory & Common | Homeroom (2nd) | `#d9d2e9` | <span style="background-color:#d9d2e9;color:#0f172a;padding:2px 8px;border-radius:4px;">#d9d2e9</span> | Non-teaching block |
-| Advisory & Common | Lunch Duty (`LD*`) | `#f59e0b` | <span style="background-color:#f59e0b;color:#ffffff;padding:2px 8px;border-radius:4px;">#f59e0b</span> | Non-teaching duty |
-| Advisory & Common | Study Hall | `#475569` | <span style="background-color:#475569;color:#ffffff;padding:2px 8px;border-radius:4px;">#475569</span> | Non-teaching block (see Note a) |
-| Advisory & Common | Wellbeing | `#f3f3f3` | <span style="background-color:#f3f3f3;color:#0f172a;padding:2px 8px;border-radius:4px;">#f3f3f3</span> | Non-teaching block (see Note b) |
+| Biology | AP Bio | `#38761d` | `white #ffffff` | full title: see Master DB `Subjects.CourseTitle` |
+| Biology | Gen.Bio | `#b6d7a8` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Biology | Anatomy | `#00ffff` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Biology | SAS | `#6aa84f` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Chemistry | AP Chem | `#1155cc` | `white #ffffff` | full title: see Master DB `Subjects.CourseTitle` |
+| Chemistry | Gen.Chem | `#6d9eeb` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Chemistry | Found.Chem | `#cfe2f3` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Physics | AP Physics | `#666666` | `white #ffffff` | full title: see Master DB `Subjects.CourseTitle` |
+| Physics | Gen.Physics | `#d9d9d9` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Physics | Found.Physics | `#f3f3f3` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` (see Note b) |
+| Interdisciplinary | Envi | `#00ff00` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Interdisciplinary | Food | `#ffff00` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Interdisciplinary | Engineer | `#d5a6bd` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Interdisciplinary | Int.Sci | `#ea9999` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Health / Sports | Sport Sci | `#ffd966` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Health / Sports | Health 10 | `#ffe599` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Health / Sports | Health 12 | `#ffe599` | `dark #0f172a` | full title: see Master DB `Subjects.CourseTitle` |
+| Advisory & Common | Homeroom | `#b4a7d6` | `dark #0f172a` | Non-teaching block |
+| Advisory & Common | Homeroom (2nd) | `#d9d2e9` | `dark #0f172a` | Non-teaching block |
+| Advisory & Common | Lunch Duty (`LD*`) | `#f59e0b` | `dark #0f172a` | Non-teaching block |
+| Advisory & Common | Study Hall | `#475569` | `white #ffffff` | Non-teaching block (see Note a) |
+| Advisory & Common | Wellbeing | `#f3f3f3` | `dark #0f172a` | Non-teaching block (see Note b) |
 
 ---
 
