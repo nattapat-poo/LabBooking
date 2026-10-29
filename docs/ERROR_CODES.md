@@ -43,10 +43,10 @@
 
 The following error states are specified in requirements and behavioural suites, with formal codes to be finalised during Phase 2 implementation (**BL-05**):
 
-| Candidate Code | Failure Condition | Raised by (rule / decision) | Source Document | Phase |
-|---|---|---|---|:---:|
-| `LOCK_BUSY` | Concurrency script lock acquisition timeout (`withLock` busy) | Concurrency lock wrapper in `Utils_Concurrency.js` | PRD §14, Plan §2.5, `PHASE_CHECKLIST.md` `P2-30` | Phase 2 |
-| `LEAD_TIME_VIOLATION` | Submission attempted with less than 2 instructional days lead time without TALT bypass | Lead time validation (F-05, R-09, D-07) | `IMPLEMENTATION_PLAN.md` §2.1; `PHASE_CHECKLIST.md` `P2-10` | Phase 2 |
-| `CANCEL_LOCK_ACTIVE` | Cancellation or postponement attempted within 24 hours of scheduled start by non-TALT user | Cancellation lock validation (D-02, D-07) | `IMPLEMENTATION_PLAN.md` §2.1; `PHASE_CHECKLIST.md` `P2-10` | Phase 2 |
-| `SLOT_UNAVAILABLE` | Requested room slot is occupied by an active booking or outage hold | Bookable slot derivation (D-29) | `IMPLEMENTATION_PLAN.md` §2.3; `PHASE_CHECKLIST.md` `P2-27` | Phase 2 |
-| `DUPLICATE_SUBMISSION` | Idempotency token collision on duplicate batch or request UUID | Idempotency guard | PRD §14, `PHASE_CHECKLIST.md` `P2-30` | Phase 2 |
+| Candidate Code | Meaning | Raised by (rule / decision) | Where first defined (doc / section) | Caller-visible message theme | Phase |
+|---|---|---|---|---|:---:|
+| `LOCK_BUSY` | Concurrency script lock acquisition timeout (`withLock` busy) | Concurrency lock wrapper in `Utils_Concurrency.js` | PRD §14, Plan §2.5, `PHASE_CHECKLIST.md` `P2-30` | System is busy processing another request. Please try again. | Phase 2 |
+| `LEAD_TIME_VIOLATION` | Submission attempted with less than 2 instructional days lead time without TALT bypass | Lead time validation (F-05, R-09, D-07) | `IMPLEMENTATION_PLAN.md` §2.1; `PHASE_CHECKLIST.md` `P2-10` | Bookings require a minimum of 2 instructional days lead time. | Phase 2 |
+| `CANCEL_LOCK_ACTIVE` | Cancellation or postponement attempted within 24 hours of scheduled start by non-TALT user | Cancellation lock validation (D-02, D-07) | `IMPLEMENTATION_PLAN.md` §2.1; `PHASE_CHECKLIST.md` `P2-10` | Bookings cannot be cancelled or postponed within 24 hours of start. | Phase 2 |
+| `SLOT_UNAVAILABLE` | Requested room slot is occupied by an active booking or outage hold | Bookable slot derivation (D-29) | `IMPLEMENTATION_PLAN.md` §2.3; `PHASE_CHECKLIST.md` `P2-27` | The selected room and time slot is not available. | Phase 2 |
+| `DUPLICATE_SUBMISSION` | Idempotency token collision on duplicate batch or request UUID | Idempotency guard | PRD §14, `PHASE_CHECKLIST.md` `P2-30` | This booking request has already been submitted. | Phase 2 |
