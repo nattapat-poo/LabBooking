@@ -28,14 +28,14 @@
 | Room + calendar + bell derive bookability; revocation = delete `Users` row; teacher-join audit | Contract §7 | D-29, D-30, D-31 · `P1-27`, `P1-28` |
 | Identity spike disqualifiers and process hygiene (tag by SHA, branch protection, scanning, doc lint) | Phase 0 | D-33, D-34 · `P0-11` … `P0-17` |
 | Milestones 2–3 (feature work) sequenced after Gate 6 | §6 | D-28 |
-| **rev. 3 (2026-10-27)** | Timetable assignment rule (D-46; Option B) replaces conflict-check semantics | §2.3, PRD Amendment | D-46 · `P2-37` |
-| | HoD role authority: subject teacher with executive view and own-booking rights | §2.1, Contract §7.2 | D-47 · `P1-22`, `P2-35` |
-| | Booking-grid UI requirements & design tokens (assigned teaching blocks only, muted available blocks, locked fields) | §2.1, `DESIGN_TOKENS_SUBJECT_COLORS.md` | D-48 · `P2-38`, BL-02, BL-03 |
-| | Make-up session booking type (TALT creator, auto-`APPROVED`, whole subject `Section = ALL`, subject-wide free period) | §2.1, Contract §8 | D-49 · `P2-39`, BL-04 |
-| | Grandfathering & manual revalidation (existing bookings stay valid; revalidation in `Remark`/`Logs`) | §2.3, §7 | D-50 · `P2-30`, O-14 |
-| | Strict terminology glossary established | [`GLOSSARY.md`](./GLOSSARY.md) | Standard terminology |
-| | Standardised subject color design tokens | [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) | D-48, BL-03, O-12 |
-| | Centralised error code catalogue established | [`ERROR_CODES.md`](./ERROR_CODES.md) | BL-05 |
+| rev. 3 (2026-10-27): Timetable assignment rule (D-46, Option B) replaces conflict-check semantics | §2.3, PRD Amendment | D-46 · `P2-37` |
+| rev. 3 (2026-10-27): HoD role authority: subject teacher with executive view and own-booking rights | §2.1, Contract §7.2 | D-47 · `P1-22`, `P2-35` |
+| rev. 3 (2026-10-27): Booking-grid UI requirements & design tokens (assigned blocks only, muted available blocks, locked fields) | §2.1, `DESIGN_TOKENS_SUBJECT_COLORS.md` | D-48 · `P2-38`, BL-02, BL-03 |
+| rev. 3 (2026-10-27): Make-up session booking type (TALT creator, auto-`APPROVED`, whole subject `Section = ALL`, subject-wide free period) | §2.1, Contract §8 | D-49 · `P2-39`, BL-04 |
+| rev. 3 (2026-10-27): Grandfathering & manual revalidation (existing bookings stay valid; revalidation in `Remark`/`Logs`) | §2.3, §7 | D-50 · `P2-30`, O-14 |
+| rev. 3 (2026-10-27): Strict terminology glossary established | [`GLOSSARY.md`](./GLOSSARY.md) | Standard terminology |
+| rev. 3 (2026-10-27): Standardised subject color design tokens | [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) | D-48, BL-03, O-12 |
+| rev. 3 (2026-10-27): Centralised error code catalogue established | [`ERROR_CODES.md`](./ERROR_CODES.md) | BL-05 |
 
 ---
 
