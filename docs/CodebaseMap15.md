@@ -72,7 +72,7 @@ Executing domain partition: DOMAIN_WRITE
 [Info] [UNT-WRT.02] Concurrency Collision Guard (Overlap Prevention) [5ms] — Target transactional architecture verified against modern thread-locks.
 [Info] [UNT-WRT.03] Data Schema Normalization Engine (Ingestion Mapping) [5ms] — Dynamic input schema tolerance verified. Ingestion layer safely maps and normalizes uppercase payloads.
 Executing domain partition: DOMAIN_RBAC
-[Info] [RBC.01] Role Identity Verification Enforcement (RBAC Engine) [1507ms] — Current running script identity possesses elevated admin clearances. User:nattapat.poo@mahidol.ac.th [labtech]
+[Info] [RBC.01] Role Identity Verification Enforcement (RBAC Engine) [1507ms] — Current running script identity possesses elevated admin clearances. User:<staff_user>@mahidol.ac.th [labtech]
 Executing domain partition: DOMAIN_UTILITIES
 [Info] [SYS-CFG.01] Cross-File Hoisting & TDZ Elimination Check [2ms] — Configuration matrices successfully resolved across isolated compile timelines.
 [Info] [SYS-COR.02] Database Lookup Graceful Fault-Tolerance Cascade [4ms] — Container active spreadsheet lookup and fallback streams verified operational.

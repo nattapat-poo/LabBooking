@@ -60,6 +60,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 **Test matrix.** Run every combination of `executeAs` (`USER_DEPLOYING`, `USER_ACCESSING`) × `access` (`DOMAIN`, `ANYONE`) for each account type: staff, G10 student, G11/G12 student, outside account.
 
 **A combination is DISQUALIFIED if any of these is true:**
+
 | # | Disqualifier |
 |---|---|
 | D1 | A **staff** account returns an empty or ambiguous identity. |

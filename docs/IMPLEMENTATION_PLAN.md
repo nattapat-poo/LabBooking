@@ -4,7 +4,7 @@
 **Source Location:** `App_Script/` (Google Apps Script web app, 50 files)
 **Governing Standard:** `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills` (conflicts recorded in [ADR-0002](./adr/0002-superadmin-pin-removal-and-standard-deviations.md))
 **Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-28)
-**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) · [`ERROR_CODES.md`](./ERROR_CODES.md) · [`adr/`](./adr/)
+**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) · [`ERROR_CODES.md`](./ERROR_CODES.md) · [`docs/adr/`](./adr/0001-governing-ecosystem-alignment.md)
 
 > **Status of this document:** a *plan*. No application code has changed yet. `CHANGELOG.md` records planned work under `[Unreleased]` until code ships.
 
