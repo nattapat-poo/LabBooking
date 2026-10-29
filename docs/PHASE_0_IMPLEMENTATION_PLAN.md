@@ -47,7 +47,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 2. **Branch protection on `main`:** pull request required, owner review, `verify_phase` check required, no force-push, no deletion; protect tag patterns; `CODEOWNERS` for `docs/`, `Utils_Security.js` and `appsscript.json`.
 3. **GitHub secret scanning and push protection** enabled.
 4. **CI:** a workflow runs the pattern scan and `verify_phase.js --phase 0` on every pull request.
-5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`.
+5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`. The future `verify_phase.js` docs lint will warn on banned words ("retained", "proxy", bare "conflict") outside allow-listed contexts (per `docs/GLOSSARY.md`).
 6. **Single schema source:** keep `schema/contract.json` (machine-readable) alongside `SCHEMA_CONTRACT.md`; the lint compares them.
 7. **Changelog discipline:** planned work is recorded under `[Unreleased]` until code ships.
 
@@ -60,6 +60,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 **Test matrix.** Run every combination of `executeAs` (`USER_DEPLOYING`, `USER_ACCESSING`) × `access` (`DOMAIN`, `ANYONE`) for each account type: staff, G10 student, G11/G12 student, outside account.
 
 **A combination is DISQUALIFIED if any of these is true:**
+
 | # | Disqualifier |
 |---|---|
 | D1 | A **staff** account returns an empty or ambiguous identity. |
@@ -72,6 +73,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 | D8 | It needs broader OAuth scopes than the minimal set, or shows consent screens users cannot complete. |
 
 **Method & Account Coverage Policy (D-44):**
+
 | Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
 |---|---|---|---|
 | Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |

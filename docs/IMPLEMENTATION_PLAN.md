@@ -3,8 +3,8 @@
 **Target System:** `Lab Oops OS` — Project 01 (`Smart Lab Booking System`)
 **Source Location:** `App_Script/` (Google Apps Script web app, 50 files)
 **Governing Standard:** `AGENTS.md`, `lab-oops-standards`, `gas-best-practices`, `setup-matt-pocock-skills` (conflicts recorded in [ADR-0002](./adr/0002-superadmin-pin-removal-and-standard-deviations.md))
-**Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-19)
-**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`adr/`](./adr/)
+**Reference Input:** Executive Security Audit (Findings F-01 … F-18, Revisions R-01 … R-16, Owner Decisions through 2026-10-28)
+**Companion documents:** [`SCHEMA_CONTRACT.md`](./SCHEMA_CONTRACT.md) · [`PHASE_CHECKLIST.md`](./PHASE_CHECKLIST.md) · [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md) · [`PRD_AMENDMENT_v1.4.0b.md`](./PRD_AMENDMENT_v1.4.0b.md) · [`GLOSSARY.md`](./GLOSSARY.md) · [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) · [`ERROR_CODES.md`](./ERROR_CODES.md) · [`docs/adr/`](./adr/0001-governing-ecosystem-alignment.md)
 
 > **Status of this document:** a *plan*. No application code has changed yet. `CHANGELOG.md` records planned work under `[Unreleased]` until code ships.
 
@@ -23,11 +23,19 @@
 | Client-side admin PIN removed; shortcut only for server-verified Admin/SuperAdmin | §2.7, Phase 1 | D-27, F-18 · `P1-24` |
 | SuperAdmin defined as Script Property (ADR-0002) | §2.6 | D-26 · `P1-25` |
 | Admin-only impersonation: view-only preview, dry-run "try actions" in production | §2.8 | D-16 · `P1-26` |
-| `Student` zero permissions; `HoD` executive read-only | §2.1 | D-08, D-10, D-24 · `P1-21`, `P1-22` |
+| `Student` zero permissions; `HoD` executive view with own-class bookings | §2.1 | D-08, D-10, D-47 · `P1-21`, `P1-22` |
 | Read-only forensic log viewer for all non-student roles | §2.9 | D-25 · `P2-28`, `P4-09` |
 | Room + calendar + bell derive bookability; revocation = delete `Users` row; teacher-join audit | Contract §7 | D-29, D-30, D-31 · `P1-27`, `P1-28` |
 | Identity spike disqualifiers and process hygiene (tag by SHA, branch protection, scanning, doc lint) | Phase 0 | D-33, D-34 · `P0-11` … `P0-17` |
 | Milestones 2–3 (feature work) sequenced after Gate 6 | §6 | D-28 |
+| rev. 3 (2026-10-27): Timetable assignment rule (D-46, Option B) replaces conflict-check semantics | §2.3, PRD Amendment | D-46 · `P2-37` |
+| rev. 3 (2026-10-27): HoD role authority: subject teacher with executive view and own-booking rights | §2.1, Contract §7.2 | D-47 · `P1-22`, `P2-35` |
+| rev. 3 (2026-10-27): Booking-grid UI requirements & design tokens (assigned blocks only, muted available blocks, locked fields) | §2.1, `DESIGN_TOKENS_SUBJECT_COLORS.md` | D-48 · `P2-38`, BL-02, BL-03 |
+| rev. 3 (2026-10-27): Make-up session booking type (TALT creator, auto-`APPROVED`, whole subject `Section = ALL`, subject-wide free period) | §2.1, Contract §8 | D-49 · `P2-39`, BL-04 |
+| rev. 3 (2026-10-27): Grandfathering & manual revalidation (existing bookings stay valid; revalidation in `Remark`/`Logs`) | §2.3, §7 | D-50 · `P2-30`, O-14 |
+| rev. 3 (2026-10-27): Strict terminology glossary established | [`GLOSSARY.md`](./GLOSSARY.md) | Standard terminology |
+| rev. 3 (2026-10-27): Standardised subject color design tokens | [`DESIGN_TOKENS_SUBJECT_COLORS.md`](./DESIGN_TOKENS_SUBJECT_COLORS.md) | D-48, BL-03, O-12 |
+| rev. 3 (2026-10-27): Centralised error code catalogue established | [`ERROR_CODES.md`](./ERROR_CODES.md) | BL-05 |
 
 ---
 
@@ -79,28 +87,30 @@ VALID_ROLES = ["Teacher", "TA", "LabTech", "Admin", "HoD", "Student"];
 
 | Action | Teacher | TA | LabTech | Admin | HoD | Student | Source |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Denied** | Denied | D-10 |
-| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | Own (read-only) | Denied | D-24 |
-| `ACTION_VIEW_ALL_BOOKINGS` (Master Calendar) | Allowed | Allowed | Allowed | Allowed | Allowed | Denied | D-10 |
-| `ACTION_VIEW_SCHEDULE` | Allowed | Allowed | Allowed | Allowed | Allowed | **Denied** | D-08 |
-| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Denied** | Denied | D-02, D-24 |
-| `ACTION_APPROVE_BOOKING` | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
-| `ACTION_REJECT_BOOKING` (status `DENIED`) | Denied | Allowed | Allowed | Allowed | **Denied** | Denied | D-03, D-10 |
-| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Denied** | Denied | D-04 |
-| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Denied** | Denied | D-04 |
-| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | Denied | Denied | D-23 |
-| `ACTION_ASSIGN_ROOM_TECH` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
-| `ACTION_MANAGE_OUTAGES` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-10 |
-| `ACTION_EDIT_CONFIG` | Denied | Denied | Denied | Allowed | Denied | Denied | D-10 |
-| `ACTION_VIEW_LOGS_STATS` (read-only viewer) | Allowed | Allowed | Allowed | Allowed | Allowed | Denied | D-25 |
-| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Denied | Denied | Denied | Allowed | Denied | Denied | D-10 |
-| `ACTION_IMPERSONATE_PREVIEW` | Denied | Denied | Denied | Allowed | Denied | Denied | D-16 |
-| `ACTION_TRIGGER_CALENDAR` | Denied | Allowed | Allowed | Allowed | Denied | Denied | D-24 |
+| `ACTION_SUBMIT_BOOKING` | Own | Own / On-behalf | Own / On-behalf | Any | **Own** | Not allowed | D-10, D-47 |
+| `ACTION_SUBMIT_MAKEUP` (D-49) | Not allowed | Any | Any | Any | Not allowed | Not allowed | D-49 |
+| `ACTION_VIEW_OWN_BOOKINGS` | Own | Own | Own | Own | **Own** | Not allowed | D-24, D-47 |
+| `ACTION_VIEW_ALL_BOOKINGS` (Master Calendar) | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-10 |
+| `ACTION_VIEW_SCHEDULE` | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-08 |
+| `ACTION_CANCEL_BOOKING` | Own only (24 h lock) | Any | Any | Any | **Own only (24 h lock)** | Not allowed | D-02, D-47 |
+| `ACTION_APPROVE_BOOKING` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-03, D-10 |
+| `ACTION_REJECT_BOOKING` (status `DENIED`) | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-03, D-10 |
+| `ACTION_REQUEST_POSTPONE` | Own (24 h lock) | Any (TALT-initiated swap) | Any (TALT-initiated swap) | Any | **Own (24 h lock)** | Not allowed | D-04, D-47 |
+| `ACTION_APPROVE_POSTPONE` | Reciprocal (only TALT-initiated swaps of own bookings) | Allowed | Allowed | Allowed | **Reciprocal** | Not allowed | D-04, D-47 |
+| `ACTION_CANCEL_POSTPONE_REQUEST` | Own (requests they started) | Allowed | Allowed | Allowed | **Own** | Not allowed | D-23, D-47 |
+| `ACTION_ASSIGN_ROOM_TECH` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_MANAGE_OUTAGES` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_EDIT_CONFIG` | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_VIEW_LOGS_STATS` (read-only viewer) | Allowed | Allowed | Allowed | Allowed | Allowed | Not allowed | D-25 |
+| `ACTION_RUN_DIAGNOSTICS` (+ `ENABLE_DIAGNOSTICS`) | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-10 |
+| `ACTION_IMPERSONATE_PREVIEW` | Not allowed | Not allowed | Not allowed | Allowed | Not allowed | Not allowed | D-16 |
+| `ACTION_TRIGGER_CALENDAR` | Not allowed | Allowed | Allowed | Allowed | Not allowed | Not allowed | D-24 |
 
 *`Source` names the decision that determines the row. Cells not literally quoted by the Owner but implied by a confirmed decision are marked by that decision's ID and are re-verified at Gate 1.*
 
-**Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Denied** for the `Student` role until a Student module exists.
-**HoD policy (D-10, D-24, D-43):** HoD is strictly executive read-only: cannot book, cannot act as proxy, and **cannot be the `TargetUserID` of an on-behalf booking**. Any booking attempt targeting an HoD fails with `TARGET_ROLE_INELIGIBLE`. The earlier workaround permitting proxy booking for an HoD is completely withdrawn (D-43).
+**Student policy (D-08):** `@student.mahidol.ac.th` and `@student.mahidol.edu` accounts may pass domain validation but **every action is Not allowed** for the `Student` role until a Student module exists.
+**Make-up sessions (D-49):** Historically created by TALT staff (`TA`, `LabTech`, `Admin` only; Teacher, HoD, Student: Not allowed) to accommodate absent students across multiple sections into a single session (typically Period 8 where no scheduled teaching blocks exist). TALT creator uses the same booking form with a "Make-up session" type, selecting the subject from Master DB `Subjects.Subject` (short title; must be a teaching subject per contract §7.8, else `MAKEUP_SUBJECT_NOT_TEACHING`). `Bookings.Section` stores the literal `ALL`. Any period may be chosen (must satisfy the free-period rule: no `Index` row for any teacher who teaches that subject at that DayType/Period, else `MAKEUP_PERIOD_NOT_FREE`; must also be a bookable slot per D-29). Booking owner: `TargetUserID` = creating TALT member's `UserID` (an eligible target), `SubmittedByUserID` = same. Subject teachers are notification recipients only, not owners (recipients = teachers teaching that subject per `Index` via `DisplayName` join to `Users` emails, plus multi-select extras from `Users`; an unresolvable recipient join is logged and skipped, never blocking). Status is `APPROVED` immediately upon creation by the TALT creator (`ConfirmUserId` = creator; mandatory justification; no second approval). `Remark` begins `[MAKEUP] notify: <nicknames>` (nicknames only, no emails) followed by mandatory justification; `Logs` action `MAKEUP_BOOKING` with recipient count. 2-day lead time and 24 h cancel lock apply (TALT bypass audited, D-07). Timetable assignment rule (D-46) does not apply to make-up sessions (subject-wide rules replace it). TALT staff only may cancel a make-up (existing `ACTION_CANCEL_BOOKING` "Any"), notifying the same recipients with one email per make-up.
+**HoD policy (D-10, D-47; supersedes D-24, D-43):** HoD is a subject teacher with an executive view; role string stays `HoD` (no rename). An HoD may submit, cancel (subject to 24 h lock) and request postponement for their own bookings, and approve TALT-initiated swaps of their own bookings (their own timetable assignment rule applies). A TALT member may book on an HoD's behalf. An HoD may not book on behalf of other teachers and has no approve/deny, assign, outage, config, diagnostics, impersonation, or calendar-trigger rights; has read access to Master Calendar, schedules, logs, and statistics. `TARGET_ROLE_INELIGIBLE` applies to `Student` (and unrecognised roles) only.
 **Error taxonomy:** every permission, role, domain, ownership or identity failure throws `AUTH_DENIED` (the reason code is written to `Logs` only). Business-rule failures (lead time, conflicts) use their own codes.
 
 #### Booking Ownership & Audit Attribution (D-21, D-11)
@@ -138,7 +148,7 @@ stateDiagram-v2
 
 **Rules**
 1. **Blocking:** `PENDING`, `APPROVED`, `POSTPONE_PENDING_TALT` and `POSTPONE_PENDING_TEACHER` occupy their slot. Conflict checks read live data inside the lock.
-2. **Linked-row postponement:** a request keeps the original row `O` and inserts a proposed-slot row `N` with the same pending status and `LinkedBookingID = O.BookingID` (both slots blocked). Approval sets `N` → `APPROVED` and `O` → `POSTPONED` in one lock. Denial or cancellation sets `N` → `CANCELLED` and `O` → `APPROVED`.
+2. **Linked-row postponement:** a request keeps the original row `O` and inserts a proposed-slot row `N` with the same pending status and `LinkedBookingID = O.BookingID` (both slots occupied). Validation of proposed slot `N` enforces the timetable assignment rule (D-46): it must be another scheduled class for the same target teacher, subject, and section. Make-up sessions are not postponements (handled by D-49). Approval sets `N` → `APPROVED` and `O` → `POSTPONED` in one script lock. Denial or cancellation sets `N` → `CANCELLED` and `O` → `APPROVED`.
 3. **Cancellation in both modes:** the initiator or any `TA`/`LabTech`/`Admin` may cancel a pending request. **No timeout** exists. Safety invariant: when the earlier of the two slot start times is reached while pending, the request auto-reverts and `POSTPONE_AUTO_REVERT` is logged.
 4. **Denial reasons** are appended to `Remark` (chronological ascending, never overwritten) on every row involved.
 5. **Locks:** teachers cannot cancel or request postponement within 24 h of the slot start. TALT bypass is allowed with `[URGENT_BYPASS …]` audit logging. A TALT-initiated swap still requires the owner's approval.
@@ -182,7 +192,7 @@ flowchart LR
 - **Fail closed:** Master DB unreachable or a required header missing → authorization denies; schedule reads return a clear error, never defaults.
 - **Bookable slot (D-29):** Room exists ∧ date is instructional ∧ period exists for the effective bell type ∧ no active outage ∧ no occupying booking (see Contract §7.1).
 - **Revocation (D-30):** delete the user's row in Master DB `Users`; access ends within 5 minutes. `UserID` must be stable and never reused (audit `P1-27`).
-- **Teacher join (D-15, D-31):** `Session email → Users.DisplayName → Index.Teacher`; zero or multiple matches throw `TIMETABLE_USER_UNRESOLVED`; one-time audit `P1-28`.
+- **Teacher join (D-46, D-31):** Session email → `Users.DisplayName` → `Index.Teacher`. `TIMETABLE_USER_UNRESOLVED` is thrown only if identity resolution fails (no `Users` row, duplicate email, or duplicate `DisplayName`). A booking is valid only if an assigned teaching block exists in `Index` matching `DayType`, `Period`, `Subject`, and `Section`; free periods, non-teaching blocks, and teachers with zero `Index` rows are rejected with `TIMETABLE_NOT_ASSIGNED` (D-46). One-time audit `P1-28`.
 - **Interface seam:** all role and directory reads go through `getUserDirectory_()` so tests can stub it.
 
 ---
@@ -246,7 +256,9 @@ flowchart TD
 *Details in [`PHASE_0_IMPLEMENTATION_PLAN.md`](./PHASE_0_IMPLEMENTATION_PLAN.md).*
 * **Findings / revisions:** baseline for F-01 … F-18, R-01, R-06, R-10, R-16, D-33, D-34.
 * **Workstreams:** (1) git isolation with a rollback tag **by explicit SHA**; (2) pattern-based secret/ID scan and branch protection; (3) **Identity Spike** with pre-registered disqualifiers and redacted evidence; (4) Node test harness; (5) `verify_phase.js`; (6) ledger and exposure matrix; (7) `Health_UAT.js` fixture sanitation; (8) owner-run read-only header dump to verify the contract; (9) docs lint.
+
 **Account Coverage Matrix & Scope (D-44):**
+
 | Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
 |---|---|---|---|
 | Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |
@@ -266,7 +278,7 @@ flowchart TD
   2. **Domain whitelist:** exact match on the three domains; look-alike and `@mahidol.edu` rejected; a **pre-enforcement audit** reports counts (no PII) of `Users` rows outside the whitelist.
   3. **Configuration & ID migration (moved from P2-03/P6-01):** `Utils_Config.get(key)` over Script Properties. Move the local, DEV, Master DB, Timetable and Calendar IDs and `SUPERADMIN_EMAILS` out of source. `getMainSpreadsheet()` throws `DATABASE_UNAVAILABLE` and `FALLBACK_SHEET_ID` is deleted. Tests and diagnostics refuse the production ID (D-14).
   4. **Cross-sheet reader (moved from P2-03):** `getUserDirectory_()` over Master DB `Users` with federated cache keys, TTL ≤ 300 s, header validation, email → `UserID` resolution.
-  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all denied; `HoD` read-only; `TA` ≡ `LabTech`.
+  5. **PERMISSIONS enforcement:** matrix in §2.1; ownership by `TargetUserID`; `Student` all Not allowed; `HoD` executive view with own-booking rights (D-47); `TA` ≡ `LabTech`.
   6. **Function exposure & read-API scoping:** internal functions renamed with `_`; explicit public allowlist; read APIs authenticated and scoped (teachers receive only what the matrix allows).
   7. **Framing & PIN:** replace `ALLOWALL` with `DEFAULT` in all three places in `Main.js`; remove the PIN gateway from `Index.html`; shortcut only for server-verified Admin/SuperAdmin; fix `Main.doGet` admin-route check.
   8. **SuperAdmin & break-glass** (§2.6) and **server-side impersonation** (§2.8). UI banner arrives in Phase 4.
@@ -280,7 +292,7 @@ flowchart TD
 * **Workstreams:**
   1. **Schema alignment:** align `TX_COL`, `USR_COL`, `LOG_COL` and `Stats` schemas (case-insensitive headers, throw on mismatch; Outages and Duties order/`IsActive` per D-36, D-39).
   2. **Wiring repair:** wire `coreApproveBooking`/`coreRejectBooking`/`coreCancelBooking` with server identity; fix dropped `session`; fix email-template keys; eliminate "cart" terminology.
-  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` per D-43), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
+  3. **Atomic validation inside the lock:** UUIDs, bookable-slot rule (§2.3, D-37 default `BellType`, D-38 all rooms bookable with `isRoomEligible_` seam), target role validation (`TARGET_ROLE_INELIGIBLE` for `Student` / unrecognised roles per D-47; `HoD` is eligible target for TALT), timetable assignment rule (D-46: teaching block must exist with matching subject and section; free periods, non-teaching blocks, and zero-row teachers reject TIMETABLE_NOT_ASSIGNED; subject/section mismatch rejects TIMETABLE_SUBJECT_MISMATCH; identity failure rejects TIMETABLE_USER_UNRESOLVED fail-closed; TALT on-behalf validates target teacher; no bypass per O-11), 2-instructional-day lead time, 24-hour lock, TALT bypass audit, `SetupHold` outages, conflicts, `flush()` before unlock.
   4. **Idempotency:** client request ID in `CacheService` (6 h TTL) + natural-key collision prevention.
   5. **Status enum & migration:** enforce 7 stored values incl. `DENIED` and `POSTPONED`; chronological `Remark` stacking; execute legacy status migration procedure (D-42 / `P2-32`).
   6. **Linked-row postponement:** two-way approval with cancellation in both modes and auto-revert (§2.2, ADR-0003).
@@ -307,7 +319,7 @@ flowchart TD
 
 ### Phase 6 — Hardening, Scopes & Staging Release
 * **Findings:** `F-13` (scopes), `F-14` (history scan), `F-17`, `R-15`, `R-16`.
-* Minimal explicit OAuth scopes (including the identity scope; test on staging); history scan report; remove dead code and misleading headers; `Result<T>` envelope verification; `CONFIGURATION.md` and `DEPLOYMENT_ROLLBACK.md`; regression guard for IDs and framing; staging smoke test.
+* Minimal explicit OAuth scopes (including the identity scope; test on staging); history scan report; remove dead code and misleading headers; `Result<T>` envelope verification; `CONFIGURATION.md` and `DEPLOYMENT_ROLLBACK.md`; regression guard for IDs and framing; staging smoke test; staff communication (staff notice drafted by Owner and sent before production release, P6-10).
 * **Gate 6:** final human authorisation for production.
 
 ---
@@ -347,7 +359,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-12 | Role cache TTL | ≤ 5 minutes | CONFIRMED | Owner 2026-10-15 |
 | D-13 | Fail-closed DB | No silent fallback; `DATABASE_UNAVAILABLE`; `FALLBACK_SHEET_ID` removed | CONFIRMED | Owner 2026-10-15 |
 | D-14 | DEV/PROD isolation | Separate DEV and PROD IDs, read from Script Properties; tests refuse PROD | CONFIRMED | Owner 2026-10-15 |
-| D-15 | Teacher join | Session email → `Users.DisplayName` → `Index.Teacher`; unresolved fails closed | CONFIRMED | Owner 2026-10-15 |
+| D-15 | Teacher join | Session email → Users.DisplayName → Index.Teacher; identity resolution failure (no Users row, duplicate email/DisplayName) throws TIMETABLE_USER_UNRESOLVED; zero Index rows logged warning (HISTORY) | SUPERSEDED by D-46 (Owner 2026-10-27) | Owner 2026-10-15 |
 | D-16 | Impersonation | Admin/SuperAdmin only; production = preview + dry-run; writes only on DEV | CONFIRMED | Owner 2026-10-19 |
 | D-17 | Test fixtures | Use `uat_tester@mahidol.ac.th` | CONFIRMED | Owner 2026-10-15 |
 | D-18 | Derived attributes | `isHoD`, `Can_Edit_Config` derived; tutorial in `localStorage`; `PrimaryGrade` removed | CONFIRMED | Owner 2026-10-15 |
@@ -356,7 +368,7 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-21 | Ownership | `TargetUserID` holds UserID only; nickname/email via `Users` | CONFIRMED | Owner 2026-10-19 |
 | D-22 | Status enum | `PENDING`, `APPROVED`, `DENIED`, `CANCELLED`, `POSTPONE_PENDING_TALT`, `POSTPONE_PENDING_TEACHER`, `POSTPONED`; plan, contract, PRD amendment, code | CONFIRMED | Owner 2026-10-19 |
 | D-23 | Postponement model | Linked-row; cancellation in both modes; no timeout; auto-revert at slot start | CONFIRMED | Owner 2026-10-19 (accepted recommendation) |
-| D-24 | HoD | Executive read-only | CONFIRMED | Owner 2026-10-19 |
+| D-24 | HoD | Executive read-only (REVISED by D-47: subject teacher with own-class bookings) | REVISED | Owner 2026-10-19, 2026-10-27 |
 | D-25 | Forensic viewer | Read-only for all non-student roles, with event details and emails | CONFIRMED | Owner 2026-10-19 |
 | D-26 | SuperAdmin | Script Property list; never a fallback (ADR-0002) | CONFIRMED | Owner 2026-10-19 |
 | D-27 | Admin PIN | Removed | CONFIRMED | Owner 2026-10-19 |
@@ -370,31 +382,51 @@ Status: `CONFIRMED` = stated by the Owner; `DERIVED` = follows directly from a c
 | D-35 | Phase moves | Reader and all ID migration → Phase 1 | CONFIRMED | Owner 2026-10-19 |
 | D-36 | Column order | Outages and Duties per contract; `Duties.IsActive` added | CONFIRMED | Owner 2026-10-19 |
 | D-37 | Default `BellType` | When `Academic_Calendar.BellScheduleOverride` is blank, effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular` | CONFIRMED (rule); ASSUMED (spelling) | Owner 2026-10-19 |
-| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained; future restrictions deferred to BL-01 via `isRoomEligible_` seam | CONFIRMED | Owner 2026-10-19 |
+| D-38 | Room scope | All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); future room restrictions deferred to BL-01 via `isRoomEligible_` seam (additional check on top of assignment rule) | CONFIRMED | Owner 2026-10-19, 2026-10-27 |
 | D-39 | Live spellings | Exact tab spelling is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive | CONFIRMED | Owner 2026-10-19 |
 | D-40 | Calendar failure marker | Failed sync recorded as `GCalEventID = ERROR:<code>` with standard code vocabulary; retry attempts tracked outside sheet schema | CONFIRMED (marker); ASSUMED (codes/retry) | Owner 2026-10-19 |
 | D-41 | Non-statuses | `Action Required` and `Error (Calendar)` are non-statuses; recorded in `Remark` and `Logs` only | CONFIRMED | Owner 2026-10-19 |
 | D-42 | Status migration | Migrate legacy statuses using PRD amendment §2 mapping (backup copy, DEV first, idempotent, counts only, unknown strings block go-live) | CONFIRMED | Owner 2026-10-19 |
-| D-43 | HoD restriction | HoD is strictly read-only: cannot book, cannot proxy, and cannot be `TargetUserID` of on-behalf booking (`TARGET_ROLE_INELIGIBLE`); workaround withdrawn | CONFIRMED (interpretation to reconfirm) | Owner 2026-10-19 |
+| D-43 | HoD restriction | HoD is strictly read-only: cannot book, cannot proxy, and cannot be `TargetUserID` of on-behalf booking (`TARGET_ROLE_INELIGIBLE`); workaround withdrawn | SUPERSEDED by D-47 (Owner 2026-10-27) | Owner 2026-10-19 |
 | D-44 | Test account policy | Admin on DEV via staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite | CONFIRMED | Owner 2026-10-19 |
 | D-45 | ADR-0002 reconfirmed | SuperAdmin via Script Property, PIN removal, project schema authority, global standards updated later | CONFIRMED | Owner 2026-10-19 |
+| D-46 | Timetable ASSIGNMENT rule | Booking is valid only if a teaching block exists in Timetable 2026 / Index matching target teacher, DayType, Period, Subject, and Section. Same block allowed; subject/section mismatch rejects TIMETABLE_SUBJECT_MISMATCH; free period, non-teaching block (Homeroom, Study Hall, LD, meetings) or teacher with zero Index rows rejects TIMETABLE_NOT_ASSIGNED; identity failure rejects TIMETABLE_USER_UNRESOLVED fail closed. Applies to Teacher/HoD own bookings and TALT on-behalf target teacher. No bypass exists (O-11); teaching block classification per contract §7.8 (O-10); supersedes code conflict-check (Owner decision 2026-10-27, option B) | CONFIRMED | Owner 2026-10-27 |
+| D-47 | HoD role authority | HoD is a subject teacher with executive view; role string stays HoD. HoD may submit, cancel (24 h lock), and request postponement for own bookings and approve TALT swaps of own bookings (own timetable assignment rule applies); TALT may book on HoD's behalf. HoD may not book on behalf of other teachers and has no approve/deny, assign, outage, config, diagnostics, impersonation or calendar-trigger rights; read access to Master Calendar, schedules, logs, and statistics. TARGET_ROLE_INELIGIBLE applies to Student and unrecognised roles only (supersedes D-43; revises D-24) | CONFIRMED | Owner 2026-10-27 |
+| D-48 | Booking-grid UI requirements | Teacher booking view shows only assigned teaching blocks; all other cells (free periods, Homeroom, Study Hall, LD, meetings) are blank/empty; available block is muted (transparent background, border and text only); filled with subject colour when selected, pending or booked; selecting block autofills and locks Subject and Section; subject colours drawn from design tokens in DESIGN_TOKENS_SUBJECT_COLORS.md (O-12); server remains authority regardless of UI; UI implementation deferred to BL-02/BL-03 | CONFIRMED | Owner 2026-10-27 |
+| D-49 | Make-up session booking type | Dedicated booking flow for whole-subject make-up lab sessions (typically Period 8) to accommodate absent students across multiple sections. Created by TALT staff only (TA/LabTech/Admin; Teacher/HoD/Student Not allowed). Subject chosen from Master DB Subjects (teaching subject, short title; else MAKEUP_SUBJECT_NOT_TEACHING); Bookings.Section stores ALL. Free-period rule: period must have no Index row for any teacher who teaches that subject at that DayType/Period (else MAKEUP_PERIOD_NOT_FREE); slot must be bookable (D-29). TargetUserID = creating TALT member's UserID; other teachers are notification recipients only (derived from Index via DisplayName join + multi-select extras; join failure skips and logs). Status is APPROVED immediately upon creation (ConfirmUserId = creator; mandatory justification; no second approval). Remark begins [MAKEUP] notify: <nicknames> followed by justification; Logs action MAKEUP_BOOKING. 2-day lead time and 24 h cancel lock apply (TALT bypass audited, D-07). D-46 timetable assignment rule does not apply to make-ups. TALT staff may cancel (ACTION_CANCEL_BOOKING Any). One email per make-up to recipients. UI/flow deferred to BL-04 | CONFIRMED | Owner 2026-10-27, 2026-10-28 |
+| D-50 | Grandfathering & manual revalidation | The new rules (timetable assignment rule D-46, target-role eligibility D-47) apply to new bookings and new postponement proposals only. Existing Bookings rows are grandfathered and are not cancelled or rewritten by the release. A booking approved before the release stays valid, but cannot be postponed to a proposed slot that fails the assignment rule (D-46). The manual revalidation feature (PRD §7.3.1) may be run against the new rule; because Action Required is a non-status (D-41), its result is recorded in Remark and Logs only, and TALT staff decide any follow-up | CONFIRMED | Owner 2026-10-28 |
 
 ---
 
-## 🔓 6. Sequencing of Feature Work (D-28)
-Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) start **after Gate 6** to avoid concurrent edits to the same files. The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
+## 🔓 6. Sequencing of Feature Work (D-28, BL-01, BL-02, BL-03)
+Feature Milestones 2–3 (Adaptive Calendar Grid, SetupHold modal, pre-release polish) and UI enhancements start **after Gate 6** to avoid concurrent edits to the same files:
+* **BL-01:** Timetable-based room booking restrictions (`isRoomEligible_` seam).
+* **BL-02:** Teacher booking-grid UI overhaul per D-48 (blank unassigned cells, muted available blocks, locked subject/section autofill from `P2-38`).
+* **BL-03:** Subject colour token adoption (`DESIGN_TOKENS_SUBJECT_COLORS.md`; tokens populated from TimeTable mapping).
+* **BL-04:** Make-up session booking type UI and multi-teacher notification flow (D-49).
+* **BL-05:** Error code catalogue synchronisation and automated docs lint comparing `docs/ERROR_CODES.md` to error codes in `App_Script/`.
+The `Outages` columns are already in the contract, so `SetupHold` enforcement is delivered in Phase 2 (`P2-11`); only its UI waits.
 
 ## ❓ 7. Open and Resolved Items for the Owner
 
 ### Resolved / Confirmed Items
 1. **Default `BellType` (O-1 / D-37):** CONFIRMED — `Wed` on Wednesday, otherwise `Regular`.
-2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable verification retained; extensible seam `isRoomEligible_` added; restriction logic deferred to BL-01.
+2. **Room Scope (O-2 / D-38 / BL-01):** CONFIRMED — All rooms bookable today; timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); extensible seam `isRoomEligible_` added as an additional future restriction; room restriction logic deferred to BL-01.
 3. **Live Tab & Header Spellings (O-4 / D-39):** CONFIRMED — `Bookings` and `IsActive`.
 4. **Calendar Sync Error Marker (O-5 / D-40):** CONFIRMED — `GCalEventID = ERROR:<code>`; retry state external.
 5. **Non-Statuses (O-6 / D-41):** CONFIRMED — `Action Required` and `Error (Calendar)` logged to `Remark`/`Logs`.
 6. **Legacy Status Migration (O-7 / D-42):** CONFIRMED — Migration procedure with backup and DEV run first.
 7. **DEV Copies Prerequisite (O-9 / P0-18):** CONFIRMED by Owner (2026-10-21) — Isolated DEV copies of all Google Sheets confirmed to exist; production sheets untouched.
 
+8. **HoD Role Scope (D-47; supersedes D-43, revises D-24):** CONFIRMED (Owner 2026-10-27) — HoD role string UNCHANGED as `HoD`. HoD is a subject teacher with executive view: can book own classes under own timetable, cancel (24 h lock), and request postponement; TALT may book on HoD's behalf. HoD cannot submit on-behalf bookings for other teachers, cannot approve bookings, and has no administrative rights. `TARGET_ROLE_INELIGIBLE` applies only to `Student` and unrecognised roles.
+9. **Timetable Assignment Rule (D-46 / D-48):** CONFIRMED (Owner 2026-10-27, Option B) — Owner selected the PRD assignment rule over the code's conflict-check. Teachers can only book periods where they are assigned a teaching block for the matching Subject and Section. Free periods and non-teaching blocks are rejected (`TIMETABLE_NOT_ASSIGNED`). Behaviour change from live code; staff communication required before release. Grid UI requirements defined in D-48 and deferred to BL-02/BL-03.
+
 ### Open Items (Phase 0 Execution)
 1. **Live Header & Distinct Value Dump (O-3 / `P0-17`):** Open (not yet processed). To be executed by Owner in Phase 0 across the 12 consumed tabs, reporting distinct values and counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII).
-2. **Master DB Role Strings (`P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.
+2. **Master DB Role Strings (O-8 / `P0-17`):** Open. Verified during `P0-17` dump that active roles match `Teacher`/`TA`/`LabTech`/`Admin`/`HoD`/`Student`.
+3. **Teaching-Block Classification (O-10):** OPEN — In Master DB `Subjects`, Column B `Subject` is the short title (e.g. `Gen.Bio`, `Envi`, matching `Index.Subject`); Column C `CourseTitle` is not used for matching. A block is teaching iff `Index.Subject` equals `Subjects.Subject` (Column B) and is not in `NON_TEACHING_SUBJECTS` exclusion list (or derived from `Subjects.SubjectCategory`). Distinct subject and category counts reported in `P0-17`.
+4. **Special Session Override & Postponement (O-11):** OPEN (Default = NO OVERRIDE) — No override of timetable assignment rule exists (D-46); postponements must target another scheduled class of the same teacher, subject, and section. Make-up sessions are handled by the separate make-up session type (D-49).
+5. **Subject Colour Tokens (O-12):** RESOLVED — Design tokens populated in `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` from Owner's TimeTable mapping.
+6. **Make-Up Session Booking Policy (O-13 / D-49):** RESOLVED (D-49) — Confirmed by Owner (2026-10-28): A TALT member can create the make-up session already `APPROVED` (no second approval needed), the period must be free for all teachers of that subject (`MAKEUP_PERIOD_NOT_FREE`), and `Section = ALL`.
+7. **Grandfathering & Manual Revalidation Policy (O-14 / D-50):** RESOLVED (D-50) — Confirmed by Owner (2026-10-28): The new rules apply to new bookings and new postponement proposals only; existing bookings stay valid (grandfathered) but cannot be postponed to an invalid slot. Manual revalidation against the assignment rule records findings in `Remark` and `Logs` only (no status overwrite), since `Action Required` is a non-status.
+8. **Make-up Session Implementation Phasing (O-15):** OPEN (non-blocking) — Owner to decide how the make-up session flow is scheduled: (Reading A) server-side validation is implemented in Phase 2 so `P2-39` is required for Gate 2, while the dedicated UI waits for post-Gate 6 (BL-04); or (Reading B) both server validation and UI flows are deferred together to post-Gate 6 under BL-04 (with `P2-39` deferred to BL-04, reducing Phase 2 gate scope).

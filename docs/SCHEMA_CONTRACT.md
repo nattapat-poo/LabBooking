@@ -250,13 +250,14 @@ A slot (`LabID`, `Date`, `Period`) is bookable only if **all** hold:
 5. No booking in `PENDING`, `APPROVED`, `POSTPONE_PENDING_TALT` or `POSTPONE_PENDING_TEACHER` occupies the slot (checked live inside the lock, never from cache).
 6. Lead-time and cancel-lock rules (Plan §2.4) are satisfied or legitimately bypassed.
 
-### 7.2 Ownership
+### 7.2 Ownership & Target Role Eligibility (D-47)
 Ownership = the caller's `Users.UserID` (resolved from the session email) equals `Bookings.TargetUserID`. No ownership logic uses an email column.
+`TARGET_ROLE_INELIGIBLE` is thrown if the booking target resolves to `Student` or an unrecognised role. `HoD` is an eligible target for on-behalf booking by TALT, and books own classes under own timetable (D-47; supersedes D-43).
 
 ### 7.3 Canonical teacher join (`Utils_DataMapper.js`)
 1. Session email → `Users` row (trim, lowercase) → `DisplayName` (or `FirstName` if blank), normalised.
-2. `Index.Teacher` (trim, lowercase) must equal that value.
-3. Zero matches or more than one match throws `TIMETABLE_USER_UNRESOLVED` (fail closed, never guess).
+2. Matching: `TIMETABLE_USER_UNRESOLVED` means the **identity** cannot be resolved (no `Users` row for the session email, duplicate email, or duplicate `DisplayName` across active rows). Fail closed, never guess.
+3. Timetable records in `Timetable 2026` (`Index`) are matched where `Index.Teacher.trim().toLowerCase() === user.DisplayName.trim().toLowerCase()`. Under the timetable assignment rule (D-46), a teacher with **zero `Index` rows** is not assigned to any teaching block and cannot book classes; any booking attempt is rejected with `TIMETABLE_NOT_ASSIGNED`.
 4. A one-time audit (`P1-28`) proves every `Index.Teacher` resolves to exactly one `Users` row.
 
 ### 7.4 Revocation
@@ -268,6 +269,18 @@ Postponement uses a **linked row**. See the plan §2.2 for the state machine. Th
 ### 7.6 Forensic log viewer
 Non-student roles may open a read-only viewer over `Logs`: event details and actor emails visible; allowlisted columns only; message text sanitised; paginated; **no write endpoint exists**.
 
+### 7.7 Room eligibility seam (future, BL-01 / D-38 / D-46)
+The business rule restricting which teachers may book which rooms based on the timetable is deferred to backlog item **BL-01**. In the remediation plan, the validation pipeline will enforce the timetable assignment rule in `API_Validation.js` (PLANNED Phase 2, `P2-37`) (verifying that a valid teaching block exists for the target teacher at that `DayType` and `Period` matching the requested `Subject` and `Section` per D-46), and routes room checks through an extensible seam:
+`isRoomEligible_(userId, roomId, dayType, period)`
+This seam returns `true` unconditionally today, establishing the call site for future BL-01 room restrictions as an *additional check* on top of the timetable assignment rule without modifying core booking flow.
+
+### 7.8 Teaching-block classification (O-10 / D-46)
+In Master DB `Subjects`, Column B `Subject` is the canonical short title (e.g. `Gen.Bio`, `Envi`, matching `Index.Subject` and timetable grids), while Column C `CourseTitle` is the full descriptive title. `CourseTitle` is **not** used for matching. `Bookings.Subject` stores the short title.
+
+A block in `Index` is classified as a **teaching block** iff its `Index.Subject` equals (trimmed, case-insensitive) a **`Subjects.Subject`** value (Column B) **and** is not matched by an exclusion list kept in the local `Config` tab (key `NON_TEACHING_SUBJECTS`, e.g., `Homeroom`, `Study Hall`, `LD*`, `Meeting*`, `Outside`, `Wellbeing`). If `Subjects.SubjectCategory` categorizes advisory and common non-teaching blocks, the exclusion list may optionally be derived from `SubjectCategory` (to be confirmed by the Owner from the `P0-17` verification report).
+
+Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0-17` reports distinct `Index.Subject` values with counts, whether each equals a `Subjects.Subject`, and distinct `Subjects.SubjectCategory` values (counts only).
+
 ---
 
 ## 8. Open and Resolved Items (Phase 0 & Phase 2 Alignment)
@@ -275,7 +288,7 @@ Non-student roles may open a read-only viewer over `Logs`: event details and act
 | # | Item | Status / Resolution |
 |---|---|---|
 | **O-1** | Default `BellType` when `Academic_Calendar.BellScheduleOverride` is blank | **RESOLVED (D-37):** Effective `BellType` is `Wed` if `DayOfWeek` is Wednesday, otherwise `Regular`. Value spellings verified in `P0-17`. |
-| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained; future restrictions deferred to **BL-01** via `isRoomEligible_` seam. |
+| **O-2** | Room scope & non-lab rooms in `Room` tab | **RESOLVED (D-38):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); future restrictions deferred to **BL-01** via `isRoomEligible_` seam (an additional check on top of assignment check). |
 | **O-3** | Live header dump & array-formula check across 12 consumed tabs (`P0-17`) | **OPEN (not yet processed):** Scheduled for owner-run execution in Phase 0 (`P0-17`). Extended to report distinct values with counts for `Bookings.Status`, `Bell_Schedules.BellType`, `Room.RoomType`, and `Users.Role` (no PII). |
 | **O-4** | Live tab name and header spelling (`Bookings` vs `Booking`, `IsActive`) | **RESOLVED (D-39):** Exact live tab name is `Bookings`; header is `IsActive`. Matching remains trim + case-insensitive. |
 | **O-5** | `GCalEventID` failure convention and code vocabulary | **RESOLVED (D-40):** `ERROR:<code>` confirmed. Proposed vocabulary (`CALENDAR_API`, `CALENDAR_QUOTA`, `CALENDAR_NOT_FOUND`, `INVALID_TIME`) adopted (ASSUMED). Retry counts stored outside sheet. |
@@ -283,3 +296,9 @@ Non-student roles may open a read-only viewer over `Logs`: event details and act
 | **O-7** | Legacy status string migration | **RESOLVED (D-42):** Migration procedure approved (backup copy, test on DEV first, idempotent, log counts only). Unknown status strings block go-live. |
 | **O-8** | Stored role strings in Master DB `Users.Role` | **OPEN:** Verify that all active rows in `Users.Role` use canonical values (`Teacher`, `TA`, `LabTech`, `Admin`, `HoD`, `Student`). Verified via `P0-17`. |
 | **O-9** | DEV copies of Master DB 2026 and Timetable 2026 (`P0-18`) | **CONFIRMED (Owner 2026-10-21):** Isolated DEV copies of all Google Sheets confirmed to exist; production Master DB is never modified. |
+| **O-10** | Teaching vs non-teaching block classification | **OPEN (default in §7.8):** Column B `Subjects.Subject` is short title used for exact matching; `CourseTitle` is not used. Block is teaching iff `Index.Subject` equals `Subjects.Subject` and is not in `NON_TEACHING_SUBJECTS` (or derived from `SubjectCategory`). Owner to confirm from `P0-17`. |
+| **O-11** | Special session override & postponement constraint | **OPEN (default = NO OVERRIDE):** No override of timetable assignment rule exists (D-46); postponements must target another scheduled class of same teacher/subject/section. Make-up sessions handled by D-49 type. |
+| **O-12** | Subject colour design tokens from TimeTable project | **RESOLVED (BL-03):** Design tokens populated in `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` from Owner's TimeTable scheme. Short titles match Column B `Subjects.Subject`. |
+| **O-13** | Make-up session booking policy (D-49) | **RESOLVED (D-49):** Confirmed by Owner (2026-10-28): Dedicated make-up lab session type (typically Period 8) for whole subjects (`Section = ALL`), created by TALT staff only with auto-`APPROVED` status, subject-wide free-period rule across all teachers of that subject, and email notification to all subject teachers (recipients not owners); mandatory justification; tagged `[MAKEUP]` in `Remark`. |
+| **O-14** | Grandfathering & manual revalidation semantics (D-50) | **RESOLVED (D-50):** Confirmed by Owner (2026-10-28): New rules apply to new bookings and postponement proposals only; existing bookings remain valid (grandfathered). Manual revalidation (PRD §7.3.1) writes to `Remark` and `Logs` only (`Action Required` is a non-status per D-41). |
+| **O-15** | Make-up session implementation phasing | **OPEN (non-blocking):** Owner to decide whether server-side make-up validation is built in Phase 2 (`P2-39` required for Gate 2) with UI deferred to BL-04, or whether the entire make-up flow (server + UI) is deferred to post-Gate 6 under BL-04. |

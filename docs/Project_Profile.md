@@ -27,7 +27,7 @@ Roles come from Master DB `Users.Role` (one value per user). Full matrix: `IMPLE
 * **`LabTech`:** Full operational management: approve/deny bookings, approve postponements, mark lab outages (`Maintenance`, `SetupHold`), assign technicians, override rooms, view system-wide schedules, and bypass the lead-time rules with an audited justification.
 * **`TA`:** **Equal authority to `LabTech`.**
 * **`Admin`:** All TALT authority plus system configuration, diagnostics, user permission management and admin-only impersonation (preview and dry-run).
-* **`HoD`:** **Strictly executive read-only.** Views schedules, the Master Calendar, forensic logs and statistics. Cannot book, cannot act as a proxy, and **cannot be the `TargetUserID` of an on-behalf booking** (`TARGET_ROLE_INELIGIBLE`; D-43). Cannot approve, deny, cancel, postpone, submit, assign, manage outages or edit configuration.
+* **`HoD`:** **Subject teacher with executive overview (D-47; supersedes D-43, revises D-24).** May submit, cancel (24 h lock) and request postponement for own bookings under own timetable assignment rule; can approve TALT-initiated swaps of own bookings. A TALT member may book on an HoD's behalf. Cannot book on behalf of other teachers. Has read access to schedules, the Master Calendar, forensic logs, and statistics. Has no approve, deny, assign, outage management, configuration editing, diagnostics, or impersonation rights.
 * **`Student`:** Passes the domain perimeter but holds **zero permissions** until a Student module exists.
 * **SuperAdmin:** not a database role; a Script Property applying only to a resolved, whitelisted active user. Inherits `Admin` plus diagnostics, impersonation and configuration.
 
