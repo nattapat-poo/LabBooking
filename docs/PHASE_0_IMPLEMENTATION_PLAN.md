@@ -43,7 +43,8 @@ git checkout -b security/production-hardening main
 
 ### 0.2 Repository Hygiene (`P0-07`, `P0-12`, `P0-13`, `P0-14`)
 The repository stays **public** (D-09), so the controls must be strong.
-1. **Pattern-based history scan.** Search all history for Google ID shaped strings (44 characters of `[A-Za-z0-9_-]`), calendar IDs (`@group.calendar.google.com`) and personal emails. Report **counts only**; never write found values into any document. Do not search for a placeholder string.
+*Locked-document hygiene note (O-16, PROPOSED):* Real spreadsheet IDs and staff emails exist within locked v1.1.3c reference specifications on `main`. Either sanitize them under a documented exception or make the repository private before sharing further; sharing settings of affected spreadsheets must be verified.
+1. **Pattern-based history scan.** Search all history for Google ID shaped strings (44 characters of `[A-Za-z0-9_-]`), calendar IDs (`@group.calendar.google.com`) and personal emails. Report **counts only**; never write found values into any document. Do not search for a placeholder string. The history scan also reports the **count of distinct author/committer addresses** (`git log --all --format=%ae%n%ce | sort -u | wc -l`; counts only). Future commits should use the GitHub "noreply" address (`git config user.email "<id>+<username>@users.noreply.github.com"`) and GitHub's setting "Block command line pushes that expose my email" should be enabled; existing history is unchanged by this.
 2. **Branch protection on `main`:** pull request required, owner review, `verify_phase` check required, no force-push, no deletion; protect tag patterns; `CODEOWNERS` for `docs/`, `Utils_Security.js` and `appsscript.json`.
 3. **GitHub secret scanning and push protection** enabled.
 4. **CI:** a workflow runs the pattern scan and `verify_phase.js --phase 0` on every pull request.
