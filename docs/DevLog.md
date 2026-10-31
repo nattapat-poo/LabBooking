@@ -2,24 +2,37 @@
 
 ---
 
+## 2026-10-22: Process Note — Repository Incident Recovery & Standing Safety Rules
+* During a documentation task on 2026-10-21, an agent deleted the Phase 0 branch (`security/production-hardening`) and baseline tag (`pre-hardening-baseline`) and force-reset `main`.
+* The Owner required a read-only incident report; refs were restored exactly under explicit Owner authorization (tag on baseline commit `b984891`, Phase 0 branch at its previous tip `2f69730`, and `main` fast-forwarded to `efd082d` then `baa19de`) with no history lost.
+* The Phase 0 branch remains an **unreviewed draft**.
+* Standing safety rules have been proposed for `AGENTS.md`: never force-push, reset, or delete shared refs without written Owner approval; stop and report immediately on precondition mismatch; and report every state-changing command.
+
+---
+
 ## 2026-10-19: Revision 2 — Owner Clarifications (D-37 … D-45) & PR #1 Hardening
 * **2026-10-21 Owner Clarification & Prerequisite Confirmation:**
   - **P0-18 Confirmed:** Owner confirmed all Google Sheets have DEV copies; checklist row `P0-18` marked complete (`☑`).
   - **O-3 / P0-17 Not Yet Processed:** Acknowledged that live schema header dump has not yet been run; remains open for Phase 0 execution.
 * **Lead Architect:** Nattapat Poolyam (Mek)
 * **Agent:** Claude (documentation review) with Google Antigravity (implementation)
-* **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD to exact 1-line banner addition. *(Documentation only; no code changed).*
+* **Scope:** Applied Owner answers for open items O-1 … O-9; recorded decisions D-37 … D-45; updated schema contract, implementation plan, checklist, and PRD amendment; restored locked PRD from main, kept the old v1.4.0a amendment block for history with a superseded notice, and added a v1.4.0b pointer banner. *(Documentation only; no code changed).*
 
 ### Decisions Recorded
 1. **D-37 (Default `BellType`):** Effective schedule is `Wed` on Wednesday, otherwise `Regular` when `BellScheduleOverride` is blank.
-2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable verification retained in `API_Validation.js`; seam `isRoomEligible_` added for backlog BL-01.
+2. **D-38 (Room Scope & BL-01):** All `Room` rows are bookable; no `RoomType` filter. Timetable assignment rule will be enforced in `API_Validation.js` (PLANNED Phase 2, `P2-37`); seam `isRoomEligible_` added as an additional future check for backlog BL-01.
 3. **D-39 (Live Spellings):** Exact tab spelling is `Bookings`; header is `IsActive`.
 4. **D-40 (Calendar Failure Marker):** `GCalEventID = ERROR:<code>` confirmed with standard vocabulary; retry counts stored outside sheet.
 5. **D-41 (Non-Statuses):** `Action Required` and `Error (Calendar)` confirmed non-statuses.
 6. **D-42 (Status Migration):** Procedure approved (dated backup, DEV first, idempotent, counts only, unknown strings block go-live).
-7. **D-43 (HoD Strictly Read-Only):** HoD cannot book, cannot proxy, and **cannot be the `TargetUserID` of an on-behalf booking** (`TARGET_ROLE_INELIGIBLE`). Workaround withdrawn.
-8. **D-44 (Identity Spike Account Coverage):** Admin tested on DEV via Owner staff account; consumer Google proxy for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite (`P0-18`).
+7. **D-43 (HoD Restriction — SUPERSEDED by D-47):** Previously held HoD strictly read-only; superseded by D-47 (Owner 2026-10-27).
+8. **D-44 (Identity Spike Account Coverage):** Admin tested on DEV via Owner staff account; consumer Google stand-in for G10; Workspace student best-effort; no emails in committed docs; DEV DB prerequisite (`P0-18`).
 9. **D-45 (ADR-0002 Reconfirmed):** SuperAdmin via Script Property, PIN removal, project schema authority, global standards update deferred.
+10. **D-46 (Timetable Assignment Rule):** Owner confirmed Option B (PRD assignment rule). Stricter than live code: bookings require an existing assigned teaching block with matching Subject and Section. Free periods, non-teaching blocks (Homeroom, Study Hall, LD, meetings), and teachers with zero `Index` rows are rejected (`TIMETABLE_NOT_ASSIGNED`). Identity failure throws `TIMETABLE_USER_UNRESOLVED` fail-closed. Added `P2-37` and `P2-38`. Supersedes D-15; staff notice required before deployment.
+11. **D-47 (HoD as Subject Teacher with Executive View):** HoD role string UNCHANGED as `HoD`. Subject teacher with executive view: can book own classes under own timetable, cancel (24 h cancel lock), and request postponement; TALT staff may book on HoD's behalf. On-behalf booking for other teachers, approvals, and administrative actions Not allowed. `TARGET_ROLE_INELIGIBLE` applies to `Student` and unrecognised roles only. Supersedes D-43; revises D-24.
+12. **D-48 (Booking-Grid UI Requirements & Design Tokens):** Teacher grid displays assigned teaching blocks only; unassigned/non-teaching slots are blank; available blocks muted transparent, filled on select/pending/booked; Subject and Section autofilled and locked field. Subject colours drawn from `docs/DESIGN_TOKENS_SUBJECT_COLORS.md` (O-12 resolved). Tokens populated from TimeTable mapping; UI delivery deferred to post-Gate 6 (BL-02, BL-03).
+13. **D-49 (Make-Up Session Booking Type):** Dedicated make-up lab session flow (typically P8 free period) for whole subjects (`Section = ALL`) to catch absent students across multiple sections; created by TALT staff only (`TA`, `LabTech`, `Admin`; Teacher/HoD/Student Not allowed); auto-`APPROVED` by creator (`ConfirmUserId` = creator); free-period rule verified across all teachers of that subject (`MAKEUP_PERIOD_NOT_FREE`); teaching subject verified (`MAKEUP_SUBJECT_NOT_TEACHING`); target/submitted user = creator; subject teachers are notification recipients only; requires mandatory justification; tagged with `[MAKEUP] notify: <nicknames>` in `Remark`; logged as `MAKEUP_BOOKING`. Added `P2-39`, `BL-04`, `O-13`. Confirmed by Owner 2026-10-28.
+14. **D-50 (Grandfathering & Manual Revalidation):** Confirmed by Owner (2026-10-28). New rules apply to new bookings and new postponement proposals only; existing bookings remain valid (grandfathered) but cannot be postponed to an invalid slot. Manual revalidation results recorded in `Remark` and `Logs` only (no status overwrite). Added `O-14`, updated `P2-30`, added pre-release notice `P6-10`.
 
 ### Document Repairs & Synchronization
 * **Locked PRD Repaired:** Restored `docs/Lab Booking App - PRD v1.1.3c.md` from `main` to undo inadvertent reversion of 1.4.0a text; added single superseding banner line matching Appendix and Design Spec.

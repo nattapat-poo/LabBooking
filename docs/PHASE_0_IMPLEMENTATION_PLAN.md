@@ -43,11 +43,12 @@ git checkout -b security/production-hardening main
 
 ### 0.2 Repository Hygiene (`P0-07`, `P0-12`, `P0-13`, `P0-14`)
 The repository stays **public** (D-09), so the controls must be strong.
-1. **Pattern-based history scan.** Search all history for Google ID shaped strings (44 characters of `[A-Za-z0-9_-]`), calendar IDs (`@group.calendar.google.com`) and personal emails. Report **counts only**; never write found values into any document. Do not search for a placeholder string.
+*Locked-document hygiene note (O-16, PROPOSED):* Real spreadsheet IDs and staff emails exist within locked v1.1.3c reference specifications on `main`. Either sanitize them under a documented exception or make the repository private before sharing further; sharing settings of affected spreadsheets must be verified.
+1. **Pattern-based history scan.** Search all history for Google ID shaped strings (44 characters of `[A-Za-z0-9_-]`), calendar IDs (`@group.calendar.google.com`) and personal emails. Report **counts only**; never write found values into any document. Do not search for a placeholder string. The history scan also reports the **count of distinct author/committer addresses** (`git log --all --format=%ae%n%ce | sort -u | wc -l`; counts only). Future commits should use the GitHub "noreply" address (`git config user.email "<id>+<username>@users.noreply.github.com"`) and GitHub's setting "Block command line pushes that expose my email" should be enabled; existing history is unchanged by this.
 2. **Branch protection on `main`:** pull request required, owner review, `verify_phase` check required, no force-push, no deletion; protect tag patterns; `CODEOWNERS` for `docs/`, `Utils_Security.js` and `appsscript.json`.
 3. **GitHub secret scanning and push protection** enabled.
 4. **CI:** a workflow runs the pattern scan and `verify_phase.js --phase 0` on every pull request.
-5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`.
+5. **Docs lint:** reject `file:///` and `C:\` links (use relative links), any 44-character ID literal, and tab counts or status values that disagree with `SCHEMA_CONTRACT.md`. The future `verify_phase.js` docs lint will warn on banned words ("retained", "proxy", bare "conflict") outside allow-listed contexts (per `docs/GLOSSARY.md`).
 6. **Single schema source:** keep `schema/contract.json` (machine-readable) alongside `SCHEMA_CONTRACT.md`; the lint compares them.
 7. **Changelog discipline:** planned work is recorded under `[Unreleased]` until code ships.
 
@@ -60,6 +61,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 **Test matrix.** Run every combination of `executeAs` (`USER_DEPLOYING`, `USER_ACCESSING`) × `access` (`DOMAIN`, `ANYONE`) for each account type: staff, G10 student, G11/G12 student, outside account.
 
 **A combination is DISQUALIFIED if any of these is true:**
+
 | # | Disqualifier |
 |---|---|
 | D1 | A **staff** account returns an empty or ambiguous identity. |
@@ -72,6 +74,7 @@ The repository stays **public** (D-09), so the controls must be strong.
 | D8 | It needs broader OAuth scopes than the minimal set, or shows consent screens users cannot complete. |
 
 **Method & Account Coverage Policy (D-44):**
+
 | Account Category | Role / Identity Used | Scope / What It Proves | What It Cannot Prove |
 |---|---|---|---|
 | Staff (`@mahidol.ac.th`) | Owner staff account (`Admin` in Master DB `Users`) | Tests Admin identity resolution and permissions **strictly against DEV copies**. | Does not test non-Admin staff roles without extra accounts. |

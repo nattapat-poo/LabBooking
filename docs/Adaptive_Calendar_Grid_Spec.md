@@ -11,6 +11,7 @@
 ## 1. Compliance Assessment vs. PRD & Design Spec v1.1.3c
 
 ### 🔍 Gap & Compliance Analysis
+
 | Architectural Dimension | Legacy PRD / Design Spec v1.1.3c | Newly Proposed Google Calendar Mockup | Compliance Status |
 | :--- | :--- | :--- | :--- |
 | **Grid Architecture** | Static Table (`<tr>` per period, uniform 6 columns $\times$ 9 rows). | **Continuous Time Canvas:** Y-axis mapped to physical clock time (`07:30–16:30`), with period blocks positioned proportionally by timestamp (`top%`, `height%`). | ⚠️ **Deviation / Evolution:** Replaces rigid table with dynamic spatial canvas. |

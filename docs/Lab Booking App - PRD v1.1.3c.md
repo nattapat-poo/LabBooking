@@ -9,6 +9,8 @@
 **Status:** PRD = Locked, Design Spec = Locked, Backend = Audited  
 **Active Engineering Target:** **v1.4.0b** (Governing Security & Ecosystem Alignment)
 
+This tab contains the core specification document for the application's current version (V1.1). It details the functional requirements (features, user flows), data models (database schema), and the technical contract (API specification) defining how the application should be built and behave.
+
 ---
 
 ### 🚨 **CRITICAL AMENDMENT NOTE — Version 1.4.0a (October 2026)**
