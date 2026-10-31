@@ -258,7 +258,8 @@ Ownership = the caller's `Users.UserID` (resolved from the session email) equals
 1. Session email → `Users` row (trim, lowercase) → `DisplayName` (or `FirstName` if blank), normalised.
 2. Matching: `TIMETABLE_USER_UNRESOLVED` means the **identity** cannot be resolved (no `Users` row for the session email, duplicate email, or duplicate `DisplayName` across active rows). Fail closed, never guess.
 3. Timetable records in `Timetable 2026` (`Index`) are matched where `Index.Teacher.trim().toLowerCase() === user.DisplayName.trim().toLowerCase()`. Under the timetable assignment rule (D-46), a teacher with **zero `Index` rows** is not assigned to any teaching block and cannot book classes; any booking attempt is rejected with `TIMETABLE_NOT_ASSIGNED`.
-4. A one-time audit (`P1-28`) proves every `Index.Teacher` resolves to exactly one `Users` row.
+4. **LIVE vs PLANNED:** LIVE (current code): the validation matches `record.TEACHER_EMAIL`, a column the `Index` tab does not have; PLANNED (Phase 2, `P2-20`): the join is session email → `Users.DisplayName` → `Index.Teacher`.
+5. A one-time audit (`P1-28`) proves every `Index.Teacher` resolves to exactly one `Users` row.
 
 ### 7.4 Revocation
 Deleting a `Users` row (or clearing `Role`) denies the user at the next cache refresh (≤ 5 minutes). Existing bookings keep their `TargetUserID` and snapshot nickname.
@@ -302,3 +303,4 @@ Non-teaching blocks are rejected with `TIMETABLE_NOT_ASSIGNED`. Verification `P0
 | **O-13** | Make-up session booking policy (D-49) | **RESOLVED (D-49):** Confirmed by Owner (2026-10-28): Dedicated make-up lab session type (typically Period 8) for whole subjects (`Section = ALL`), created by TALT staff only with auto-`APPROVED` status, subject-wide free-period rule across all teachers of that subject, and email notification to all subject teachers (recipients not owners); mandatory justification; tagged `[MAKEUP]` in `Remark`. |
 | **O-14** | Grandfathering & manual revalidation semantics (D-50) | **RESOLVED (D-50):** Confirmed by Owner (2026-10-28): New rules apply to new bookings and postponement proposals only; existing bookings remain valid (grandfathered). Manual revalidation (PRD §7.3.1) writes to `Remark` and `Logs` only (`Action Required` is a non-status per D-41). |
 | **O-15** | Make-up session implementation phasing | **OPEN (non-blocking):** Owner to decide whether server-side make-up validation is built in Phase 2 (`P2-39` required for Gate 2) with UI deferred to BL-04, or whether the entire make-up flow (server + UI) is deferred to post-Gate 6 under BL-04. |
+| **O-16** | Locked-document sanitisation | **PROPOSED (Owner to decide):** Either (a) sanitise locked documents — replace spreadsheet IDs and staff emails with placeholders as documented exception to "locked", keeping unredacted originals outside repo — or (b) make repo private. Values remain in git history (`P6-02`); sharing settings of affected spreadsheets must be verified. |
